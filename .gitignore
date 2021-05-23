@@ -1,0 +1,10 @@
+*.gem
+Gemfile.lock
+*~
+.bundle
+.rvmrc
+.rspec_status
+log/*
+pkg/*
+.DS_Store
+.env
