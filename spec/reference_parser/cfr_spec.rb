@@ -47,54 +47,86 @@ RSpec.describe ReferenceParser::Cfr do
                                                                       {title: "40", section: "273.33"},
                                                                       {title: "40", section: "273.52"}]},
         {reference: "§ 273.9",                              citation: {title: "1",  section: "273.9"},  context: {title: "1", },
-          with_surrounding_text: "chapter and § 273.9 will be amended"  },
+         with_surrounding_text: "chapter and § 273.9 will be amended"  },
 
         {reference: "§ 173.60",                           citations: [{title: "49",  section: "173.60"}],  context: {title: "49", section: "173.1"}, 
-          with_surrounding_text: "§ 173.60 through 1 CFR"  }, # don"t grab upcoming full reference
+         with_surrounding_text: "§ 173.60 through 1 CFR"  }, # don"t grab upcoming full reference
 
         {reference: "§§ 173.60 through 173.62",           citations: [{title: "49",  section: "173.60"},
                                                                       {title: "49",  section: "173.62"}],  context: {title: "49", section: "173.1"}, },
 
-        {reference: "subpart C of part 261 of this chapter",          citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
-                                                                       expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
+        {reference: "subpart C of part 261 of this chapter",citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
+                                                            expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
       ],
 
       "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1
         {reference: "paragraphs (b) through (e) of this section",     citations: [{title: "26", section: "1.704-1", paragraph: "(b)"},
                                                                                     {title: "26", section: "1.704-1", paragraph: "(e)"}],  context: {title: "26", section: "1.704-1"},
-          with_surrounding_text: "and paragraphs (b) through (e) of this section. For", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)"},
+         with_surrounding_text: "and paragraphs (b) through (e) of this section. For", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)"},
 
         {reference: "paragraph (b)(4)(iv)(<em>a</em>) of this section",     citation: {title: "26", section: "1.704-1", paragraph: "(b)(4)(iv)(<em>a</em>)"},  context: {title: "26", section: "1.704-1"},
-          with_surrounding_text: "as defined in paragraph (b)(4)(iv)(<em>a</em>) of this section) an allocation", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)(4)(iv)(a)"},
+         with_surrounding_text: "as defined in paragraph (b)(4)(iv)(<em>a</em>) of this section) an allocation", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)(4)(iv)(a)"},
  
         {reference: "paragraphs (b)(2)(ii)(f), (b)(2)(ii)(h), and (b)(4)(vi) of this section", citations: [{title: "26", section: "1.704-1", paragraph: "(b)(2)(ii)(f)"},
                                                                                                              {title: "26", section: "1.704-1", paragraph: "(b)(2)(ii)(h)"},
                                                                                                              {title: "26", section: "1.704-1", paragraph: "(b)(4)(vi)"}  ],  context: {title: "26", section: "1.704-1"},
-          with_surrounding_text: "See paragraphs (b)(2)(ii)(f), (b)(2)(ii)(h), and (b)(4)(vi) of this section for other rules regarding such obligation", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)(2)(ii)(f)"},
+         with_surrounding_text: "See paragraphs (b)(2)(ii)(f), (b)(2)(ii)(h), and (b)(4)(vi) of this section for other rules regarding such obligation", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)(2)(ii)(f)"},
 
-        # {reference: "§§ 1.861-8 and 1.861-8T",     citations: [{title: "26", section: "1.861-8"},
-        #                                                        {title: "26", section: "1.861-8T"}],  context: {title: "26", section: "1.704-1"},
-        #   with_surrounding_text: "rules of §§ 1.861-8 and 1.861-8T. Under", expected_url: "/current/title-26/section-1.704-1#p-1.704-1(b)(4)(iv)(a)"},
+        {reference: "Paragraphs (b)(2)(iii)(a) (last sentence), (b)(2)(iii)(d), (b)(2)(iii)(e), and (b)(5) <em>Example 28</em>, <em>Example 29</em>, and <em>Example 30</em> of this section", # Example 28, Example 29, and Example 30 of this section", 
+                                                            citations: [{title: "26", section: "1.704-1", paragraph: "(b)(2)(iii)(a)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(2)(iii)(d)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(2)(iii)(e)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(5)"},],  context: {title: "26", section: "1.704-1"},},
+
+        {reference: "paragraph (b)(2)(iv)(<em>d</em>)(<em>4</em>), paragraph (b)(2)(iv)(<em>f</em>)(<em>1</em>), paragraph (b)(2)(iv)(<em>f</em>)(<em>5</em>)(<em>iv</em>), paragraph (b)(2)(iv)(<em>h</em>)(<em>2</em>), paragraph (b)(2)(iv)(<em>s</em>), paragraph (b)(4)(ix), paragraph (b)(4)(x), and <em>Examples 31</em> through <em>35</em> in paragraph (b)(5) of this section",
+                                                            citations: [{title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>d</em>)(<em>4</em>)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>f</em>)(<em>1</em>)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>f</em>)(<em>5</em>)(<em>iv</em>)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>h</em>)(<em>2</em>)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>s</em>)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(4)(ix)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(4)(x)"},
+                                                                        {title: "26", section: "1.704-1", paragraph: "(b)(5)"},
+                                                                        ],  context: {title: "26", section: "1.704-1"},},
+
+        {reference: "§§ 1.861-8 and 1.861-8T",     citations: [{title: "26", section: "1.861-8"},
+                                                               {title: "26", section: "1.861-8T"}],  context: {title: "26", section: "1.704-1"},
+         with_surrounding_text: "rules of §§ 1.861-8 and 1.861-8T. Under", },
           
         {reference: "1.704-1(b)(1)(ii)(b)(1)", context_specific: true,    citation: {title: "26", section: "1.704-1", paragraph: "(b)(1)(ii)(b)(1)"},  context: {title: "26", section: "1.704-1"}, },
 
+        {reference: "section 761(c)",     citation: {title: "26", section: "761", paragraph: "(c)"},  context: {title: "26", section: "1.704-1"},
+         with_surrounding_text: "a agreement see section 761(c).", expected_url: "/current/title-26/section-761#p-761(c)"},
 
-        # {reference: "section 761(c)",     citation: {title: "26", section: "761", paragraph: "(c)"},  context: {title: "26", section: "1.704-1"},
-        #   with_surrounding_text: "a agreement see section 761(c).", expected_url: "/current/title-26/section-761#p-761(c)"},
+        {reference: "26 CFR 1.704-1T(b)(4)(viii)(d)(3)",     citation: {title: "26", section: "1.704-1T", paragraph: "(b)(4)(viii)(d)(3)"},  context: {title: "26", section: "1.704-1"},
+          with_surrounding_text: "2015. See 26 CFR 1.704-1T(b)(4)(viii)(d)(3) (revise", expected_url: "/current/title-26/section-1.704-1T#p-1.704-1T(b)(4)(viii)(d)(3)"},
 
-        # {reference: "26 CFR 1.704-1T(b)(4)(viii)(d)(3)",     citation: {title: "26", section: "761", paragraph: "(c)"},  context: {title: "26", section: "1.704-1"},
-        #   with_surrounding_text: "2015. See 26 CFR 1.704-1T(b)(4)(viii)(d)(3) (revise", expected_url: "/current/title-26/section-761#p-761(c)"},
+        # provisions of paragraphs (b)(4)(viii)(a)(1), (b)(4)(viii)(c)(1), (b)(4)(viii)(c)(2)(ii) and (iii), (b)(4)(viii)(c)(3) and (4), and (b)(4)(viii)(d)(1) (as in effect on July 24, 2019) and in paragraphs (b)(6)(i), (ii), and (iii) of this section
 
-        # 2015. See 26 CFR 1.704-1T(b)(4)(viii)(d)(3) (revise
+        # § 1.704-1(b)(4)(viii)(c)(3)(ii) and (b)(4)(viii)(d)(3)
+        # the provisions of § 1.704-1(b)(4)(viii)(c)(3)(ii) and (b)(4)(viii)(d)(3) (see
 
-        ],
+        # see § 1.704-1(b)(1)(ii)(b), (b)(4)(viii)(a)(1), (b)(4)(viii)(c)(1), (b)(4)(viii)(c)(2)(ii) and (iii), (b)(4)(viii)(c)(3) and (4), (b)(4)(viii)(d)(1), and (b)(5), Example 25
+
+      ],
+
+      "avoid linking", [
+        
+        # don't link the section header w/ the context specific section pattern
+        {reference: "5.73", context_specific: true,    citation: :expect_none,  context: {title: "14", section: "5.73"}, 
+         with_surrounding_text: ">§ 5.73 Safety performance assessment.", },
+
+      ],
 
       "26 CFR 1.761-1", [ # http://docker.local:4000/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
         {reference: "paragraph (a)(1)(ii) of § 1.731-1",     citation: {title: "26", section: "1.731-1", paragraph: "(a)(1)(ii)"},  context: {title: "26", section: "1.761-1"},
           expected_url: "/current/title-26/section-1.731-1#p-1.731-1(a)(1)(ii)"},
 
-        # "§§ 301.7701-1, 301.7701-2, and 301.7701-3 of this chapter."         
-        # "See paragraph (a)(1)(ii) of § 1.731-1." 
+
+        {reference: "§§ 301.7701-1, 301.7701-2, and 301.7701-3 of this chapter", citations: [{title: "26", section: "301.7701-1"},
+                                                                                             {title: "26", section: "301.7701-2"},
+                                                                                             {title: "26", section: "301.7701-3"},],  context: {title: "26", section: "1.761-1"},},
+
       ],     
 
       "issues/recent changes", [
@@ -135,12 +167,12 @@ RSpec.describe ReferenceParser::Cfr do
         {reference: "10 C.F.R. 100.1",                      url_options: {title: "10", part: "100", section: "1"}, },
         {reference: "10 C.F.R. Part 100.1",                 url_options: {title: "10", part: "100", section: "1"}, },
         {reference: "10 C.F.R. parts 100",                  url_options: {title: "10", part: "100"}, },
-        {reference: "10 C.F.R. Sec. 100",                   url_options: {title: "10", part: "100"}, },
+        {reference: "10 C.F.R. Sec. 100",                      citation: {title: "10", section: "100"}, },
         {reference: "10 CFR 660.71 and 11 CFR 12",         url_options: [{title: "10", part: "660", section: "71"},
                                                                          {title: "11", part: "12"}], },
   
-        {reference: "10 CFR § 100",                         url_options: {title: "10", part: "100" }, },
-        {reference: "10 C.F.R. §§ 100",                     url_options: {title: "10", part: "100" }, },
+        {reference: "10 CFR § 100",                            citation: {title: "10", section: "100"}, },
+        {reference: "10 C.F.R. §§ 100",                        citation: {title: "10", section: "100"}, },
         {reference: "10 C.F.R 100.214(a)",                  url_options: {title: "10", part: "100", section: "214", sublocators: "(a)"}, },
   
         {reference: "10 C.F.R 100.214(1)",                  url_options: {title: "10", part: "100", section: "214", sublocators: "(1)"}, },
@@ -203,14 +235,21 @@ RSpec.describe ReferenceParser::Cfr do
             # embed example in text
             i = rand(lorem.length)
             text = lorem[0..i] << " " << (example[:with_surrounding_text] || example[:reference]) << " " << lorem[i..-1] << "."
-            expected_citation = [example[:citation], example[:citations]].flatten.compact.map{ |target| target.except(*example[:optional])}
+            expected_citation = [example[:citation], example[:citations]].flatten.compact.map do |target| 
+              target.respond_to?(:except) ? target.except(*example[:optional]) : target
+            end
             expected_prior_urls = [example[:url_options]].flatten.compact
 
             result_html, references = extract_references(text, context: example[:context])
 
+            
             if expected_citation.present?
-              # verify extracted references (if present)
-              expect(references.map{ |r| r[:hierarchy]}).to eq(expected_citation)
+              if [:expect_none] == expected_citation
+                expect(references.map{ |r| r[:hierarchy]}).to be_empty
+              else
+                # verify extracted references (if present)
+                expect(references.map{ |r| r[:hierarchy]}).to eq(expected_citation)
+              end
             end
             
             # verify expected_prior_urls (if present)
@@ -226,7 +265,7 @@ RSpec.describe ReferenceParser::Cfr do
             result_html_text = Nokogiri::HTML.parse(result_html).text
 
 
-            expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:reference]).text) unless expected_prior_urls.present?
+            expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:reference]).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none])
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:reference]).text)
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 
@@ -242,11 +281,7 @@ RSpec.describe ReferenceParser::Cfr do
     def all_non_context_specific_examples
       SCENERIOS_CFR.each_slice(2).map do |description, examples| 
         result = examples.select do |example| 
-          begin
           !example[:context_specific] && example[:expected_prior_urls]&.empty?
-          rescue
-            byebug
-          end
         end
         result
       end.flatten

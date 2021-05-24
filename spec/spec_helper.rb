@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
+$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-
-require 'reference_parser'
-
-require 'rspec-html-matchers'
+require "reference_parser"
+require "rspec-html-matchers"
+require "byebug"
 
 # Dir[('./lib/**/*.rb')].each { |f| require f }
 # require "reference_parser"
