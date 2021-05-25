@@ -3,7 +3,7 @@ require_relative "registration"
 class ReferenceParser::Base
   include ReferenceParser::Registration
 
-  attr_accessor :options
+  attr_accessor :options, :debugging
 
   def initialize(options, debugging: false)
     @debugging = debugging

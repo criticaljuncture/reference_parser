@@ -57,6 +57,10 @@ RSpec.describe ReferenceParser::Cfr do
 
         {reference: "subpart C of part 261 of this chapter",citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
                                                             expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
+
+       #{reference: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"}
+       #                                                              {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "14", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
+
       ],
 
       "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1
@@ -116,6 +120,13 @@ RSpec.describe ReferenceParser::Cfr do
         {reference: "5.73", context_specific: true,    citation: :expect_none,  context: {title: "14", section: "5.73"}, 
          with_surrounding_text: ">§ 5.73 Safety performance assessment.", },
 
+        # don't link paragraph identifiers
+        {reference: "1266.102(c)", context_specific: true,    citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
+         with_surrounding_text: '<div id="p-1266.102(c)"></div>', },
+
+        {reference: "1266.102(c)", context_specific: true,    citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
+         with_surrounding_text: "<div id='p-1266.102(c)'></div>", },
+
       ],
 
       "26 CFR 1.761-1", [ # http://docker.local:4000/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
@@ -159,6 +170,7 @@ RSpec.describe ReferenceParser::Cfr do
         {reference: "17 CFR 270.6e-3(T)",    citation: {title: "17", section: "270.6e-3(T)"}, context: {title: "17", part: "200", section: "800"},
                                              expected_url: "/current/title-17/section-270.6e-3(T)"},
 
+        {reference: "14 CFR § 1266.102",     citation: {title: "14", section: "1266.102"},},
       ],
 
       "prior examples", [
@@ -222,6 +234,34 @@ RSpec.describe ReferenceParser::Cfr do
   
       ],
 
+      "from cfr citation parser spec", [
+        {reference: "5 CFR 500.5",           options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5", }},
+       #{reference: "1 cfr 100",             options: {cfr: {best_guess: true}}, citation: {title: "1", part: "100", }},
+        {reference: "1 cfr 100",             options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100", }},
+       #{reference: "1 c.f.r. 100",          options: {cfr: {best_guess: true}}, citation: {title: "1", part: "100", }},
+        {reference: "1 c.f.r. 100",          options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100", }},
+       #{reference: "29 CFR 102, Subpt. B",  options: {cfr: {best_guess: true}}, citation: {title: "29", part: "102"}},
+        {reference: "29 CFR 102",            options: {cfr: {best_guess: true}}, citation: {title: "29", section: "102"}, with_surrounding_text: "29 CFR 102, Subpt. B"},
+        {reference: "5 CFR 500.5",           options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5", }},
+        {reference: "8 CFR",                 options: {cfr: {best_guess: true}}, citation: {title: "8", }},
+        {reference: "26 CFR 1.36B-0",        options: {cfr: {best_guess: true}}, citation: {title: "26", section: "1.36B-0", }},
+       #{reference: "26 CFR 1 3.14",         options: {cfr: {best_guess: true}}, citation: {title: "26", part: "1", section: "3.14", }},
+       #{reference: "26 CFR 1 Sec. 2-3",     options: {cfr: {best_guess: true}}, citation: {title: "26", part: "1", section: "2-3", }},
+        {reference: "41 CFR 102-118.35",     options: {cfr: {best_guess: true}}, citation: {title: "41", section: "102-118.35", }},
+        {reference: "41 CFR 102a.35",        options: {cfr: {best_guess: true}}, citation: {title: "41", section: "102a.35", }},
+       #{reference: "1 CFR 1.505(c)",        options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.505(c)", }},
+        {reference: "1 CFR 1.25-1T",         options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.25-1T", }},
+        {reference: "1 CFR 1.25A-1",         options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.25A-1", }},
+        {reference: "1 CFR 1.25-1T",         options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.25-1T", }},
+        {reference: "1 CFR 1.36B-3T",        options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.36B-3T", }},
+        {reference: "1 CFR 1.103(n)-7T",     options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.103(n)-7T", }},
+        {reference: "1 CFR 1.381(c)(18)-1",  options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.381(c)(18)-1", }},
+        {reference: "1 CFR",                 options: {cfr: {best_guess: true}}, citation: {title: "1", }, with_surrounding_text: "1 CFR Food" },
+      ],
+
+      "guesses", [
+        {reference: "Title 14 § 1266.102",   options: {cfr: {best_guess: true}}, citation: {title: "14", section: "1266.102", }},
+      ],
     ]
 
     include RSpecHtmlMatchers
@@ -230,7 +270,7 @@ RSpec.describe ReferenceParser::Cfr do
       describe description do
         examples.each_with_index do |example, index|
           example[:index] = index
-          it "(#{index}) #{example[:target]}" do
+          it "(#{index}) #{example[:reference].truncate(24)}" do
 
             # embed example in text
             i = rand(lorem.length)
@@ -240,8 +280,7 @@ RSpec.describe ReferenceParser::Cfr do
             end
             expected_prior_urls = [example[:url_options]].flatten.compact
 
-            result_html, references = extract_references(text, context: example[:context])
-
+            result_html, references = extract_references(text, options: (example[:options] || {}).reverse_merge({cfr: {context: example[:context]}}))
             
             if expected_citation.present?
               if [:expect_none] == expected_citation
@@ -266,7 +305,7 @@ RSpec.describe ReferenceParser::Cfr do
 
 
             expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:reference]).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none])
-            expect(result_html_text).to include(Nokogiri::HTML.parse(example[:reference]).text)
+            expect(result_html_text).to include(Nokogiri::HTML.parse(example[:reference]).text) unless example[:html_appearace] == :expect_none
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 
             # confirm specific url
@@ -306,7 +345,7 @@ RSpec.describe ReferenceParser::Cfr do
 
     describe "consolidated example" do
       it "finds everything once" do
-        result_html, references = extract_references(consolidated_example, context: {title: "1", section: "1"})
+        result_html, references = extract_references(consolidated_example, options: {cfr: {context: {title: "1", section: "1"}}})
         expected_citations = all_non_context_specific_examples.map{ |e| [e[:citations], e[:citation]]}.flatten.compact
 
         expect(references.map{ |r| r[:citation] || r[:citations]}.count).to eq(expected_citations.count)
@@ -345,9 +384,9 @@ RSpec.describe ReferenceParser::Cfr do
       path
     end
 
-    def extract_references(text, context: nil)
+    def extract_references(text, options: {})
       citations = []
-      result_html = ReferenceParser.new(options: {cfr: {context: context}}).each(text, default: {relative: true}) do |citation|
+      result_html = ReferenceParser.new(options: options).each(text, default: {relative: true}) do |citation|
         citations << citation
       end
       [result_html, citations]

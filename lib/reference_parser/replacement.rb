@@ -9,14 +9,17 @@ class ReferenceParser::Replacement
            :options,
            to: :parser
 
-  def initialize(regexp=nil, if: nil, prepend_pattern: false, &block)
+  def initialize(regexp=nil, if: nil, prepend_pattern: false, debug_pattern: false, &block)
     @regexp = regexp
     @prepend_pattern = prepend_pattern
+    @debug_pattern = debug_pattern
     @if_clause = binding.local_variable_get(:if)
   end
 
   def regexp
-    @regexp.respond_to?(:call) ? @regexp.call(options&.[](:context) || {}, options || {}) : @regexp
+    result = @regexp.respond_to?(:call) ? @regexp.call(options&.[](:context) || {}, options || {}) : @regexp
+    puts "result #{result}" if @debug_pattern && parser&.debugging
+    result
   end
 
   def describe

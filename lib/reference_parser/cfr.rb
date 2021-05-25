@@ -217,14 +217,32 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, _){
     return unless context[:section].present? && context[:section].include?(".") && (3 < context[:section].length)
     /
-    (?<!§\s)                                         # properly labelled can be matched by non-context pattern
+    (?<!(=('|")p-|§\s))                             # properly labelled can be matched by non-context pattern, avoid tags
     (?<section>#{Regexp.escape(context[:section])})  # the current section
     (?<paragraph>
       #{PARAGRAPH}
     )
-    /ix 
-  }, if: :context_present?)
+    /ix
+  }, if: :context_present?, debug_pattern: true)
     
+
+  # best guess fallback patterns
+
+  replace(->(context, options){
+    return unless options[:best_guess]
+    /
+    #{TITLE_CFR_ALLOW_SLASH_SHORTHAND}
+    /ix
+  }, prepend_pattern: true)
+
+  replace(->(context, options){
+    return unless options[:best_guess]
+    /
+    (?<title_label>Title\s*)(?<title>\d+)
+    (?<section_label>\s*§\s*)#{SECTION}
+    /ix
+  }, prepend_pattern: true)
+
 
   def context_present?(options)
     options[:context].present?
