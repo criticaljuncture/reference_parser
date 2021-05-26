@@ -16,6 +16,8 @@ require_relative "reference_parser/url"
 require_relative "reference_parser/usc"
 
 class ReferenceParser
+  class ParseError < StandardError; end
+
   def initialize(only: nil, except: [], options: {})
     parser_types = [(only || default_parser_types)].flatten - except
     @options = options
@@ -52,6 +54,16 @@ class ReferenceParser
       end
     end
     result
+  end
+
+  def self.cfr_best_guess_hierarchy(text)
+    guess = nil
+    ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, prefer_part: true}}).each(text) do |citation|
+      guess = citation[:hierarchy].compact
+      break
+    end
+    raise ParseError unless guess
+    guess    
   end
 
   private
@@ -93,8 +105,6 @@ class ReferenceParser
         citations = [citations] unless citations.is_a?(Array)
 
         citations&.each do |citation|
-          
-          
 
           citation_result = nil
           if block_given?
@@ -161,8 +171,15 @@ class ReferenceParser
   end
 
   def replacements_for(options)
-    # move prepend_pattern replacements to the front
-    prepended, other = @parsers.flat_map(&:replacements).partition(&:prepend_pattern)
+    all = @parsers.flat_map(&:replacements)
+
+    if @debugging
+      debug = all.detect{ |r| r.debug_pattern }
+      return [debug] if debug.present?
+    end
+
+    # move prepend_pattern replacements to the front    
+    prepended, other = all.partition(&:prepend_pattern)
 
     # check if_clauses
     results = [prepended, other].flatten.select do |replacement|

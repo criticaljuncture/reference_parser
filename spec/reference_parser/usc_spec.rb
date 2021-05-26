@@ -14,10 +14,11 @@ RSpec.describe ReferenceParser::Usc do
     end
 
     SCENERIOS_RP = [
-      { ex:  "Lorem ipsum dolor sit amet, 12 USC 345 consectetur adipiscing elit.", text: "12 USC 345",  citation: {title: 12, part: 345} },
+      { ex:  "Lorem ipsum dolor sit amet, 12 USC 345 consectetur adipiscing elit.", text: "12 USC 345", citation: {title: 12, part: 345} },
       { ex: ["10 USC 1",
              "10 U.S.C. 1"], citation: {title: 10, part: 1} },
-
+      { ex: "established under section 1506 of title 44, United States Code", text: "section 1506 of title 44, United States Code", citation: {title: "44", part: "1506"}, },
+      { ex: "under chapter 15 of title 44, United States Code", text: "chapter 15 of title 44, United States Code", citation: {title: "44", part: "1501"}, },
     ]
 
     include RSpecHtmlMatchers

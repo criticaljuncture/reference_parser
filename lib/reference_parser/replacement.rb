@@ -1,19 +1,27 @@
 class ReferenceParser::Replacement
-  attr_accessor :regexp, :parser, :prepend_pattern, :if_clause
+  attr_accessor :regexp,
+                :parser,
+                :if_clause,
+                :prepend_pattern,
+                :debug_pattern
 
-  delegate :clean_up_named_captures, 
-           :link, 
+  delegate :link, 
            :link_options,
            :url, 
            :slug,
            :options,
            to: :parser
 
-  def initialize(regexp=nil, if: nil, prepend_pattern: false, debug_pattern: false, &block)
+  def initialize(regexp=nil, if: nil, context_usable: nil, prepend_pattern: false, debug_pattern: false, &block)
     @regexp = regexp
     @prepend_pattern = prepend_pattern
     @debug_pattern = debug_pattern
+    @context_usable = context_usable
     @if_clause = binding.local_variable_get(:if)
+  end
+
+  def clean_up_named_captures(captures, options: {})
+    parser&.clean_up_named_captures(captures, options: (options || {}).reverse_merge({context_usable: @context_usable}))
   end
 
   def regexp

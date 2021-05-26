@@ -58,6 +58,9 @@ RSpec.describe ReferenceParser::Cfr do
         {reference: "subpart C of part 261 of this chapter",citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
                                                             expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
 
+        {reference: "36 CFR parts 1252-1258",               citation: {title: "36",  part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"}, 
+         with_surrounding_text: "in the National Archives (36 CFR parts 1252-1258) govern", expected_url: "/current/title-36/part-1252"},
+
        #{reference: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"}
        #                                                              {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "14", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
 
@@ -121,12 +124,20 @@ RSpec.describe ReferenceParser::Cfr do
          with_surrounding_text: ">§ 5.73 Safety performance assessment.", },
 
         # don't link paragraph identifiers
-        {reference: "1266.102(c)", context_specific: true,    citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
+        {reference: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
          with_surrounding_text: '<div id="p-1266.102(c)"></div>', },
 
-        {reference: "1266.102(c)", context_specific: true,    citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
+        {reference: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
          with_surrounding_text: "<div id='p-1266.102(c)'></div>", },
 
+        {reference: "section 1506 of title 44, United States Code", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.1"}, 
+         with_surrounding_text: "established under section 1506 of title 44, United States Code", },
+
+        # incomplete context / invalid link generation
+        {reference: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {title: nil, chapter: "I"}}, 
+        {reference: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {chapter: "I"}}, 
+        {reference: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {}}, 
+        {reference: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {a: "b"}}, 
       ],
 
       "26 CFR 1.761-1", [ # http://docker.local:4000/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
@@ -236,11 +247,11 @@ RSpec.describe ReferenceParser::Cfr do
 
       "from cfr citation parser spec", [
         {reference: "5 CFR 500.5",           options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5", }},
-       #{reference: "1 cfr 100",             options: {cfr: {best_guess: true}}, citation: {title: "1", part: "100", }},
+        {reference: "1 cfr 100",             options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", part: "100", }},
         {reference: "1 cfr 100",             options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100", }},
-       #{reference: "1 c.f.r. 100",          options: {cfr: {best_guess: true}}, citation: {title: "1", part: "100", }},
+        {reference: "1 c.f.r. 100",          options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", part: "100", }},
         {reference: "1 c.f.r. 100",          options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100", }},
-       #{reference: "29 CFR 102, Subpt. B",  options: {cfr: {best_guess: true}}, citation: {title: "29", part: "102"}},
+       #{reference: "29 CFR 102, Subpt. B",  options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "29", part: "102"}},
         {reference: "29 CFR 102",            options: {cfr: {best_guess: true}}, citation: {title: "29", section: "102"}, with_surrounding_text: "29 CFR 102, Subpt. B"},
         {reference: "5 CFR 500.5",           options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5", }},
         {reference: "8 CFR",                 options: {cfr: {best_guess: true}}, citation: {title: "8", }},
@@ -260,7 +271,14 @@ RSpec.describe ReferenceParser::Cfr do
       ],
 
       "guesses", [
-        {reference: "Title 14 § 1266.102",   options: {cfr: {best_guess: true}}, citation: {title: "14", section: "1266.102", }},
+        {reference: "Title 14 § 1266.102",                     options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", section: "1266.102", }},
+        {reference: "Title 14 Chapter V Part 1266 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102", }},
+        {reference: "Title 1 Chapter I Subchapter B",          options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {reference: "Title 1 Chap I Subchapter B",             options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {reference: "Title 1 Ch I Subch B",                    options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {reference: "14 Chapter V Part 1266 § 1266.102",       options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102", }},
+        {reference: "1 Chapter I Subchapter B",                options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {reference: "14/1266",                                 options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", part: "1266", }},
       ],
     ]
 
@@ -284,7 +302,7 @@ RSpec.describe ReferenceParser::Cfr do
             
             if expected_citation.present?
               if [:expect_none] == expected_citation
-                expect(references.map{ |r| r[:hierarchy]}).to be_empty
+                expect(references.map{ |r| r[:hierarchy]}.compact).to be_empty
               else
                 # verify extracted references (if present)
                 expect(references.map{ |r| r[:hierarchy]}).to eq(expected_citation)
