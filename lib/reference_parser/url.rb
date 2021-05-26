@@ -31,7 +31,7 @@ class ReferenceParser::Url < ReferenceParser::Base
 
       url = 'http://' + url unless citation[:scheme]
 
-      helpers.content_tag(:a, link_text, {href: url, class: "external"}) + punctuation.reverse.join('')
+      content_tag(:a, link_text, {href: url, class: "external"}) + punctuation.reverse.join('')
     end
   end
 end

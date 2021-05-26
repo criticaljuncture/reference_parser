@@ -1,19 +1,10 @@
 # frozen_string_literal: true
-require "active_support/all"
-require "action_controller"
 
-require_relative "reference_parser/version"
-require_relative "reference_parser/replacement"
-require_relative "reference_parser/base"
-require_relative "reference_parser/cfr"
-require_relative "reference_parser/email"
-require_relative "reference_parser/executive_order"
-require_relative "reference_parser/federal_register"
-require_relative "reference_parser/patent"
-require_relative "reference_parser/public_law"
-require_relative "reference_parser/registration"
-require_relative "reference_parser/url"
-require_relative "reference_parser/usc"
+require "active_support/core_ext/module/delegation"
+require "active_support/core_ext/hash"
+require "action_view"
+
+require_relative "reference_parser/all"
 
 class ReferenceParser
   class ParseError < StandardError; end
@@ -109,10 +100,14 @@ class ReferenceParser
           citation_result = nil
           if block_given?
             citation[:text] = citation[:text] || match[0]
-            prefix, suffix = eject_spacers_from_tag(citation[:text], aggressive: true)
+            prefix = citation[:prefix] || ''
+            prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: true)
+            suffix = citation[:suffix] || ''
             citation_result = "".html_safe << 
-                              prefix <<
+                              prefix << 
+                              prefix_spacers <<
                               (yield(replacement.parser, citation) || '') <<
+                              suffix_spacers << 
                               suffix            
           end
           if citation_result

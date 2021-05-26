@@ -1,4 +1,4 @@
-require 'rails_helper'
+require 'spec_helper'
 
 RSpec.describe ReferenceParser::FederalRegister do
   describe "links Federal Register" do

@@ -2,6 +2,7 @@ require_relative "registration"
 
 class ReferenceParser::Base
   include ReferenceParser::Registration
+  include ActionView::Helpers::TagHelper
 
   attr_accessor :options, :debugging
 
@@ -23,9 +24,7 @@ class ReferenceParser::Base
 
   def link_to(text, citation, options={})
     if href = url(citation, options)
-      # !TODO link_to vs content_tag, this will swap href & class breaking file fixtures
-      # helpers.link_to(text.html_safe, href.html_safe, **get_link_options(citation, options))
-      helpers.content_tag(:a, text.html_safe, **{href: href.html_safe}.merge(get_link_options(citation, options)))      
+      content_tag(:a, text.html_safe, **{href: href.html_safe}.merge(get_link_options(citation, options)))      
     else
       text
     end
@@ -36,10 +35,6 @@ class ReferenceParser::Base
   end
 
   private
-
-  def helpers
-    ActionController::Base.helpers
-  end
 
   def absolute?(url_options)
     !url_options[:relative] || url_options[:absolute]

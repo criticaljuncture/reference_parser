@@ -3,6 +3,6 @@ class ReferenceParser::Email < ReferenceParser::Base
   replace /(?<email>(?<!#{AUTO_EMAIL_LOCAL_RE})[\w.!#\$%+-]\.?#{AUTO_EMAIL_LOCAL_RE}*@[\w-]+(?:\.[\w-]+)+)/
 
   def link_to(text, citation, options={})
-    helpers.content_tag(:a, citation[:email], {href: "mailto:#{citation[:email]}", class: "email"})
+    content_tag(:a, citation[:email], {href: "mailto:#{citation[:email]}", class: "email"})
   end
 end

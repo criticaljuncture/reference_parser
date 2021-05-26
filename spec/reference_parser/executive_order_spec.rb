@@ -1,4 +1,4 @@
-require "rails_helper"
+require "spec_helper"
 
 RSpec.describe ReferenceParser::ExecutiveOrder do
   describe "links Executive Orders" do

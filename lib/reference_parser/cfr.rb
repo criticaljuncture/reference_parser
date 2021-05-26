@@ -6,13 +6,21 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   # sub-patterns & utilities
 
+  TITLE_ID      = /\d+/  
+  SUBTITLE_ID   = /([A-Z]{1,7})/ix
+  CHAPTER_ID    = /[IVXLCDM0-9]+/ix
+  SUBCHAPTER_ID = /[A-Z]+[-_]?[A-Z]*/ix
+  PART_ID       = /\w+[\-–—]?\w*/ix
+  SUBPART_ID    = /\w+[\w\.\-–—]*\w*/ix
+  SECTION_ID    = /[\w\-]+.?[\w\-–—\(\)]*/ix
+
   TITLE_CFR = /
-    (?<title>\d+)                           # 42
+    (?<title>#{TITLE_ID})                    # 42
     (?<cfr_label>\s*C\.?F\.?R\.?\s*)        # CFR
     /ix
 
   TITLE_CFR_ALLOW_SLASH_SHORTHAND = /
-    (?<title>\d+)                           # 42
+    (?<title>#{TITLE_ID})                           # 42
     (?<cfr_label>(\s*(C\.?F\.?R\.?)\s*|\/)) # CFR
     /ix
 
@@ -21,12 +29,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                                                       # next title
 
   TRAILING_BOUNDRY = /(?!\d)/ix             # don't stop mid-number
-
-  SUBTITLE_ID   = /([A-Z]{1,7})/ix
-  CHAPTER_ID    = /(\d{1,5}|[A-Z]{1,7})/ix
-  SUBCHAPTER_ID = CHAPTER_ID
-  PART_ID       = /\d+/ix
-  SUBPART_ID    = SUBTITLE_ID
 
   CHAPTER_LABEL    = /(?<chapter_label>\s*Ch(ap(ter)?)?\s*)/ix
   CHAPTER          = /(?<chapter>#{CHAPTER_ID})/ix
@@ -173,8 +175,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   
   MESSY_TRAILING_BOUNDRY = /
-    (?!\s?of\stitle\s\d+,\sUnited\sStates\sCode)     # for standalone section
-    (?!\d)
+    (?!\s?of\s+those\s+regulations)                  # for standalone section
+    (?!\s?of\s+title\s+\d+,\s+United\s+States\s+Code)
+    (?!\.?\d)
     /ix  
 
   replace(/
@@ -187,7 +190,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<section_label>(§+|section)\s*)#{SECTIONS}
     #{PARAGRAPH}                                     # 
     (?<suffix>\s*(of\s*this\s*(title|chapter))?)
-    #{MESSY_TRAILING_BOUNDRY}
+    #{MESSY_TRAILING_BOUNDRY}                        #
     /ix, if: :context_present?, context_usable: :title)
 
   # local list of paragraphs
@@ -204,7 +207,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         (,\s*(and\s*)?)?
       )+
     )
-    (?<suffix>
+    (?<suffix_unlinked>
           \s*of\sthis\ssection
     )
     /ix, if: :context_present?, context_usable: %i'title section')
@@ -215,6 +218,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{EXPANDED_PARAGRAPHS}
     (?<suffix>
       (#{EXAMPLES})?
+    )
+    (?<suffix_unlinked>
       \s*of\sthis\ssection
     )
     /ix, if: :context_present?, context_usable: %i'title section')
@@ -336,6 +341,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     section_label section none
     paragraph_label paragraph paragraph_range_end
     suffix'
+    # also: prefix_unlinked / suffix_unlinked
 
 
   def clean_up_named_captures(captures, options: {})
@@ -405,11 +411,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       text_from_captures << repeated_capture
       text_from_captures.concat(last_loop_named_captures) if (index == (repeated.count - 1))        # last loop/suffix
 
-      loop_prefix = (index == 0) ? captures[:prefix] || "" : ""
-      loop_suffix = (index == (repeated.count - 1)) ? captures[:suffix] || "" : ""
+      loop_prefix_unlinked = (index == 0) ? captures[:prefix_unlinked] || "" : "" 
+      loop_prefix          = (index == 0) ? captures[:prefix]          || "" : "" 
+      loop_suffix          = (index == (repeated.count - 1)) ? captures[:suffix]          || "" : ""
+      loop_suffix_unlinked = (index == (repeated.count - 1)) ? captures[:suffix_unlinked] || "" : ""
 
       text = (loop_prefix || "") + loop_captures.slice(*text_from_captures).values.join + (loop_suffix || "")      
-
 
       # cleanup hierarchy
       hierarchy = cleanup_hierarchy(hierarchy, expected: expected)
@@ -420,7 +427,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       # build citation      
       citation = { hierarchy:      hierarchy,
                    href_hierarchy: href_hierarchy,
-                   text:           text }
+                   prefix:         loop_prefix_unlinked,
+                   text:           text,
+                   suffix:         loop_suffix_unlinked }
                    
                    
       results << citation
