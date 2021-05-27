@@ -14,26 +14,26 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "1 CFR 2.7(a)(2)",                      citation: {title: "1", chapter: "I", part: "2", section: "2.7", paragraph: "(a)(2)"} , optional: [:chapter, :part]},
       ],
       "Table 2-8 (p68/2-50)", [
-        {ex: "chapter II of this title",             citation: {title: "1", chapter: "II"},                                          context: {title: "1", chapter: "I"}}, 
-        {ex: "part 300 of this title",               citation: {title: "1", chapter: "I", part: "300"},        optional: [:chapter], context: {title: "1", chapter: "I", part: "100"}}, 
-        {ex: "§ 300.19 of this title",               citation: {title: "1", chapter: "I", section: "300.19"},  optional: [:chapter], context: {title: "1", chapter: "I", section: "250.10"}},
-        {ex: "part 30 of this chapter",              citation: {title: "1", chapter: "I", part: "30"},         optional: [:chapter], context: {title: "1", chapter: "I", part: "20"}},
-        {ex: "part 30, subpart A of this chapter",   citation: {title: "1", chapter: "I", part: "30", subpart: "A"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"}},
-        {ex: "§ 30.19 of this chapter",              citation: {title: "1", chapter: "III", section: "30.19"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"}},
+        {ex: "chapter II of this title",             citation: {title: "1", chapter: "II"},                                                context: {title: "1", chapter: "I"},                    context_specific: true}, 
+        {ex: "part 300 of this title",               citation: {title: "1", chapter: "I", part: "300"},              optional: [:chapter], context: {title: "1", chapter: "I", part: "100"},       context_specific: true}, 
+        {ex: "§ 300.19 of this title",               citation: {title: "1", chapter: "I", section: "300.19"},        optional: [:chapter], context: {title: "1", chapter: "I", section: "250.10"}, context_specific: true},
+        {ex: "part 30 of this chapter",              citation: {title: "1", chapter: "I", part: "30"},               optional: [:chapter], context: {title: "1", chapter: "I", part: "20"},        context_specific: true},
+        {ex: "part 30, subpart A of this chapter",   citation: {title: "1", chapter: "I", part: "30", subpart: "A"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"},  context_specific: true},
+        {ex: "§ 30.19 of this chapter",              citation: {title: "1", chapter: "III", section: "30.19"},       optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"},  context_specific: true},
       ],
       "Table 2-9 (p69/2-51)", [
         {ex: "subpart A of this part",               citation: {title: "1", part: "20", subpart: "A"},              context: {title: "1", part: "20", section: "20.5"},
-                                                            expected_url: "/current/title-1/part-20/subpart-A"}, 
-        {ex: "§ 20.15",                              citation: {title: "1", section: "20.15"},                      context: {title: "1", section: "20.5"}}, 
-        {ex: "§ 20.15(a)",                           citation: {title: "1", section: "20.15", paragraph: "(a)"},    context: {title: "1", section: "20.5"}},
-        {ex: "Appendix A of this part",              citation: {title: "1", part: "20", section: "Appendix A"},     context: {title: "1", part: "20", section: "20.5"}},
+                                                     expected_url: "/current/title-1/part-20/subpart-A", context_specific: true}, 
+        {ex: "§ 20.15",                              citation: {title: "1", section: "20.15"},                      context: {title: "1", section: "20.5"}, context_specific: true}, 
+        {ex: "§ 20.15(a)",                           citation: {title: "1", section: "20.15", paragraph: "(a)"},    context: {title: "1", section: "20.5"}, context_specific: true},
+        {ex: "Appendix A of this part",              citation: {title: "1", part: "20", section: "Appendix A"},     context: {title: "1", part: "20", section: "20.5"}, context_specific: true},
       ],
       "table 2-10 (p69/2-51)", [
-        {ex: "paragraph (b) of this section",        text: "paragraph (b)",        citation: {title: "1", section: "1", paragraph: "(b)"},        context: {title: "1", section: "1", paragraph: "(a)"},}, 
-        {ex: "paragraph (b)(1) of this section",     text: "paragraph (b)(1)",     citation: {title: "1", section: "1", paragraph: "(b)(1)"},     context: {title: "1", section: "1", paragraph: "(a)"}}, 
-        {ex: "paragraph (a)(2) of this section",     text: "paragraph (a)(2)",     citation: {title: "1", section: "1", paragraph: "(a)(2)"},     context: {title: "1", section: "1", paragraph: "(a)(1)"}}, 
-        {ex: "paragraph (a)(1)(ii) of this section", text: "paragraph (a)(1)(ii)", citation: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}}, 
-       #{ex: "this paragraph (a)",                   text: "paragraph (a)",        citation: {title: "1", paragraph: "(a)"},                      context: {title: "1", section: "1", paragraph: "(a)"}}, 
+        {ex: "paragraph (b) of this section",        text: "paragraph (b)",        citation: {title: "1", section: "1", paragraph: "(b)"},        context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true,}, 
+        {ex: "paragraph (b)(1) of this section",     text: "paragraph (b)(1)",     citation: {title: "1", section: "1", paragraph: "(b)(1)"},     context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
+        {ex: "paragraph (a)(2) of this section",     text: "paragraph (a)(2)",     citation: {title: "1", section: "1", paragraph: "(a)(2)"},     context: {title: "1", section: "1", paragraph: "(a)(1)"},     context_specific: true}, 
+        {ex: "paragraph (a)(1)(ii) of this section", text: "paragraph (a)(1)(ii)", citation: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context_specific: true}, 
+       #{ex: "this paragraph (a)",                   text: "paragraph (a)",        citation: {title: "1", paragraph: "(a)"},                      context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
       ],
       "Table 2-7 (p68/2-50) (damaged)", [
         {ex: "1CFRchapterI",                         citation: {title: "1", chapter: "I"}},
@@ -44,16 +44,16 @@ RSpec.describe ReferenceParser::Cfr do
 
       "extracts", [
         {ex: "40 CFR 273.13, 273.33, and 273.52",  citations: [{title: "40", section: "273.13"},
-                                                                      {title: "40", section: "273.33"},
-                                                                      {title: "40", section: "273.52"}]},
-        {ex: "§ 273.9",                              citation: {title: "1",  section: "273.9"},  context: {title: "1", },
+                                                               {title: "40", section: "273.33"},
+                                                               {title: "40", section: "273.52"}]},
+        {ex: "§ 273.9",                              citation: {title: "1",  section: "273.9"},  context: {title: "1", }, context_specific: true,
          with_surrounding_text: "chapter and § 273.9 will be amended"  },
 
-        {ex: "§ 173.60",                           citations: [{title: "49",  section: "173.60"}],  context: {title: "49", section: "173.1"}, 
+        {ex: "§ 173.60",                           citations: [{title: "49",  section: "173.60"}],  context: {title: "49", section: "173.1"}, context_specific: true, 
          with_surrounding_text: "§ 173.60 through 1 CFR"  }, # don"t grab upcoming full reference
 
         {ex: "§§ 173.60 through 173.62",           citations: [{title: "49",  section: "173.60"},
-                                                                      {title: "49",  section: "173.62"}],  context: {title: "49", section: "173.1"}, },
+                                                               {title: "49",  section: "173.62"}],  context: {title: "49", section: "173.1"}, context_specific: true, },
 
         {ex: "subpart C of part 261 of this chapter",citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
                                                             expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
@@ -130,6 +130,10 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
          with_surrounding_text: "<div id='p-1266.102(c)'></div>", },
 
+        # don't link section identifiers
+        {ex: '<div class="section" id="1.100">...</div>', context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"},},
+        {ex: "<div class='section' id='1.100'>...</div>", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"},},         
+
         {ex: "section 1506 of title 44, United States Code", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.1"}, 
          with_surrounding_text: "established under section 1506 of title 44, United States Code", },
 
@@ -141,6 +145,12 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {chapter: "I"}}, 
         {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {}}, 
         {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {a: "b"}}, 
+
+        {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: nil, chapter: "I", part: "5", section: "5.9"}}, 
+        {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", chapter: "I", part: "5"}},  
+        {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", chapter: "I"}}, 
+        {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1"}}, 
+
       ],
 
       "26 CFR 1.761-1", [ # http://docker.local:4000/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
@@ -319,7 +329,7 @@ RSpec.describe ReferenceParser::Cfr do
             end
 
 
-            # confirm linking didn"t damage source text
+            # confirm linking didn't damage source text
             references_only_result_html = references.map{|r| r[:result]}.join
             references_only_result_html_text = Nokogiri::HTML.parse(references_only_result_html).text
             result_html_text = Nokogiri::HTML.parse(result_html).text
@@ -341,6 +351,13 @@ RSpec.describe ReferenceParser::Cfr do
               end
             end
 
+            if example[:context_specific]
+              # confirm same results w/ composite hierarchy
+              composite_hierarchy = "#{example.dig(:context, :title)}:#{example.dig(:context, :subtitle)}:#{example.dig(:context, :chapter)}:#{example.dig(:context, :subchapter)}:#{example.dig(:context, :part)}:#{example.dig(:context, :subpart)}:#{example.dig(:context, :section)}"
+              composite_result_html, composite_references = extract_references(text, options: (example[:options] || {}).reverse_merge({cfr: {context: { composite_hierarchy: composite_hierarchy}}}))
+              expect(composite_result_html).to eq(result_html)
+              expect(composite_references).to eq(references)
+            end
           end
         end
       end
@@ -383,7 +400,7 @@ RSpec.describe ReferenceParser::Cfr do
 
         references_html = references.map{|r| r[:result]}.join()
 
-        # confirm linking didn"t damage source text
+        # confirm linking didn't damage source text
         references_html_text = Nokogiri::HTML.parse(references_html).text
         result_html_text = Nokogiri::HTML.parse(result_html).text
 

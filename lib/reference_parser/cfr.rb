@@ -147,12 +147,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(/
     (?<chapter_label>chapter\s*)(?<chapter>[A-Z]+)   # chapter - required
     (?<suffix>\s*of\s*this\s*title)                  # of this title
-    /ix, if: :context_present?, context_usable: :title)
+    /ix, if: :context_present?, context_expected: :title)
   
   replace(/
     (?<subtitle_label>subtitle\s*)(?<subtitle>[A-Z]) # subtitle - required
     (?<suffix>\s*of\s*this\s*title)                  # of this title
-    /ix, if: :context_present?, context_usable: :title)
+    /ix, if: :context_present?, context_expected: :title)
 
   replace(/
     ((?<prefixed_subpart_label>subpart\s*)(?<prefixed_subpart>[A-Z]+)
@@ -162,7 +162,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?<subpart_label>\s*,\s*subpart\s*)(?<subpart>[A-Z]+) # part 30, subpart A of this chapter
     )?            
     (?<suffix>\s*of\s*this\s*(title|chapter))        # of this title.chapter
-    /ix, if: :context_present?, context_usable: %i'title in_suffix')
+    /ix, if: :context_present?, context_expected: %i'title in_suffix')
 
   replace(/
     (
@@ -171,7 +171,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?<section>(?<appendix_label>\s*appendix\s*)[A-Z]+) # appendix
     )
     (?<suffix>\s*of\s*this\s*part)                   # of this part
-    /ix, if: :context_present?, context_usable: %i'title part')
+    /ix, if: :context_present?, context_expected: %i'title part')
 
   
   MESSY_TRAILING_BOUNDRY = /
@@ -181,7 +181,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ix  
 
   replace(/
-    (?<![>"])                                        # avoid matching start of tag for section header
+    (?<![>"'])                                       # avoid matching start of tag for section header
     (
       (?<prefixed_paragraph_label>paragraph\s*)
       (?<prefixed_paragraph>#{PARAGRAPH_UNLABELLED})
@@ -191,7 +191,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{PARAGRAPH}                                     # 
     (?<suffix>\s*(of\s*this\s*(title|chapter))?)
     #{MESSY_TRAILING_BOUNDRY}                        #
-    /ix, if: :context_present?, context_usable: :title)
+    /ix, if: :context_present?, context_expected: %i'title in_suffix')
 
   # local list of paragraphs
   #   paragraph (b)(2)(iv)(<em>d</em>)(<em>4</em>), 
@@ -210,7 +210,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
           \s*of\sthis\ssection
     )
-    /ix, if: :context_present?, context_usable: %i'title section')
+    /ix, if: :context_present?, context_expected: %i'title section')
 
   # expanded preable local list of paragraphs
   replace(/
@@ -222,7 +222,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
       \s*of\sthis\ssection
     )
-    /ix, if: :context_present?, context_usable: %i'title section')
+    /ix, if: :context_present?, context_expected: %i'title section')
 
 
   # primarly list replacements
@@ -242,13 +242,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, _){
     return unless context[:section].present? && context[:section].include?(".") && (3 < context[:section].length)
     /
-    (?<!(=('|")p-|§\s))                              # properly labelled can be matched by non-context pattern, avoid tags
+    (?<!=('|")|=('|")p-|§\s)                         # properly labelled can be matched by non-context pattern, avoid tags
     (?<section>#{Regexp.escape(context[:section])})  # current section anchor
     (?<paragraph>
       #{PARAGRAPH}
     )
     /ix
-  }, if: :context_present?, context_usable: :title)
+  }, if: :context_present?, context_expected: :title)
     
 
   # best guess fallback patterns
@@ -347,9 +347,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def clean_up_named_captures(captures, options: {})
     results = []
 
-    context = prepare_context(options)
-    
-    usable = [options&.[](:context_usable)].flatten
+    puts "clean_up_named_captures captures #{captures}" if @debugging
+    context = options[:context] || {}
+    context_expected = [options&.[](:context_expected)].flatten
     captures = prepare_captures(captures)
 
     
@@ -396,14 +396,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       hierarchy = loop_captures.slice(*hierarchy_elements)
 
 
-      if options[:context_usable].present?
-        # fill in hierarchy from context (if needed)
-        available_from_context = determine_available_from_context(hierarchy, context: context, usable: usable, captures: captures)
+      # fill in hierarchy from context (if needed)
+      if options[:context_expected].present?
+        available_from_context = determine_available_from_context(hierarchy, context: context, context_expected: context_expected, captures: captures)
         available_from_context.each do |k|
           hierarchy[k] = context[k] if context[k].present? && !hierarchy[k].present?
         end
       end
-      next unless hierarchy[:title].present?
+      next if hierarchy_appears_incomplete?(hierarchy, context_expected: context_expected || {}, captures: captures)
 
 
       # reassemble text for link
@@ -436,6 +436,29 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
 
     results
+  end
+
+  def hierarchy_ranks
+    %i'subtitle chapter subchapter part subpart section paragraph'
+  end
+
+  def hierarchy_appears_incomplete?(hierarchy, context_expected: [], captures: {})
+    result = hierarchy_ranks.detect do |rank| 
+      context_expected.include?(rank) && 
+      !hierarchy[rank].present?
+    end
+
+    if context_expected.include?(:in_suffix)
+      hierarchy_ranks.each do |rank|
+        if captures[:suffix]&.downcase&.include?(rank.to_s)
+          incomplete ||= !hierarchy[rank].present?
+        end
+      end
+    end
+
+    result ||= !hierarchy[:title].present?
+    puts "hierarchy_appears_incomplete? #{result}" if @debugging && result
+    result
   end
 
   def split_lists_into_individual_items(captures, keys, simple: false)
@@ -479,16 +502,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
   
-  def determine_available_from_context(hierarchy, context: {}, usable: [], captures: {})
+  def determine_available_from_context(hierarchy, context: {}, context_expected: [], captures: {})
     results = []
     
     results << :title   if context[:title] && !hierarchy[:title].present? && 
-                           usable.include?(:title)
+                           context_expected.include?(:title)
 
     results << :section if context[:section] && !hierarchy[:section].present? && 
                            (hierarchy[:paragraph].present? || hierarchy[:subpart].present?) &&
-                           (usable.include?(:section) ||
-                            usable.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+                           (context_expected.include?(:section) ||
+                           context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
 
     results << :part    if context[:part] && !hierarchy[:part].present? && 
                            (
@@ -496,10 +519,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                              hierarchy[:subpart].present? ||
                              (hierarchy[:section].present? && !hierarchy[:section]&.include?(".")) 
                            ) &&
-                           (usable.include?(:part) ||
-                            usable.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("part"))
+                           (context_expected.include?(:part) ||
+                           context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("part"))
 
-    puts "determine_available_from_context \"#{results}\" usable \"#{usable}\"" if @debugging
+    puts "determine_available_from_context \"#{results}\" context_expected \"#{context_expected}\"" if @debugging
     results
   end
 
@@ -542,14 +565,25 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
 
+  def normalize_options(options)
+    context = prepare_context(options)
+    options[:context] = context if context.present?
+  end
+
   def prepare_context(options)
     result = options&.[](:context) || {}
     if composite_hierarchy = options&.[](:composite_hierarchy) || result[:composite_hierarchy]
-      result.reverse_merge!(%i'title subtitle chapter subchapter part subpart section_identifier'.zip(composite_hierarchy.split(/:/)).to_h)
+      hierarchy_from_composite = %i'title subtitle chapter subchapter part subpart section_identifier'.
+                                 zip(composite_hierarchy.
+                                 split(/:/)).to_h
+
+      hierarchy_from_composite.delete_if{ |k,v| v.blank? }
+      hierarchy_from_composite[:section] = hierarchy_from_composite[:section_identifier] if hierarchy_from_composite[:section_identifier]
+
+      result.reverse_merge!(hierarchy_from_composite)
     end
     result || {}
   end
-
 
   def cleanup_hierarchy(hierarchy, expected: {})
     puts "cleanup_hierarchy AAA hierarchy #{hierarchy}" if @debugging

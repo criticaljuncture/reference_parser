@@ -12,16 +12,16 @@ class ReferenceParser::Replacement
            :options,
            to: :parser
 
-  def initialize(regexp=nil, if: nil, context_usable: nil, prepend_pattern: false, debug_pattern: false, &block)
+  def initialize(regexp=nil, if: nil, context_expected: nil, prepend_pattern: false, debug_pattern: false, &block)
     @regexp = regexp
     @prepend_pattern = prepend_pattern
     @debug_pattern = debug_pattern
-    @context_usable = context_usable
+    @context_expected = context_expected
     @if_clause = binding.local_variable_get(:if)
   end
 
   def clean_up_named_captures(captures, options: {})
-    parser&.clean_up_named_captures(captures, options: (options || {}).reverse_merge({context_usable: @context_usable}))
+    parser&.clean_up_named_captures(captures, options: (options || {}).reverse_merge({context_expected: @context_expected}))
   end
 
   def regexp

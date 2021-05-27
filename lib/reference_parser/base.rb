@@ -34,6 +34,9 @@ class ReferenceParser::Base
     self.class.name.to_s.split("::").last.underscore.to_sym
   end
 
+  def normalize_options(options)
+  end
+
   private
 
   def absolute?(url_options)

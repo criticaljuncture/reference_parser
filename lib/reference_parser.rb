@@ -17,6 +17,7 @@ class ReferenceParser
     @parsers = parser_types.map do |parser_type| 
       new_parser(parser_type)
     end
+    @parsers.each{ |parser| parser.normalize_options(build_options(parser, @options, {})) }
   end
 
   def hyperlink(text, options: {}, default: {})
