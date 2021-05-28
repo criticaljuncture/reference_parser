@@ -37,6 +37,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   CHAPTER          = /(?<chapter>#{CHAPTER_ID})/ix
   SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(ap(ter)?)?\s*)/ix  
   SUBCHAPTER       = /(?<subchapter>#{SUBCHAPTER_ID})/ix  
+  SUBPART_LABEL    = /(?<subpart_label>,?\s*subparts?\s*)/ix
+  SUBPART          = /(?<subpart>#{SUBPART_ID})/ix
   PART_LABEL       = /(?<part_label>\s*Part\s*)/ix
   PART             = /(?<part>#{PART_ID})/ix
 
@@ -80,7 +82,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (
         #{PARAGRAPH_UNLABELLED_REQUIRED}
         (\s\(last\ssentence\))?
-        ((\s|,|and|through)+#{PARAGRAPH_UNLABELLED_REQUIRED})*
+        ((\s|,|and|or|through)+#{PARAGRAPH_UNLABELLED_REQUIRED})*
       )
     )
     /ix
@@ -120,17 +122,26 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ix
 
+  SUBPARTS = /
+    (?<subparts>
+      #{SUBPART_ID}
+      (
+        \s*(?!CFR)(,|(,\s*|)and|(,\s*|)or|through)\s*   # join
+        #{SUBPART_ID}                           # additional sections
+      )*
+    )
+    /ix    
 
   # reference replacements
 
   replace(/
-      #{TITLE_CFR}                                     # title 
+      #{TITLE_CFR}                                     # title
       (?<part_label>part\s*)(?<part>\d+)               # labelled part
-      (?<subpart_label>,?\s*subpart\s*)(?<subpart>[A-Z]) # labelled subpart
+      #{SUBPART_LABEL}#{SUBPART}
     /ix)
 
   replace(/
-      #{TITLE_CFR}                                     # title 
+      #{TITLE_CFR}                                     # title
       (?<chapter_label>chapter\s*)                     # labelled chapter
       (?<chapter>[A-Z]+\s*)      
     /ix)
@@ -184,7 +195,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ix
 
   replace(/
-    (?<![>"'])                                       # avoid matching start of tag for section header
+    (?<![>"'§])                                       # avoid matching start of tag for section header
     (
       (?<prefixed_paragraph_label>paragraph\s*)
       (?<prefixed_paragraph>#{PARAGRAPH_UNLABELLED})
@@ -193,7 +204,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<section_label>(§+|section)\s*)#{SECTIONS}
     #{PARAGRAPH}                                     # 
     (?<suffix>\s*(of\s*this\s*(title|chapter))?)
-    #{TRAILING_BOUNDRY}                        #
+    #{TRAILING_BOUNDRY}                              #
     /ix, pattern_slug: :loose_section, if: :context_present?, will_consider_post_match: true, context_expected: %i'title in_suffix')
 
   # local list of paragraphs
@@ -211,7 +222,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       )+
     )
     (?<suffix_unlinked>
-          \s*of\sthis\ssection
+          \s*of\sthis\ssection                       # of this section
     )
     /ix, if: :context_present?, context_expected: %i'title section')
 
@@ -223,7 +234,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (#{EXAMPLES})?
     )
     (?<suffix_unlinked>
-      \s*of\sthis\ssection
+      \s*of\sthis\ssection                           # of this section
     )
     /ix, if: :context_present?, context_expected: %i'title section')
 
@@ -367,6 +378,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     # determine repeated capture (if any)
     repeated = [captures[:sections] || captures[:section]].flatten.select(&:present?)
     repeated_capture = :section
+
     if !repeated.present? && captures[:paragraphs].present?
       repeated = [captures[:paragraphs] || captures[:paragraph]].flatten.select(&:present?)
       repeated_capture = :paragraph
@@ -381,7 +393,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     index = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS.find_index(repeated_capture)
     first_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[0..index]
     last_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[index..-1]
-      
+
+    previous_citation = nil
     repeated&.each_with_index do |what, index|
       loop_captures = { repeated_capture => what }.reverse_merge(captures.except(:prefix, :suffix))
       prepare_loop_captures(loop_captures, processing_a_list: processing_a_list)
@@ -423,6 +436,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       # cleanup hierarchy
       hierarchy = cleanup_hierarchy(hierarchy, expected: expected)
       hierarchy = cleanup_hierarchy_for_list_ranges_if_needed(hierarchy, repeated_capture: repeated_capture, processing_a_list: processing_a_list)
+      normalize_paragraph_ranges(hierarchy, text: text, previous_citation: previous_citation) if previous_citation
       href_hierarchy = cleanup_hierarchy_for_href(hierarchy, expected: expected)
 
 
@@ -433,7 +447,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                    text:           text,
                    suffix:         loop_suffix_unlinked }
                    
-
+      previous_citation = citation
       puts "adding citation #{citation}" if @debugging
 
       results << citation
@@ -510,11 +524,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   
   def qualify_match(captures, results: nil)
     result = true
-    
+    # return false if /\A\s*\[Reserved\]/ix =~ captures[:post_match]
     if :loose_section == captures[:pattern_slug] && !captures[:section_label].include?("§")
       
       puts "qualify_match captures[:post_match] #{captures[:post_match]}" if @debugging
       match = LIKELY_EXTERNAL_SECTIONS.match(captures[:post_match])
+      
       if match
         result = false
       end
@@ -584,6 +599,18 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     # sections aren't expected to have parentheticals w/out a dashed suffix
     if captures[:section]&.include?("(") and !captures[:section]&.include?("-")
       repartition(captures, :section, "(", :paragraph)
+    end
+  end
+
+  def normalize_paragraph_ranges(hierarchy, text: nil, previous_citation: nil)
+    return unless previous_citation    
+    previous_hierarchy = previous_citation[:hierarchy]
+    if (1 == (hierarchy[:paragraph]&.count("(") || 0)) && 
+      (1 < (previous_hierarchy[:paragraph]&.count("(") || 0)) && 
+      (/and|or/ =~ text)
+      updated = previous_hierarchy[:paragraph].rpartition("(").first + hierarchy[:paragraph]
+      puts "normalize_paragraph_ranges #{updated} <= #{hierarchy[:paragraph]}" if @debugging
+      hierarchy[:paragraph] = updated
     end
   end
 

@@ -72,10 +72,23 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "36 CFR parts 1252-1258",               citation: {title: "36",  part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"}, 
          with_surrounding_text: "in the National Archives (36 CFR parts 1252-1258) govern", expected_url: "/current/title-36/part-1252"},
 
-        {ex: "34 CFR part 256",           citation: {title: "34",  part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
+        {ex: "34 CFR part 256",           citation: {title: "34", part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
          with_surrounding_text: "(FMC 74-7) 34 CFR part 256, 39 FR 35787-35796, October 4, 1974"                                                              },
 
-         
+        # # (#13) /title-11/chapter-I/subchapter-A/part-101#p-101.2(a)
+        # {ex: "11 CFR part 100, subparts B and C", citations: [{title: "11", part: "100", subpart: "B"}, 
+        #                                                       {title: "11", part: "100", subpart: "C"}], context: {title: "11", chapter: "I", subchapter: "A", part: "101", section: "101.2", paragraph: "(c)(3)"},
+        #  with_surrounding_text: "defined at 11 CFR part 100, subparts B and C obtains any loan" },
+
+        # (#15) (#16) /current/title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(3)
+        {ex: "paragraphs (c)(1) or (2)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
+                                                     {title: "37",  section: "201.16", paragraph: "(c)(2)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
+         with_surrounding_text: "pursuant to paragraphs (c)(1) or (2) of this section, any other" },
+
+        # (#16) /current/title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(3)
+        {ex: "paragraphs (c)(1)(i) and (ii)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)(i)"}, 
+                                                          {title: "37",  section: "201.16", paragraph: "(c)(1)(ii)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
+         with_surrounding_text: "specified in paragraphs (c)(1)(i) and (ii) of this section" },         
 
        #{ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"}
        #                                                              {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "14", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
@@ -142,6 +155,13 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "5.73", context_specific: true,    citation: :expect_none,  context: {title: "14", section: "5.73"}, 
          with_surrounding_text: ">§ 5.73 Safety performance assessment.", },
 
+        # (#14) /title-34/subtitle-B/chapter-IV/part-462
+        {ex: "§§ 462.43-462.44   [Reserved]", context_specific: true,    citation: :expect_none,  context: {title: "34", part: "462   "}, 
+         with_surrounding_text: "<h8>§§ 462.43-462.44   [Reserved]</h8>", },
+
+        # (#14) /current/title-17/chapter-II/part-240/subpart-A/#240.3a4-2---240.3a4-6
+        {ex: "§§ 240.3a4-2-240.3a4-6   [Reserved]", context_specific: true,    citation: :expect_none,  context: {title: "17", section: "240.3a4-2"}, 
+         with_surrounding_text: "<h8>§§ 240.3a4-2-240.3a4-6   [Reserved]</h8>", },
 
         # don't link paragraph identifiers
         {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
