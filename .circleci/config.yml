@@ -1,0 +1,15 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.0
+
+jobs:
+  build:
+    docker:
+      - image: cimg/ruby:2.7
+    steps:
+      - checkout
+      - run:
+          name: Bundle install, without requiring a Gemfile.lock
+          command: bundle install --jobs=4 --retry=3 --path vendor/bundle
+      - ruby/rspec-test
