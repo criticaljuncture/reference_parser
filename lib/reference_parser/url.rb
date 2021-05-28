@@ -3,35 +3,33 @@ class ReferenceParser::Url < ReferenceParser::Base
   WORD_PATTERN = '\p{Word}'
 
   replace %r{
+    (?<!["'])
       (?<url>
         (?: (?<scheme>(?:http|https):)// | www\. )
         [^\s<\u00A0"]+
       )
     }ix 
 
-  def link_to(text, citation, options={})
-    url = citation[:url]
+  def default_link_classes
+    "external"
+  end
 
-    fr_image_url_prefix = Settings.cloudfront_fr_image_url
+  def url(citation, url_options={})
+    citation[:url] || "#{(url_options[:default_scheme] || "https")}://#{citation[:url_without_scheme]}"
+  end
 
-    if url.starts_with?(fr_image_url_prefix)
-      url
-    else
-      punctuation = []
-
-      # don't include trailing punctuation character as part of the URL
-      while url.sub!(/[^#{WORD_PATTERN}\/-=&]$/, '')
-        punctuation.push $&
-        if opening = BRACKETS[punctuation.last] and url.scan(opening).size > url.scan(punctuation.last).size
-          url << punctuation.pop
-          break
-        end
+  def clean_up_named_captures(captures, options: {})
+    url = captures[:url]
+    punctuation = []
+    # don't include trailing punctuation character as part of the URL
+    while url&.sub!(/[^#{WORD_PATTERN}\/-=&]$/, '')
+      punctuation.push $&
+      if opening = BRACKETS[punctuation.last] and url.scan(opening).size > url.scan(punctuation.last).size
+        url << punctuation.pop
+        break
       end
-      link_text = url
-
-      url = 'http://' + url unless citation[:scheme]
-
-      content_tag(:a, link_text, {href: url, class: "external"}) + punctuation.reverse.join('')
     end
+    link_text = url
+    { (captures[:scheme] ? :url : :url_without_scheme) => url, text: link_text, suffix: punctuation.join }
   end
 end

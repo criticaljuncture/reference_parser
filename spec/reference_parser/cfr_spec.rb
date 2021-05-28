@@ -7,13 +7,13 @@ RSpec.describe ReferenceParser::Cfr do
   describe "per DDH" do # Document Drafting Handbook
 
     SCENERIOS_CFR = [
-      "Table 2-7 (p68/2-50)", [
+      "DDH table 2-7 (p68/2-50)", [
         {ex: "1 CFR chapter I",                      citation: {title: "1", chapter: "I"}},
         {ex: "1 CFR part 2",                         citation: {title: "1", chapter: "I", part: "2"},                                       optional: [:chapter]},
         {ex: "1 CFR 2.7",                            citation: {title: "1", chapter: "I", part: "2", section: "2.7"},                       optional: [:chapter, :part]},
         {ex: "1 CFR 2.7(a)(2)",                      citation: {title: "1", chapter: "I", part: "2", section: "2.7", paragraph: "(a)(2)"} , optional: [:chapter, :part]},
       ],
-      "Table 2-8 (p68/2-50)", [
+      "DDH table 2-8 (p68/2-50)", [
         {ex: "chapter II of this title",             citation: {title: "1", chapter: "II"},                                                context: {title: "1", chapter: "I"},                    context_specific: true}, 
         {ex: "part 300 of this title",               citation: {title: "1", chapter: "I", part: "300"},              optional: [:chapter], context: {title: "1", chapter: "I", part: "100"},       context_specific: true}, 
         {ex: "§ 300.19 of this title",               citation: {title: "1", chapter: "I", section: "300.19"},        optional: [:chapter], context: {title: "1", chapter: "I", section: "250.10"}, context_specific: true},
@@ -21,27 +21,38 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "part 30, subpart A of this chapter",   citation: {title: "1", chapter: "I", part: "30", subpart: "A"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"},  context_specific: true},
         {ex: "§ 30.19 of this chapter",              citation: {title: "1", chapter: "III", section: "30.19"},       optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"},  context_specific: true},
       ],
-      "Table 2-9 (p69/2-51)", [
+      "DDH table 2-9 (p69/2-51)", [
         {ex: "subpart A of this part",               citation: {title: "1", part: "20", subpart: "A"},              context: {title: "1", part: "20", section: "20.5"},
                                                      expected_url: "/current/title-1/part-20/subpart-A", context_specific: true}, 
         {ex: "§ 20.15",                              citation: {title: "1", section: "20.15"},                      context: {title: "1", section: "20.5"}, context_specific: true}, 
         {ex: "§ 20.15(a)",                           citation: {title: "1", section: "20.15", paragraph: "(a)"},    context: {title: "1", section: "20.5"}, context_specific: true},
         {ex: "Appendix A of this part",              citation: {title: "1", part: "20", section: "Appendix A"},     context: {title: "1", part: "20", section: "20.5"}, context_specific: true},
       ],
-      "table 2-10 (p69/2-51)", [
+      "DDH table 2-10 (p69/2-51)", [
         {ex: "paragraph (b) of this section",        text: "paragraph (b)",        citation: {title: "1", section: "1", paragraph: "(b)"},        context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true,}, 
         {ex: "paragraph (b)(1) of this section",     text: "paragraph (b)(1)",     citation: {title: "1", section: "1", paragraph: "(b)(1)"},     context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
         {ex: "paragraph (a)(2) of this section",     text: "paragraph (a)(2)",     citation: {title: "1", section: "1", paragraph: "(a)(2)"},     context: {title: "1", section: "1", paragraph: "(a)(1)"},     context_specific: true}, 
         {ex: "paragraph (a)(1)(ii) of this section", text: "paragraph (a)(1)(ii)", citation: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context_specific: true}, 
        #{ex: "this paragraph (a)",                   text: "paragraph (a)",        citation: {title: "1", paragraph: "(a)"},                      context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
       ],
-      "Table 2-7 (p68/2-50) (damaged)", [
+      "DDH table 2-7 (p68/2-50) (damaged)", [
         {ex: "1CFRchapterI",                         citation: {title: "1", chapter: "I"}},
         {ex: "1CFRpart2",                            citation: {title: "1", chapter: "I", part: "2"},                                      optional: [:chapter]  },
         {ex: "1CFR2.7",                              citation: {title: "1", chapter: "I", part: "2", section: "2.7"},                      optional: [:chapter, :part]  },
         {ex: "1CFR2.7(a)(2)",                        citation: {title: "1", chapter: "I", part: "2", section: "2.7", paragraph: "(a)(2)"}, optional: [:chapter, :part]}
       ],
 
+      "buest guess / suggestions", [
+        {ex: "Title 14 § 1266.102",                     options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", section: "1266.102", }},
+        {ex: "Title 14 Chapter V Part 1266 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102", }},
+        {ex: "Title 1 Chapter I Subchapter B",          options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {ex: "Title 1 Chap I Subchapter B",             options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {ex: "Title 1 Ch I Subch B",                    options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {ex: "14 Chapter V Part 1266 § 1266.102",       options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102", }},
+        {ex: "1 Chapter I Subchapter B",                options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
+        {ex: "14/1266",                                 options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", part: "1266", }},
+      ],
+      
       "extracts", [
         {ex: "40 CFR 273.13, 273.33, and 273.52",  citations: [{title: "40", section: "273.13"},
                                                                {title: "40", section: "273.33"},
@@ -60,6 +71,11 @@ RSpec.describe ReferenceParser::Cfr do
 
         {ex: "36 CFR parts 1252-1258",               citation: {title: "36",  part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"}, 
          with_surrounding_text: "in the National Archives (36 CFR parts 1252-1258) govern", expected_url: "/current/title-36/part-1252"},
+
+        {ex: "34 CFR part 256",           citation: {title: "34",  part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
+         with_surrounding_text: "(FMC 74-7) 34 CFR part 256, 39 FR 35787-35796, October 4, 1974"                                                              },
+
+         
 
        #{ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"}
        #                                                              {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "14", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
@@ -102,9 +118,6 @@ RSpec.describe ReferenceParser::Cfr do
           
         {ex: "1.704-1(b)(1)(ii)(b)(1)", context_specific: true,    citation: {title: "26", section: "1.704-1", paragraph: "(b)(1)(ii)(b)(1)"},  context: {title: "26", section: "1.704-1"}, },
 
-        {ex: "section 761(c)",     citation: {title: "26", section: "761", paragraph: "(c)"},  context: {title: "26", section: "1.704-1"},
-         with_surrounding_text: "a agreement see section 761(c).", expected_url: "/current/title-26/section-761#p-761(c)"},
-
         {ex: "26 CFR 1.704-1T(b)(4)(viii)(d)(3)",     citation: {title: "26", section: "1.704-1T", paragraph: "(b)(4)(viii)(d)(3)"},  context: {title: "26", section: "1.704-1"},
           with_surrounding_text: "2015. See 26 CFR 1.704-1T(b)(4)(viii)(d)(3) (revise", expected_url: "/current/title-26/section-1.704-1T#p-1.704-1T(b)(4)(viii)(d)(3)"},
 
@@ -117,11 +130,18 @@ RSpec.describe ReferenceParser::Cfr do
 
       ],
 
-      "avoid linking", [
+      "standalone section handling", [
+        # {ex: "section 761(c)",     citation: {title: "26", section: "761", paragraph: "(c)"},  context: {title: "26", section: "1.704-1"},
+        #  with_surrounding_text: "a agreement see section 761(c).", expected_url: "/current/title-26/section-761#p-761(c)"},
+
+      ],
+
+      "false positives / html", [
         
         # don't link the section header w/ the context specific section pattern
         {ex: "5.73", context_specific: true,    citation: :expect_none,  context: {title: "14", section: "5.73"}, 
          with_surrounding_text: ">§ 5.73 Safety performance assessment.", },
+
 
         # don't link paragraph identifiers
         {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
@@ -129,6 +149,7 @@ RSpec.describe ReferenceParser::Cfr do
 
         {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"}, 
          with_surrounding_text: "<div id='p-1266.102(c)'></div>", },
+
 
         # don't link section identifiers
         {ex: '<div class="section" id="1.100">...</div>', context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"},},
@@ -139,6 +160,18 @@ RSpec.describe ReferenceParser::Cfr do
 
         {ex: "Section 1258.14", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "3.3"}, 
          with_surrounding_text: "them. Section 1258.14 of those regulations", },
+
+
+        # (future) inter-section 
+        {ex: "section 4471 of the Internal Revenue Code", citation: :expect_none, html_appearace: :expect_none, context: {title: "26", section: "43.0-1"}, 
+         with_surrounding_text: "transportation by water imposed by section 4471 of the Internal Revenue Code.", },
+
+        {ex: "section 3", citation: :expect_none, html_appearace: :expect_none, context: {title: "8", section: "101", paragraph: "(d)"}, 
+         with_surrounding_text: "Asiatic zone defined in section 3 of the Act of February 5, 1917", },
+
+        {ex: "section 104(d)", citation: :expect_none, html_appearace: :expect_none, context: {title: "40", section: "223.2", paragraph: "(a)"}, 
+         with_surrounding_text: "proceedings under section 104(d) of the Marine Protection, Research, and Sanctuaries Act of 1972, as amended (33 [IGNORE USC] 1414(d)), to revise, revoke or limit the terms and conditions of any permit issued pursuant to section 102 of the Act. Section 104(d) provides that", },
+                           
          
         # incomplete context / invalid link generation
         {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {title: nil, chapter: "I"}}, 
@@ -153,23 +186,23 @@ RSpec.describe ReferenceParser::Cfr do
 
       ],
 
-      "26 CFR 1.761-1", [ # http://docker.local:4000/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
+      "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
         {ex: "paragraph (a)(1)(ii) of § 1.731-1",     citation: {title: "26", section: "1.731-1", paragraph: "(a)(1)(ii)"},  context: {title: "26", section: "1.761-1"},
-          expected_url: "/current/title-26/section-1.731-1#p-1.731-1(a)(1)(ii)"},
+         expected_url: "/current/title-26/section-1.731-1#p-1.731-1(a)(1)(ii)"},
 
 
         {ex: "§§ 301.7701-1, 301.7701-2, and 301.7701-3 of this chapter", citations: [{title: "26", section: "301.7701-1"},
-                                                                                             {title: "26", section: "301.7701-2"},
-                                                                                             {title: "26", section: "301.7701-3"},],  context: {title: "26", section: "1.761-1"},},
+                                                                                      {title: "26", section: "301.7701-2"},
+                                                                                      {title: "26", section: "301.7701-3"},],  context: {title: "26", section: "1.761-1"},},
 
       ],     
 
       "issues/recent changes", [
         {ex: "14 CFR 401, 404, 413-415, 417, 420", citations: [{title: "14", section: "401"},
-                                                                      {title: "14", section: "404"},
-                                                                      {title: "14", section: "413", section_end: "415"},
-                                                                      {title: "14", section: "417"},
-                                                                      {title: "14", section: "420"}]},
+                                                               {title: "14", section: "404"},
+                                                               {title: "14", section: "413", section_end: "415"},
+                                                               {title: "14", section: "417"},
+                                                               {title: "14", section: "420"}]},
       ],
 
       "mentioned", [
@@ -242,56 +275,45 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "12 CFR § 275.206(1)(a)(3)-3(1)",       url_options: {title: "12", part: "275", section: "206(1)(a)(3)-3", sublocators: "(1)"}, },
   
         {ex: "15 CFR parts 4 and 903",              url_options: [{title: "15", part: "4", },
-                                                                         {title: "15", part: "903"} ], },
+                                                                  {title: "15", part: "903"} ], },
   
         {ex: "33 CFR Parts 160, 161, 164, and 165",  url_options:[{title: "33", part: "160"},
-                                                                         {title: "33", part: "161"},
-                                                                         {title: "33", part: "164"},
-                                                                         {title: "33", part: "165"} ], },
+                                                                  {title: "33", part: "161"},
+                                                                  {title: "33", part: "164"},
+                                                                  {title: "33", part: "165"} ], },
   
         {ex: "18 CFR 385.214 or 385.211",           url_options: [{title: "18", part: "385", section: "214"},
-                                                                         {title: "18", part: "385", section: "211"}], },
+                                                                  {title: "18", part: "385", section: "211"}], },
   
         {ex: "7 CFR 2.22, 2.80, and 371.3",         url_options: [{title: "7", part: "2", section: "22"},
-                                                                         {title: "7", part: "2", section: "80"},
-                                                                         {title: "7", part: "371", section: "3"}], },
+                                                                  {title: "7", part: "2", section: "80"},
+                                                                  {title: "7", part: "371", section: "3"}], },
   
       ],
 
       "from cfr citation parser spec", [
-        {ex: "5 CFR 500.5",           options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5", }},
+        {ex: "5 CFR 500.5",           options: {cfr: {best_guess: true}},                    citation: {title: "5", section: "500.5", }},
         {ex: "1 cfr 100",             options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", part: "100", }},
-        {ex: "1 cfr 100",             options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100", }},
+        {ex: "1 cfr 100",             options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "100", }},
         {ex: "1 c.f.r. 100",          options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", part: "100", }},
-        {ex: "1 c.f.r. 100",          options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100", }},
+        {ex: "1 c.f.r. 100",          options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "100", }},
        #{ex: "29 CFR 102, Subpt. B",  options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "29", part: "102"}},
-        {ex: "29 CFR 102",            options: {cfr: {best_guess: true}}, citation: {title: "29", section: "102"}, with_surrounding_text: "29 CFR 102, Subpt. B"},
-        {ex: "5 CFR 500.5",           options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5", }},
-        {ex: "8 CFR",                 options: {cfr: {best_guess: true}}, citation: {title: "8", }},
-        {ex: "26 CFR 1.36B-0",        options: {cfr: {best_guess: true}}, citation: {title: "26", section: "1.36B-0", }},
-       #{ex: "26 CFR 1 3.14",         options: {cfr: {best_guess: true}}, citation: {title: "26", part: "1", section: "3.14", }},
-       #{ex: "26 CFR 1 Sec. 2-3",     options: {cfr: {best_guess: true}}, citation: {title: "26", part: "1", section: "2-3", }},
-        {ex: "41 CFR 102-118.35",     options: {cfr: {best_guess: true}}, citation: {title: "41", section: "102-118.35", }},
-        {ex: "41 CFR 102a.35",        options: {cfr: {best_guess: true}}, citation: {title: "41", section: "102a.35", }},
-       #{ex: "1 CFR 1.505(c)",        options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.505(c)", }},
-        {ex: "1 CFR 1.25-1T",         options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.25-1T", }},
-        {ex: "1 CFR 1.25A-1",         options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.25A-1", }},
-        {ex: "1 CFR 1.25-1T",         options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.25-1T", }},
-        {ex: "1 CFR 1.36B-3T",        options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.36B-3T", }},
-        {ex: "1 CFR 1.103(n)-7T",     options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.103(n)-7T", }},
-        {ex: "1 CFR 1.381(c)(18)-1",  options: {cfr: {best_guess: true}}, citation: {title: "1", section: "1.381(c)(18)-1", }},
-        {ex: "1 CFR",                 options: {cfr: {best_guess: true}}, citation: {title: "1", }, with_surrounding_text: "1 CFR Food" },
-      ],
-
-      "guesses", [
-        {ex: "Title 14 § 1266.102",                     options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", section: "1266.102", }},
-        {ex: "Title 14 Chapter V Part 1266 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102", }},
-        {ex: "Title 1 Chapter I Subchapter B",          options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
-        {ex: "Title 1 Chap I Subchapter B",             options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
-        {ex: "Title 1 Ch I Subch B",                    options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
-        {ex: "14 Chapter V Part 1266 § 1266.102",       options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102", }},
-        {ex: "1 Chapter I Subchapter B",                options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B" }},
-        {ex: "14/1266",                                 options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", part: "1266", }},
+        {ex: "29 CFR 102",            options: {cfr: {best_guess: true}},                    citation: {title: "29", section: "102"}, with_surrounding_text: "29 CFR 102, Subpt. B"},
+        {ex: "5 CFR 500.5",           options: {cfr: {best_guess: true}},                    citation: {title: "5", section: "500.5", }},
+        {ex: "8 CFR",                 options: {cfr: {best_guess: true}},                    citation: {title: "8", }},
+        {ex: "26 CFR 1.36B-0",        options: {cfr: {best_guess: true}},                    citation: {title: "26", section: "1.36B-0", }},
+       #{ex: "26 CFR 1 3.14",         options: {cfr: {best_guess: true}},                    citation: {title: "26", part: "1", section: "3.14", }},
+       #{ex: "26 CFR 1 Sec. 2-3",     options: {cfr: {best_guess: true}},                    citation: {title: "26", part: "1", section: "2-3", }},
+        {ex: "41 CFR 102-118.35",     options: {cfr: {best_guess: true}},                    citation: {title: "41", section: "102-118.35", }},
+        {ex: "41 CFR 102a.35",        options: {cfr: {best_guess: true}},                    citation: {title: "41", section: "102a.35", }},
+       #{ex: "1 CFR 1.505(c)",        options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.505(c)", }},
+        {ex: "1 CFR 1.25-1T",         options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.25-1T", }},
+        {ex: "1 CFR 1.25A-1",         options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.25A-1", }},
+        {ex: "1 CFR 1.25-1T",         options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.25-1T", }},
+        {ex: "1 CFR 1.36B-3T",        options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.36B-3T", }},
+        {ex: "1 CFR 1.103(n)-7T",     options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.103(n)-7T", }},
+        {ex: "1 CFR 1.381(c)(18)-1",  options: {cfr: {best_guess: true}},                    citation: {title: "1", section: "1.381(c)(18)-1", }},
+        {ex: "1 CFR",                 options: {cfr: {best_guess: true}},                    citation: {title: "1", }, with_surrounding_text: "1 CFR Food" },
       ],
     ]
 
@@ -318,7 +340,7 @@ RSpec.describe ReferenceParser::Cfr do
                 expect(references.map{ |r| r[:hierarchy]}.compact).to be_empty
               else
                 # verify extracted references (if present)
-                expect(references.map{ |r| r[:hierarchy]}).to eq(expected_citation)
+                expect(references.map{ |r| r[:hierarchy]}.compact).to eq(expected_citation)
               end
             end
             
@@ -339,6 +361,12 @@ RSpec.describe ReferenceParser::Cfr do
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearace] == :expect_none
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 
+            if expected_citation == [:expect_none]
+              expect(
+                references_only_result_html
+              ).to_not have_tag("a")
+            end
+
             # confirm specific url
             if references.count < 2 && (expected_citation != [:expect_none])
               if example[:text]&.include?("<") # have_tag vs <em>?
@@ -347,7 +375,7 @@ RSpec.describe ReferenceParser::Cfr do
                 expect(
                   references_only_result_html
                 ).to have_tag("a", text: example[:text] || example[:ex], 
-                                  with: { href: example[:expected_url] }.tap{ |h| h.delete(:href) unless h[:href].present?})
+                                   with: { href: example[:expected_url] }.tap{ |h| h.delete(:href) unless h[:href].present?})
               end
             end
 

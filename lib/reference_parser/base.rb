@@ -9,6 +9,7 @@ class ReferenceParser::Base
   def initialize(options, debugging: false)
     @debugging = debugging
     @options = options&.[](slug) || {}
+    @accumulated_context = []
   end
 
   def clean_up_named_captures(captures, options: {})
@@ -37,6 +38,10 @@ class ReferenceParser::Base
   def normalize_options(options)
   end
 
+  def ignore?(citations, options: {})
+    options[:ignore].call(citations) if options[:ignore]&.respond_to?(:call)
+  end
+
   private
 
   def absolute?(url_options)
@@ -59,6 +64,6 @@ class ReferenceParser::Base
       # moment
     end
 
-    result.except(:on, :current, :absolute, :relative, :between, :compare)
+    result.except(:on, :current, :absolute, :relative, :between, :compare, :default_scheme)
   end
 end

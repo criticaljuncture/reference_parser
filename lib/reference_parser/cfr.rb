@@ -15,20 +15,23 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SECTION_ID    = /[\w\-]+.?[\w\-–—\(\)]*/ix
 
   TITLE_CFR = /
-    (?<title>#{TITLE_ID})                    # 42
+    (?<title>#{TITLE_ID})                   # 42
     (?<cfr_label>\s*C\.?F\.?R\.?\s*)        # CFR
     /ix
 
   TITLE_CFR_ALLOW_SLASH_SHORTHAND = /
-    (?<title>#{TITLE_ID})                           # 42
+    (?<title>#{TITLE_ID})                   # 42
     (?<cfr_label>(\s*(C\.?F\.?R\.?)\s*|\/)) # CFR
     /ix
 
-  NEXT_TITLE_STOP = /(?!\s*(C\.?F\.?R|U\.?S\.?C))/ix  # ...1 CFR 11 and 2 CFR 22...    vs    ...1 CFR 11 and 12.
-                                                      # needed after simple digits patterns that could match the
-                                                      # next title
+  NEXT_TITLE_STOP = /
+    (?!\s*(                                 # ...1 CFR 11 and 2 CFR 22...    vs    ...1 CFR 11 and 12.
+        C\.?F\.?R|                          # needed after simple digits patterns that could match the
+        U\.?S\.?C|                          # next title
+        F\.?R\.?
+    ))/ix                                   
 
-  TRAILING_BOUNDRY = /(?!\d)/ix             # don't stop mid-number
+  TRAILING_BOUNDRY = /(?!\.?\d)/ix          # don't stop mid-number
 
   CHAPTER_LABEL    = /(?<chapter_label>\s*Ch(ap(ter)?)?\s*)/ix
   CHAPTER          = /(?<chapter>#{CHAPTER_ID})/ix
@@ -173,12 +176,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix>\s*of\s*this\s*part)                   # of this part
     /ix, if: :context_present?, context_expected: %i'title part')
 
-  
-  MESSY_TRAILING_BOUNDRY = /
-    (?!\s?of\s+those\s+regulations)                  # for standalone section
-    (?!\s?of\s+title\s+\d+,\s+United\s+States\s+Code)
-    (?!\.?\d)
-    /ix  
+  LIKELY_EXTERNAL_SECTIONS = /
+    of\s*
+    (?:the|those)
+    (?:[\s\,a-z]{0,128})
+    (?:Act|Amendments|Code|regulations)
+    /ix
 
   replace(/
     (?<![>"'])                                       # avoid matching start of tag for section header
@@ -190,8 +193,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<section_label>(§+|section)\s*)#{SECTIONS}
     #{PARAGRAPH}                                     # 
     (?<suffix>\s*(of\s*this\s*(title|chapter))?)
-    #{MESSY_TRAILING_BOUNDRY}                        #
-    /ix, if: :context_present?, context_expected: %i'title in_suffix')
+    #{TRAILING_BOUNDRY}                        #
+    /ix, pattern_slug: :loose_section, if: :context_present?, will_consider_post_match: true, context_expected: %i'title in_suffix')
 
   # local list of paragraphs
   #   paragraph (b)(2)(iv)(<em>d</em>)(<em>4</em>), 
@@ -343,7 +346,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     suffix'
     # also: prefix_unlinked / suffix_unlinked
 
-
   def clean_up_named_captures(captures, options: {})
     results = []
 
@@ -352,7 +354,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     context_expected = [options&.[](:context_expected)].flatten
     captures = prepare_captures(captures)
 
-    
+
     expected = { # determine expected captures
       subtitle:   captures[:subtitle_label].present?,
       subchapter: captures[:subchapter_label].present?,
@@ -431,9 +433,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                    text:           text,
                    suffix:         loop_suffix_unlinked }
                    
-                   
+
+      puts "adding citation #{citation}" if @debugging
+
       results << citation
     end
+
+    return :skip unless qualify_match(captures, results: results)
 
     results
   end
@@ -502,6 +508,37 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
   
+  def qualify_match(captures, results: nil)
+    result = true
+    
+    if :loose_section == captures[:pattern_slug] && !captures[:section_label].include?("§")
+      
+      puts "qualify_match captures[:post_match] #{captures[:post_match]}" if @debugging
+      match = LIKELY_EXTERNAL_SECTIONS.match(captures[:post_match])
+      if match
+        result = false
+      end
+      if result
+        potential_danger = captures.values_at(:section, :sections).flatten.flat_map(&:strip).select(&:present?)
+
+        # previously identified as unrelated
+        result = false if (@accumulated_context & potential_danger).present?
+
+        # fails to match common formatting
+        result = false if !potential_danger.detect{ |r|r.include?(".") }
+
+
+        @accumulated_context.concat(potential_danger).uniq!
+        
+      end
+      unless result
+        @accumulated_context.concat(captures.values_at(:section, :sections).flatten.flat_map(&:strip).select(&:present?)).uniq!
+      end
+    end
+    puts "qualify_match #{result}" if @debugging && !result
+    result
+  end
+
   def determine_available_from_context(hierarchy, context: {}, context_expected: [], captures: {})
     results = []
     
@@ -586,7 +623,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def cleanup_hierarchy(hierarchy, expected: {})
-    puts "cleanup_hierarchy AAA hierarchy #{hierarchy}" if @debugging
     result = hierarchy
 
     # drop any list or range related items that made it through

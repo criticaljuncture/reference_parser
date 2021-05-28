@@ -8,12 +8,12 @@ require_relative "reference_parser/all"
 
 class ReferenceParser
   class ParseError < StandardError; end
+  class ParseTimeout < StandardError; end  
 
   def initialize(only: nil, except: [], options: {})
     parser_types = [(only || default_parser_types)].flatten - except
     @options = options
     @debugging = false
-    @add_debugging_capture_groups = false
     @parsers = parser_types.map do |parser_type| 
       new_parser(parser_type)
     end
@@ -71,10 +71,22 @@ class ReferenceParser
 
   def perform(text, options: {}, &block)
     replacements = replacements_for(@options)
-
     return text unless replacements.present?
+    
+    Timeout::timeout(10) do
+      text = replace_patterns(text, replacements: replacements, options: options, &block)
+    end
+
+    text
+  rescue Timeout::Error
+    puts "timeout @options #{@options}" if @debugging
+    raise ParseTimeout
+  end
+
+  def replace_patterns(text, replacements: [], options: {}, &block)
     @references = []
-    text.to_str.gsub(merge_patterns_from(replacements)) do
+    searchable_text = text.to_str
+    searchable_text.gsub(merge_patterns_from(replacements)) do
       match = Regexp.last_match
       all_captures = match.captures
       result = nil
@@ -89,8 +101,13 @@ class ReferenceParser
 
         # only captures used by this replacement
         named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
-
-        citations = replacement.clean_up_named_captures(named_captures, options: @options[replacement.slug])
+        if replacement.will_consider_post_match
+          named_captures[:post_match] = searchable_text[match.end(0)..match.end(0)+64]
+          named_captures[:pattern_slug] = replacement.pattern_slug
+        end
+        citations = replacement.clean_up_named_captures(named_captures, options: build_options(replacement.parser, @options, {}))
+        citations = :skip if replacement.ignore?(citations, options: build_options(replacement.parser, @options, {}))
+        break if citations == :skip
 
         # simple implementations just update the captures in place
         citations = named_captures unless citations.is_a?(Array) || citations.is_a?(Hash)
@@ -109,7 +126,7 @@ class ReferenceParser
                               prefix_spacers <<
                               (yield(replacement.parser, citation) || '') <<
                               suffix_spacers << 
-                              suffix            
+                              suffix
           end
           if citation_result
             result ||= "".html_safe
@@ -162,7 +179,6 @@ class ReferenceParser
 
   def merge_patterns_from(replacements)
     patterns = replacements.map(&:regexp).compact
-    throw "!NI" if @add_debugging_capture_groups
     Regexp.union(patterns)
   end
 
