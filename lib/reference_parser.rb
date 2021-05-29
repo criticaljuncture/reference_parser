@@ -11,7 +11,7 @@ class ReferenceParser
   class ParseTimeout < StandardError; end  
 
   def initialize(only: nil, except: [], options: {})
-    parser_types = [(only || default_parser_types)].flatten - except
+    parser_types = [(only || options[:only] || default_parser_types)].flatten - except
     @options = options
     @debugging = false
     @parsers = parser_types.map do |parser_type| 
@@ -174,7 +174,7 @@ class ReferenceParser
   end
 
   def default_parser_types
-    %i'cfr federal_register executive_order public_law patent usc email url'
+    %i'usc cfr federal_register executive_order public_law patent email url'
   end
 
   def merge_patterns_from(replacements)

@@ -15,6 +15,8 @@ RSpec.describe ReferenceParser::PublicLaw do
 
     SCENERIOS_PL = [
       { ex:  "Lorem ipsum dolor sit amet, Public Law 117-9 consectetur adipiscing elit.", text: "Public Law 117-9", citation: {congress: 117, law: 9} },
+      { ex:  "(Pub. L. 107-295)", text: "Pub. L. 107-295", citation: {congress: 107, law: 295} },
+      
       { ex: ["Public Law 107-295",
              "Pub. Law 107-295",
              "Pub. L. 107-295",
@@ -30,13 +32,13 @@ RSpec.describe ReferenceParser::PublicLaw do
           expect(
             ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})
           ).to have_tag("a", text: scenerio[:text] || example,
-                             with: { href: executive_order_url(scenerio[:citation]) })
+                             with: { href: public_law_url(scenerio[:citation]) })
 
         end
       end
     end  
 
-    def executive_order_url(options)
+    def public_law_url(options)
       ReferenceParser::PublicLaw.new({}).url(options)
     end
   end

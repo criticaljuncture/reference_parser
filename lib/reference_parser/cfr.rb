@@ -100,14 +100,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   SECTION_UNLABELLED = /
     \d+#{NEXT_TITLE_STOP}(\.\d+)?#{NEXT_TITLE_STOP}([a-z]\d?)?
-    #{OPTIONAL_PARENTHETICALS}            
+    #{OPTIONAL_PARENTHETICALS}
     (
+      ([a-z]\d+-\d)|
       (-\d+T?)| # dash suffix if present tends to mark end of section area
       (\.\d+) |
       (\(T\))   # temporary may be marked w T suffix
     )*
     \s*#{NEXT_TITLE_STOP}
-    
     /ix 
 
   SECTION = /(?<section>#{SECTION_UNLABELLED})/ix
@@ -137,7 +137,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(/
       #{TITLE_CFR}                                     # title
       (?<part_label>part\s*)(?<part>\d+)               # labelled part
-      #{SUBPART_LABEL}#{SUBPART}
+      #{SUBPART_LABEL}#{SUBPARTS}
     /ix)
 
   replace(/
@@ -195,6 +195,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ix
 
   replace(/
+    (?<!U.S.C.\s|USC\s)
     (?<![>"'§])                                       # avoid matching start of tag for section header
     (
       (?<prefixed_paragraph_label>paragraph\s*)
@@ -378,7 +379,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     # determine repeated capture (if any)
     repeated = [captures[:sections] || captures[:section]].flatten.select(&:present?)
     repeated_capture = :section
-
+    if !repeated.present? && captures[:subparts].present?
+      repeated = [captures[:subparts] || captures[:subpart]].flatten.select(&:present?)
+      repeated_capture = :subpart
+    end
     if !repeated.present? && captures[:paragraphs].present?
       repeated = [captures[:paragraphs] || captures[:paragraph]].flatten.select(&:present?)
       repeated_capture = :paragraph
@@ -583,7 +587,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     slide_right(captures, :paragraph, :suffix) if only_whitespace?(captures[:paragraph])
 
-    split_lists_into_individual_items(captures, %i'sections paragraphs')
+    split_lists_into_individual_items(captures, %i'subparts sections paragraphs')
     slide_left(captures, :section, :part_string)
 
     restore_paragraph(captures)
@@ -607,7 +611,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     previous_hierarchy = previous_citation[:hierarchy]
     if (1 == (hierarchy[:paragraph]&.count("(") || 0)) && 
       (1 < (previous_hierarchy[:paragraph]&.count("(") || 0)) && 
-      (/and|or/ =~ text)
+      (/and|or|through/ =~ text)
       updated = previous_hierarchy[:paragraph].rpartition("(").first + hierarchy[:paragraph]
       puts "normalize_paragraph_ranges #{updated} <= #{hierarchy[:paragraph]}" if @debugging
       hierarchy[:paragraph] = updated

@@ -1,5 +1,9 @@
 class ReferenceParser::PublicLaw < ReferenceParser::Base
-  replace /(?:Public Law|Pub\. Law|Pub\. L.|P\.L\.)\s+(?<congress>\d+)-(?<law>\d+)/i
+  replace(/
+    (?:
+      P(ub(?:lic)?)?\.?\s*L(?:aw)?\.?|
+    )\s+(?<congress>\d+)-(?<law>\d+)
+    /ix)
 
   def url(citation, url_options={})
     if citation[:congress] >= 104

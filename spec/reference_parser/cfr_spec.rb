@@ -75,10 +75,14 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "34 CFR part 256",           citation: {title: "34", part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
          with_surrounding_text: "(FMC 74-7) 34 CFR part 256, 39 FR 35787-35796, October 4, 1974"                                                              },
 
-        # # (#13) /title-11/chapter-I/subchapter-A/part-101#p-101.2(a)
-        # {ex: "11 CFR part 100, subparts B and C", citations: [{title: "11", part: "100", subpart: "B"}, 
-        #                                                       {title: "11", part: "100", subpart: "C"}], context: {title: "11", chapter: "I", subchapter: "A", part: "101", section: "101.2", paragraph: "(c)(3)"},
-        #  with_surrounding_text: "defined at 11 CFR part 100, subparts B and C obtains any loan" },
+        # (#9) /current/title-17/chapter-II/part-240/subpart-A/#p-240.3a44-1(b)
+        {ex: "§ 240.3a43-1", citation: {title: "17",  section: "240.3a43-1" }, context: {title: "17", chapter: "II", part: "240", section: "240.3a44-1", paragraph: "(b)"},
+         with_surrounding_text: "under rule 3a43-1 (§ 240.3a43-1) the following" },
+
+        # (#13) /title-11/chapter-I/subchapter-A/part-101#p-101.2(a)
+        {ex: "11 CFR part 100, subparts B and C", citations: [{title: "11", part: "100", subpart: "B"}, 
+                                                              {title: "11", part: "100", subpart: "C"}], context: {title: "11", chapter: "I", subchapter: "A", part: "101", section: "101.2", paragraph: "(c)(3)"},
+         with_surrounding_text: "defined at 11 CFR part 100, subparts B and C obtains any loan" },
 
         # (#15) (#16) /current/title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(3)
         {ex: "paragraphs (c)(1) or (2)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
@@ -88,7 +92,16 @@ RSpec.describe ReferenceParser::Cfr do
         # (#16) /current/title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(3)
         {ex: "paragraphs (c)(1)(i) and (ii)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)(i)"}, 
                                                           {title: "37",  section: "201.16", paragraph: "(c)(1)(ii)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
-         with_surrounding_text: "specified in paragraphs (c)(1)(i) and (ii) of this section" },         
+         with_surrounding_text: "specified in paragraphs (c)(1)(i) and (ii) of this section" },
+
+        # (#16) /title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(4)
+        {ex: "paragraphs (c)(1) through (3)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
+                                                          {title: "37",  section: "201.16", paragraph: "(c)(3)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(4)"},
+         with_surrounding_text: "the Office under paragraphs (c)(1) through (3) of this section" },         
+
+        
+
+          
 
        #{ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"}
        #                                                              {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "14", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
@@ -175,11 +188,23 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: '<div class="section" id="1.100">...</div>', context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"},},
         {ex: "<div class='section' id='1.100'>...</div>", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"},},         
 
-        {ex: "section 1506 of title 44, United States Code", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.1"}, 
+        {ex: "section 1506 of title 44, United States Code", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.1"}, 
          with_surrounding_text: "established under section 1506 of title 44, United States Code", },
 
         {ex: "Section 1258.14", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "3.3"}, 
          with_surrounding_text: "them. Section 1258.14 of those regulations", },
+
+        # (#10) avoid USC §
+        {ex: "5 U.S.C. § 5584", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"}, 
+         with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver", },
+
+        {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"}, 
+         with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", },
+
+        # {ex: "", citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"}, 
+        #  with_surrounding_text: "The General Accounting Office Act of 1996 (Pub. L. 104-316), Title I, § 103(d), enacted October 19, 1996", },            
+
+         
 
 
         # (future) inter-section 
