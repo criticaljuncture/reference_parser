@@ -101,9 +101,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       \s*in\s*paragraph\s*
     )?
     (?<paragraphs>                                    # list of paragraphs
-        #{PARAGRAPH_UNLABELLED_REQUIRED}
-        (?:\s\(last\ssentence\))?
-        (?:(?:\s|,|and|or|through)+#{PARAGRAPH_UNLABELLED_REQUIRED})*
+        (?:(?:\s+|,|and|or|through|\s\(last\ssentence\))+#{PARENTHETICALS}+(-\d+)?)*
     )
     /ix
 

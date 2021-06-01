@@ -1,7 +1,7 @@
 class ReferenceParser::PublicLaw < ReferenceParser::Base
   replace(/
     (?:
-      P(ub(?:lic)?)?\.?\s*L(?:aw)?\.?|
+      P(?:ub(?:lic)?)?\.?\s*L(?:aw)?\.?
     )\s+(?<congress>\d+)-(?<law>\d+)
     /ix)
 
