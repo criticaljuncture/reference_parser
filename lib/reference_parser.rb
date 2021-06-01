@@ -14,9 +14,7 @@ class ReferenceParser
     parser_types = [(only || options[:only] || default_parser_types)].flatten - except
     @options = options
     @debugging = false
-    @parsers = parser_types.map do |parser_type| 
-      new_parser(parser_type)
-    end
+    @parsers, @dependencies = parsers_for(parser_types)
     @parsers.each{ |parser| parser.normalize_options(build_options(parser, @options, {})) }
   end
 
@@ -60,6 +58,10 @@ class ReferenceParser
 
   private
 
+  def default_parser_types
+    %i'cfr usc federal_register executive_order public_law patent email url'
+  end
+
   def new_parser(parser_type)
     case parser_type
     when Class
@@ -69,11 +71,31 @@ class ReferenceParser
     end.new(@options, debugging: @debugging)    
   end
 
+  def parsers_for(parser_types)
+    parsers, dependencies = [], []
+    parser_types.map do |parser_type|
+      parser = new_parser(parser_type)
+      if parser.depends_on_parser && !parser_types.include?(parser.depends_on_parser)
+        dependencies << parser.depends_on_parser
+        parsers << new_parser(parser.depends_on_parser).tap{|p| p.dependency = true}
+      end
+      parsers << parser
+    end
+    [parsers, dependencies]
+  end
+
+  def determine_effective_parser(parser, citation)
+    return parser if !citation[:source] || (parser&.slug == citation[:source])
+    result = @parsers.detect{ |parser| parser.slug == citation[:source] }
+    yield(result) if result && block_given?
+    result
+  end  
+
   def perform(text, options: {}, &block)
     replacements = replacements_for(@options)
-    return text unless replacements.present?
+    return text || "" unless text && replacements.present?
     
-    Timeout::timeout(10) do
+    Timeout::timeout(20) do
       text = replace_patterns(text, replacements: replacements, options: options, &block)
     end
 
@@ -115,23 +137,31 @@ class ReferenceParser
 
         citations&.each do |citation|
 
-          citation_result = nil
-          if block_given?
-            citation[:text] = citation[:text] || match[0]
-            prefix = citation[:prefix] || ''
-            prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: true)
-            suffix = citation[:suffix] || ''
-            citation_result = "".html_safe << 
-                              prefix << 
-                              prefix_spacers <<
-                              (yield(replacement.parser, citation) || '') <<
-                              suffix_spacers << 
-                              suffix
+          effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
+            effective_parser.clean_up_named_captures(citation, options: build_options(effective_parser, @options, {}))
           end
-          if citation_result
-            result ||= "".html_safe
-            result << citation_result  
-            citation[:result] = citation_result
+
+          unless effective_parser
+            citation = {text: match[0], result: match[0]} 
+          else
+            citation_result = nil
+            if block_given?
+              citation[:text] = citation[:text] || match[0]
+              prefix = citation[:prefix] || ''
+              prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: true)
+              suffix = citation[:suffix] || ''
+              citation_result = "".html_safe << 
+                                prefix << 
+                                prefix_spacers <<
+                                (yield(effective_parser, citation) || '') <<
+                                suffix_spacers << 
+                                suffix
+            end
+            if citation_result
+              result ||= "".html_safe
+              result << citation_result  
+              citation[:result] = citation_result
+            end
           end
 
         end
@@ -166,15 +196,12 @@ class ReferenceParser
   end
 
   def build_options(parser, options, default)
+    return default unless parser
     default.merge(options[parser.slug] || {})
   end
 
   def build_link(parser, citation, str, options)
     parser.link_to(str, citation, options)    
-  end
-
-  def default_parser_types
-    %i'usc cfr federal_register executive_order public_law patent email url'
   end
 
   def merge_patterns_from(replacements)

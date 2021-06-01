@@ -3,9 +3,9 @@ class ReferenceParser::Url < ReferenceParser::Base
   WORD_PATTERN = '\p{Word}'
 
   replace %r{
-    (?<!["'])
+    (?<!("|'|//))
       (?<url>
-        (?: (?<scheme>(?:http|https):)// | www\. )
+        (?: (?<scheme>(?:http|https):)// | www.?\. )
         [^\s<\u00A0"]+
       )
     }ix 
@@ -30,6 +30,6 @@ class ReferenceParser::Url < ReferenceParser::Base
       end
     end
     link_text = url
-    { (captures[:scheme] ? :url : :url_without_scheme) => url, text: link_text, suffix: punctuation.join }
+    { (captures[:scheme] ? :url : :url_without_scheme) => url, text: link_text, suffix: punctuation.reverse.join }
   end
 end

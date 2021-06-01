@@ -10,7 +10,7 @@ RSpec.describe ReferenceParser::Patent do
           default: {target: nil, class: nil}
         )
 
-      ).to eql "Lorem ipsum dolor sit amet, <a href='http://patft.uspto.gov/netacgi/nph-Parser?Sect2=PTO1&Sect2=HITOFF&p=1&u=/netahtml/PTO/search-bool.html&r=1&f=G&l=50&d=PALL&RefSrch=yes&Query=PN/3005282'>Patent Number 3,005,282</a> consectetur adipiscing elit."
+      ).to eql "Lorem ipsum dolor sit amet, <a href='http://patft.uspto.gov/netacgi/nph-Parser?Sect2=PTO1&amp;Sect2=HITOFF&amp;p=1&amp;u=/netahtml/PTO/search-bool.html&amp;r=1&amp;f=G&amp;l=50&amp;d=PALL&amp;RefSrch=yes&amp;Query=PN/3005282'>Patent Number 3,005,282</a> consectetur adipiscing elit."
     end
   end
 end

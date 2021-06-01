@@ -16,9 +16,9 @@ module ReferenceParser::Registration
   end  
 
   def replacements
-    @replacements ||= self.class.replacements.dup.map do |replacement| 
+    @replacements ||= (self.class.replacements.dup || []).map do |replacement| 
       replacement.parser = self
       replacement
-    end    
+    end
   end
 end

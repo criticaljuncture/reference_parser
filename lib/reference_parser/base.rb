@@ -4,10 +4,11 @@ class ReferenceParser::Base
   include ReferenceParser::Registration
   include ActionView::Helpers::TagHelper
 
-  attr_accessor :options, :debugging
+  attr_accessor :options, :debugging, :dependency
 
   def initialize(options, debugging: false)
     @debugging = debugging
+    @dependency = false
     @options = options&.[](slug) || {}
     @accumulated_context = []
   end
@@ -25,7 +26,7 @@ class ReferenceParser::Base
 
   def link_to(text, citation, options={})
     if href = url(citation, options)
-      content_tag(:a, text.html_safe, **{href: href.html_safe}.merge(get_link_options(citation, options)))      
+      content_tag(:a, text.html_safe, **{href: href.gsub("&amp;", "&")}.merge(get_link_options(citation, options)))
     else
       text
     end
@@ -33,6 +34,10 @@ class ReferenceParser::Base
 
   def slug
     self.class.name.to_s.split("::").last.underscore.to_sym
+  end
+
+  def depends_on_parser
+    nil
   end
 
   def normalize_options(options)

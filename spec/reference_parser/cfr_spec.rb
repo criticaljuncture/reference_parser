@@ -33,7 +33,7 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "paragraph (b)(1) of this section",     text: "paragraph (b)(1)",     citation: {title: "1", section: "1", paragraph: "(b)(1)"},     context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
         {ex: "paragraph (a)(2) of this section",     text: "paragraph (a)(2)",     citation: {title: "1", section: "1", paragraph: "(a)(2)"},     context: {title: "1", section: "1", paragraph: "(a)(1)"},     context_specific: true}, 
         {ex: "paragraph (a)(1)(ii) of this section", text: "paragraph (a)(1)(ii)", citation: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context: {title: "1", section: "1", paragraph: "(a)(1)(ii)"}, context_specific: true}, 
-       #{ex: "this paragraph (a)",                   text: "paragraph (a)",        citation: {title: "1", paragraph: "(a)"},                      context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
+        {ex: "this paragraph (a)",                   text: "paragraph (a)",        citation: {title: "1", section: "1", paragraph: "(a)"},        context: {title: "1", section: "1", paragraph: "(a)"},        context_specific: true}, 
       ],
       "DDH table 2-7 (p68/2-50) (damaged)", [
         {ex: "1CFRchapterI",                         citation: {title: "1", chapter: "I"}},
@@ -72,39 +72,82 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "36 CFR parts 1252-1258",               citation: {title: "36",  part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"}, 
          with_surrounding_text: "in the National Archives (36 CFR parts 1252-1258) govern", expected_url: "/current/title-36/part-1252"},
 
-        {ex: "34 CFR part 256",           citation: {title: "34", part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
+        {ex: "34 CFR part 256",                      citation: {title: "34", part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
          with_surrounding_text: "(FMC 74-7) 34 CFR part 256, 39 FR 35787-35796, October 4, 1974"                                                              },
 
+        # (#6) /current/title-7/subtitle-A/part-9/subpart-A/section-9.7#p-9.7(e)(3)(i)
+        {ex: "(e)(2)(ii) and (e)(2)(iii)",         citations: [{title: "7",  section: "9.7", paragraph: "(e)(2)(ii)"},
+                                                               {title: "7",  section: "9.7", paragraph: "(e)(2)(iii)"}], context: {title: "7",  section: "9.7", paragraph: "(e)(3)(i)"},
+         with_surrounding_text: "Except for payments subject to the increased payment limitation in (e)(2)(ii) and (e)(2)(iii) of this section" },
+
+        {ex: "(e)(2)(ii) or (iii)",                citations: [{title: "7",  section: "9.7", paragraph: "(e)(2)(ii)"},
+                                                               {title: "7",  section: "9.7", paragraph: "(e)(2)(iii)"}], context: {title: "7",  section: "9.7", paragraph: "(e)(3)(i)"},
+         with_surrounding_text: "limitation under (e)(2)(ii) or (iii) of this section" },
+         
+        # (#7) /current/title-24/subtitle-B/chapter-V/subchapter-C/part-570/subpart-G/section-570.456
+        {ex: "paragraph (c)(1)",                     citation: {title: "24",  section: "570.456", paragraph: "(c)(1)" }, context: {title: "24", chapter: "V", part: "570", section: "570.456"},
+         with_surrounding_text: "provisions of this paragraph (c)(1) shall not apply" },
+
+        # (#8) /current/title-17/section-240.0-1
+        {ex: "paragraph (a)(3) of 17 CFR 240.0-1",   citation: {title: "17",  section: "240.0-1", paragraph: "(a)(3)" }, context: {title: "17", chapter: "II", part: "240", section: "240.0-1"},
+         with_surrounding_text: "The provisions of paragraph (a)(3) of 17 CFR 240.0-1 relate to the terminology" },        
+
+        # (#8) /current/title-17/section-240.3a4-1#p-240.3a4-1(a)(4)(i)
+        {ex: "paragraph (a)(4) (i), (ii), or (iii) of this section", citations: [{title: "17",  section: "240.3a4-1", paragraph: "(a)(4) (i)" },
+                                                                                 {title: "17",  section: "240.3a4-1", paragraph: "(a)(4) (ii)" },
+                                                                                 {title: "17",  section: "240.3a4-1", paragraph: "(a)(4) (iii)" }], context: {title: "17", chapter: "II", part: "240", section: "240.3a4-1", paragraph: "(a)(4)(i)"},
+         with_surrounding_text: "one of paragraph (a)(4) (i), (ii), or (iii) of this section" },        
+
+        # (#8) /current/title-17/section-240.3a4-1#p-240.3a4-1(a)(4)(ii)(C)
+        {ex: "paragraph (a)(4)(i) or (iii) of this section", citations: [{title: "17",  section: "240.3a4-1", paragraph: "(a)(4)(i)" },
+                                                                         {title: "17",  section: "240.3a4-1", paragraph: "(a)(4)(iii)" }], context: {title: "17", chapter: "II", part: "240", section: "240.3a4-1", paragraph: "(a)(4)(ii)(C)"},},    
+
+        # (#8) /current/title-17/section-240.3a51-1#p-240.3a51-1(e)(1)(iii)
+        {ex: "paragraph (a)(1) or (a)(2) of this section", citations: [{title: "17",  section: "240.3a51-1", paragraph: "(a)(1)" },
+                                                                       {title: "17",  section: "240.3a51-1", paragraph: "(a)(2)" }], context: {title: "17", chapter: "II", part: "240", section: "240.3a51-1", paragraph: "(e)(1)(iii)"},},    
+
+        # (#8) /current/title-17/section-240.3a51-1#p-240.3a51-1(e)(2)
+        {ex: "paragraph (a), (b), (c), (d), (f), or (g) of this section", citations: [{title: "17",  section: "240.3a51-1", paragraph: "(a)" },
+                                                                                      {title: "17",  section: "240.3a51-1", paragraph: "(b)" },
+                                                                                      {title: "17",  section: "240.3a51-1", paragraph: "(c)" },
+                                                                                      {title: "17",  section: "240.3a51-1", paragraph: "(d)" },
+                                                                                      {title: "17",  section: "240.3a51-1", paragraph: "(f)" },
+                                                                                      {title: "17",  section: "240.3a51-1", paragraph: "(g)" }], context: {title: "17", chapter: "II", part: "240", section: "240.3a51-1", paragraph: "(e)(2)"},},    
+        # (#8) /current/title-17/section-240.6h-1#p-240.6h-1(b)(3)
+        {ex: "paragraph (b)(1) or (b)(2) of this section", citations: [{title: "17",  section: "240.6h-1", paragraph: "(b)(1)" },
+                                                                       {title: "17",  section: "240.6h-1", paragraph: "(b)(2)" }], context: {title: "17", chapter: "II", part: "240", section: "240.6h-1", paragraph: "(b)(3)"},},    
+
         # (#9) /current/title-17/chapter-II/part-240/subpart-A/#p-240.3a44-1(b)
-        {ex: "§ 240.3a43-1", citation: {title: "17",  section: "240.3a43-1" }, context: {title: "17", chapter: "II", part: "240", section: "240.3a44-1", paragraph: "(b)"},
+        {ex: "§ 240.3a43-1",                         citation: {title: "17",  section: "240.3a43-1" }, context: {title: "17", chapter: "II", part: "240", section: "240.3a44-1", paragraph: "(b)"},
          with_surrounding_text: "under rule 3a43-1 (§ 240.3a43-1) the following" },
 
         # (#13) /title-11/chapter-I/subchapter-A/part-101#p-101.2(a)
-        {ex: "11 CFR part 100, subparts B and C", citations: [{title: "11", part: "100", subpart: "B"}, 
-                                                              {title: "11", part: "100", subpart: "C"}], context: {title: "11", chapter: "I", subchapter: "A", part: "101", section: "101.2", paragraph: "(c)(3)"},
+        {ex: "11 CFR part 100, subparts B and C",  citations: [{title: "11", part: "100", subpart: "B"}, 
+                                                               {title: "11", part: "100", subpart: "C"}], context: {title: "11", chapter: "I", subchapter: "A", part: "101", section: "101.2", paragraph: "(c)(3)"},
          with_surrounding_text: "defined at 11 CFR part 100, subparts B and C obtains any loan" },
 
         # (#15) (#16) /current/title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(3)
-        {ex: "paragraphs (c)(1) or (2)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
-                                                     {title: "37",  section: "201.16", paragraph: "(c)(2)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
+        {ex: "paragraphs (c)(1) or (2)",           citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
+                                                               {title: "37",  section: "201.16", paragraph: "(c)(2)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
          with_surrounding_text: "pursuant to paragraphs (c)(1) or (2) of this section, any other" },
 
         # (#16) /current/title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(3)
-        {ex: "paragraphs (c)(1)(i) and (ii)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)(i)"}, 
-                                                          {title: "37",  section: "201.16", paragraph: "(c)(1)(ii)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
+        {ex: "paragraphs (c)(1)(i) and (ii)",      citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)(i)"}, 
+                                                               {title: "37",  section: "201.16", paragraph: "(c)(1)(ii)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(3)"},
          with_surrounding_text: "specified in paragraphs (c)(1)(i) and (ii) of this section" },
 
         # (#16) /title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(4)
-        {ex: "paragraphs (c)(1) through (3)", citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
-                                                          {title: "37",  section: "201.16", paragraph: "(c)(3)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(4)"},
-         with_surrounding_text: "the Office under paragraphs (c)(1) through (3) of this section" },         
+        {ex: "paragraphs (c)(1) through (3)",      citations: [{title: "37",  section: "201.16", paragraph: "(c)(1)"}, 
+                                                               {title: "37",  section: "201.16", paragraph: "(c)(3)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(4)"},
+         with_surrounding_text: "the Office under paragraphs (c)(1) through (3) of this section" },
 
-        
-
-          
-
-       #{ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"}
-       #                                                              {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "14", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
+        # /current/title-7/subtitle-A/part-9/subpart-A/section-9.4#p-9.4(d)
+        {ex: "§ 9.203(a) or (b)",                  citations: [{title: "7",  section: "9.203", paragraph: "(a)"}, 
+                                                               {title: "7",  section: "9.203", paragraph: "(b)"}], context: {title: "7", section: "9.4", paragraph: "(d)"},
+         with_surrounding_text: "subject to § 9.203(a) or (b) must file" },
+         
+       #{ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"},
+       #                                                       {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
 
       ],
 
@@ -196,10 +239,23 @@ RSpec.describe ReferenceParser::Cfr do
 
         # (#10) avoid USC §
         {ex: "5 U.S.C. § 5584", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"}, 
-         with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver", },
+         with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver"},
+         
+        {ex: "5 U.S.C. § 5584", options: {only: [:cfr, :usc]}, citation: {title: "5", section: "5584"}, context: {title: "31", part: "5"}, 
+         with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver", expected_url: "https://www.govinfo.gov/link/uscode/5/5584"},
+
+        {ex: "5 U.S.C. § 5584", options: {only: [:usc]}, citation: {title: "5", section: "5584"}, context: {title: "31", part: "5"}, 
+         with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver", expected_url: "https://www.govinfo.gov/link/uscode/5/5584"},
 
         {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"}, 
-         with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", },
+         with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", expected_url: "https://www.govinfo.gov/link/uscode/5/5514"},
+
+        {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:cfr, :usc]}, citation: {title: "5", section: "5514", paragraph: "(a)(2)(D)"}, context: {title: "31", part: "5"}, 
+         with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", expected_url: "https://www.govinfo.gov/link/uscode/5/5514"},
+
+        {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:usc]}, citation: {title: "5", section: "5514", paragraph: "(a)(2)(D)"}, context: {title: "31", part: "5"}, 
+         with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", expected_url: "https://www.govinfo.gov/link/uscode/5/5514"},
+
 
         # {ex: "", citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"}, 
         #  with_surrounding_text: "The General Accounting Office Act of 1996 (Pub. L. 104-316), Title I, § 103(d), enacted October 19, 1996", },            
@@ -362,8 +418,6 @@ RSpec.describe ReferenceParser::Cfr do
       ],
     ]
 
-    include RSpecHtmlMatchers
-
     SCENERIOS_CFR.each_slice(2) do |description, examples|
       describe description do
         examples.each_with_index do |example, index|
@@ -514,8 +568,8 @@ RSpec.describe ReferenceParser::Cfr do
     end
   end
 
-  describe "links USC" do
-    it "misc issue usage" do
+  describe "links CFR" do
+    it "issue shorthand usage" do
       expect(
 
         ReferenceParser.new(only: :cfr, options: {cfr: {slash_shorthand_allowed: true}}).hyperlink(

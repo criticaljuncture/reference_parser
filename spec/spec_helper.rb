@@ -4,6 +4,7 @@ $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 
 require "reference_parser"
 require "rspec-html-matchers"
+require "spec_helper"
 require "byebug"
 
 # Dir[('./lib/**/*.rb')].each { |f| require f }
