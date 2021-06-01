@@ -1,5 +1,4 @@
 class ReferenceParser::Usc < ReferenceParser::Base
-
   USC_LABEL = /U(nited)?\.?\s*S(tates)?\.?\s*C(ode)?\.?/ix
 
   replace /section\s*(?<section>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{USC_LABEL}/ix
@@ -15,7 +14,7 @@ class ReferenceParser::Usc < ReferenceParser::Base
     captures.reverse_merge!(captures[:hierarchy]) if captures[:hierarchy].present?
     captures[:part] = captures[:section] if !captures[:part] && captures[:section]
     captures[:part] = captures[:chapter] + "01" if !captures[:part] && captures[:chapter]
-    captures[:part] = captures[:part].partition("(").first if captures[:part].include?("(")
+    captures[:part] = captures[:part].partition("(").first if captures[:part]&.include?("(")
   end
 
   def depends_on_parser

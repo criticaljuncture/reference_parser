@@ -23,5 +23,46 @@ RSpec.describe ReferenceParser::FederalRegister do
 
       ).to eql "Lorem ipsum dolor sit amet, <a href='/citation/60-FR-1000' data-reference='60 FR 1000'>60 FR 1000</a> consectetur adipiscing elit."
     end
+
+    SCENERIOS_FR = [
+      { ex: "Redesignated and amended at 53 FR 15991, 15999", citations: [{volume: "53", page: "15991"}, 
+                                                                          {volume: "53", page: "15999"}],},
+    ]
+
+    SCENERIOS_FR.each do |scenerio|
+      [scenerio[:ex]].flatten.each do |example|        
+        it "#{example}" do
+
+          result_html = ReferenceParser.new(only: :federal_register).hyperlink(example, default: {target: nil, class: nil})
+
+          citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
+
+          if citations == 1
+
+            expect(
+              result_html
+            ).to have_tag("a", text: scenerio[:text] || example,
+                              with: { href: fr_url(citation) })
+
+          else
+
+            citations.each do |citation|
+
+                expect(
+                  result_html
+                ).to have_tag("a", with: { href: fr_url(citation) })
+
+            end
+
+            expect(result_html).to have_tag("a", count: citations.count)
+            
+          end
+        end
+      end
+    end
+    
+    def fr_url(options)
+      ReferenceParser::FederalRegister.new({}).url(options)
+    end
   end
 end

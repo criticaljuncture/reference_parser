@@ -72,7 +72,8 @@ RSpec.describe ReferenceParser::Cfr do
         {ex: "36 CFR parts 1252-1258",               citation: {title: "36",  part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"}, 
          with_surrounding_text: "in the National Archives (36 CFR parts 1252-1258) govern", expected_url: "/current/title-36/part-1252"},
 
-        {ex: "34 CFR part 256",                      citation: {title: "34", part: "256"}, context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
+        {ex: "34 CFR part 256",                      citations:[{title: "34", part: "256", expected_url: "/current/title-34/part-256"},
+                                                                {title: "39", section: "35787", section_end: "35796", expected_url: "/citation/39-FR-35787"}], context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
          with_surrounding_text: "(FMC 74-7) 34 CFR part 256, 39 FR 35787-35796, October 4, 1974"                                                              },
 
         # (#6) /current/title-7/subtitle-A/part-9/subpart-A/section-9.7#p-9.7(e)(3)(i)
@@ -428,7 +429,7 @@ RSpec.describe ReferenceParser::Cfr do
             i = rand(lorem.length)
             text = lorem[0..i] << " " << (example[:with_surrounding_text] || example[:ex]) << " " << lorem[i..-1] << "."
             expected_citation = [example[:citation], example[:citations]].flatten.compact.map do |target| 
-              target.respond_to?(:except) ? target.except(*example[:optional]) : target
+              results = target.respond_to?(:except) ? target.except(*example[:optional]) : target
             end
             expected_prior_urls = [example[:url_options]].flatten.compact
 
@@ -439,7 +440,12 @@ RSpec.describe ReferenceParser::Cfr do
                 expect(references.map{ |r| r[:hierarchy]}.compact).to be_empty
               else
                 # verify extracted references (if present)
-                expect(references.map{ |r| r[:hierarchy]}.compact).to eq(expected_citation)
+                expect(references.map{ |r| r[:hierarchy]}.compact).to eq(expected_citation.map{|c| c.except(:expected_url)})
+
+                expected_citation.map{ |expected_citation| expected_citation[:expected_url] }.compact.each do |expected_url|
+                  expect(result_html).to have_tag("a", with: { href: expected_url })
+                end
+
               end
             end
             

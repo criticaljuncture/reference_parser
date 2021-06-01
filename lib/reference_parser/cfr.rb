@@ -16,8 +16,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   CFR_LABEL = /C\.?\s*F\.?\s*R\.?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
-  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL})\s*)/ix
-  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|\/)\s*)/ix
+  FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
+  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL})\s*)/ix
+  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|\/)\s*)/ix
 
   TITLE_SOURCE = /
     (?<title>#{TITLE_ID})
@@ -615,6 +616,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def qualify_result_sources(citation, captures: {})
     if captures[:source_label]&.present?
       citation[:source] = :usc if USC_LABEL =~ captures[:source_label]
+      citation[:source] = :federal_register if (FR_LABEL =~ captures[:source_label]) && !(CFR_LABEL =~ captures[:source_label])
     end
     captures[:source_label]
   end
