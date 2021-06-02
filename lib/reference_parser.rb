@@ -14,7 +14,7 @@ class ReferenceParser
   def initialize(only: nil, except: [], options: {})
     parser_types = [(only || options[:only] || default_parser_types)].flatten - except
     @options = options
-    @debugging = false
+    @debugging = true
     @parsers, @dependencies = parsers_for(parser_types)
     @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }
   end
@@ -109,6 +109,7 @@ class ReferenceParser
   def replace_patterns(text, replacements: [], options: {}, &block)
     @references = []
     searchable_text = text.to_str
+    return text unless searchable_text
     searchable_text.gsub(merge_patterns_from(replacements)) do
       match = Regexp.last_match
       all_captures = match.captures

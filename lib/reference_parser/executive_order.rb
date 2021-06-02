@@ -1,5 +1,5 @@
 class ReferenceParser::ExecutiveOrder < ReferenceParser::Base
-  replace /(?:\bE\.\s*O\.|\bE\s*O\b|\bExecutive Order\b)(?:\s+No\.?)?\s+(?<eo_number>[0-9,]+)/i
+  replace(/(?:\bE\.\s*O\.|\bE\s*O\b|\bExecutive Order\b)(?:\s+No\.?)?\s+(?<eo_number>[0-9,]+)/i)
 
   def url(citation, url_options = {})
     if citation[:eo_number] >= 12_890

@@ -9,11 +9,11 @@ SCENERIOS_CFR = [
   ],
   "DDH table 2-8 (p68/2-50)", [
     {ex: "chapter II of this title", citation: {title: "1", chapter: "II"}, context: {title: "1", chapter: "I"}, context_specific: true},
-    {ex: "part 300 of this title", citation: {title: "1", chapter: "I", part: "300"}, optional: [:chapter], context: {title: "1", chapter: "I", part: "100"}, context_specific: true},
+    {ex: "part 300 of this title", citation: {title: "1", chapter: "I", part: "300"}, context: {title: "1", chapter: "I", part: "100"}, context_specific: true},
     {ex: "§ 300.19 of this title", citation: {title: "1", chapter: "I", section: "300.19"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "250.10"}, context_specific: true},
-    {ex: "part 30 of this chapter", citation: {title: "1", chapter: "I", part: "30"}, optional: [:chapter], context: {title: "1", chapter: "I", part: "20"}, context_specific: true},
-    {ex: "part 30, subpart A of this chapter", citation: {title: "1", chapter: "I", part: "30", subpart: "A"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true},
-    {ex: "§ 30.19 of this chapter", citation: {title: "1", chapter: "III", section: "30.19"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true}
+    {ex: "part 30 of this chapter", citation: {title: "1", chapter: "I", part: "30"}, context: {title: "1", chapter: "I", part: "20"}, context_specific: true},
+    {ex: "part 30, subpart A of this chapter", citation: {title: "1", chapter: "I", part: "30", subpart: "A"}, context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true},
+    {ex: "§ 30.19 of this chapter", citation: {title: "1", chapter: "III", section: "30.19"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true, expected_url: "/current/title-1/section-30.19"}
   ],
   "DDH table 2-9 (p69/2-51)", [
     {ex: "subpart A of this part", citation: {title: "1", part: "20", subpart: "A"}, context: {title: "1", part: "20", section: "20.5"},
@@ -60,7 +60,7 @@ SCENERIOS_CFR = [
     {ex: "§§ 173.60 through 173.62", citations: [{title: "49", section: "173.60"},
       {title: "49", section: "173.62"}], context: {title: "49", section: "173.1"}, context_specific: true},
 
-    {ex: "subpart C of part 261 of this chapter", citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
+    {ex: "subpart C of part 261 of this chapter", citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
      expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
 
     {ex: "36 CFR parts 1252-1258", citation: {title: "36", part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"},

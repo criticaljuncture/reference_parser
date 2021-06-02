@@ -1,8 +1,8 @@
 class ReferenceParser::Usc < ReferenceParser::Base
   USC_LABEL = /U(nited)?\.?\s*S(tates)?\.?\s*C(ode)?\.?/ix
 
-  replace /section\s*(?<section>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{USC_LABEL}/ixo
-  replace /chapter\s*(?<chapter>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{USC_LABEL}/ixo
+  replace(/section\s*(?<section>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{USC_LABEL}/ixo)
+  replace(/chapter\s*(?<chapter>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{USC_LABEL}/ixo)
 
   def url(citation, url_options = {})
     return unless citation&.slice(%(title part))&.all?(&:present?)

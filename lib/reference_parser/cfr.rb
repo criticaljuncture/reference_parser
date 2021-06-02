@@ -496,13 +496,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     if context_expected.include?(:in_suffix)
       hierarchy_ranks.each do |rank|
         if captures[:suffix]&.downcase&.include?(rank.to_s)
-          incomplete ||= !hierarchy[rank].present?
+          result ||= !hierarchy[rank].present? && (!%i[chapter].include?(rank) || !hierarchy[:section].present?)
+          break if result
         end
       end
     end
 
     result ||= !hierarchy[:title].present?
-    puts "hierarchy_appears_incomplete? #{result}" if @debugging && result
+    puts "hierarchy_appears_incomplete? #{result} #{hierarchy}" if @debugging && result
     result
   end
 
@@ -620,6 +621,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (hierarchy[:paragraph].present? || hierarchy[:subpart].present?) &&
       (context_expected.include?(:section) ||
       context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+
+    if context[:chapter] && !hierarchy[:chapter].present? &&
+        (hierarchy[:paragraph].present? || hierarchy[:subpart].present? || hierarchy[:part].present?) &&
+        !hierarchy[:section].present? && !results.include?(:section) &&
+        (!context_expected.include?(:section) ||
+        context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("chapter"))
+      results << :chapter
+    end
 
     results << :part if context[:part] && !hierarchy[:part].present? &&
       (
