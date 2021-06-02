@@ -14,7 +14,7 @@ class ReferenceParser
   def initialize(only: nil, except: [], options: {})
     parser_types = [(only || options[:only] || default_parser_types)].flatten - except
     @options = options
-    @debugging = true
+    @debugging = false
     @parsers, @dependencies = parsers_for(parser_types)
     @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }
   end

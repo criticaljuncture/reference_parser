@@ -78,11 +78,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
+  # empty connection option intentional for paragraphs directly following section
   PARAGRAPHS_OPTIONAL = /
     (?<paragraphs>                          # list of paragraphs
       (?:
-        (?:\s|,|and|or|through)+
-        #{PARAGRAPH_UNLABELLED_REQUIRED}
+        (?:\s|,|and|or|through||-)+
+        (?:#{PARAGRAPH_UNLABELLED_REQUIRED}|\d+\.\d+)
       )*
     )
     /ixo
@@ -673,13 +674,31 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def normalize_paragraph_ranges(hierarchy, text: nil, previous_citation: nil, captures: {})
     return unless previous_citation
     previous_hierarchy = previous_citation[:hierarchy]
+    if ((hierarchy[:paragraph]&.count("(") || 0) == 0) &&
+        (hierarchy[:paragraph]&.include?(".") || numbers_seem_like_a_range?([hierarchy[:paragraph], hierarchy[:section]].compact))
+      # this seems like the list has jumped back up to sections
+      hierarchy[:section] = hierarchy[:paragraph]
+      hierarchy.delete(:paragraph)
+      puts "normalize_paragraph_ranges reverting paragraph to section #{hierarchy[:section]} <= #{hierarchy[:paragraph]}" if @debugging
+    end
+
     if ((hierarchy[:paragraph]&.count("(") || 0) == 1) &&
         ((previous_hierarchy[:paragraph]&.count("(") || 0) > 1) &&
         ((/and|or|through/ =~ text) || (/and|or|through/ =~ captures[:paragraph]))
-      updated = previous_hierarchy[:paragraph].rpartition("(").first + hierarchy[:paragraph]
-      puts "normalize_paragraph_ranges #{updated} <= #{hierarchy[:paragraph]}" if @debugging
-      hierarchy[:paragraph] = updated
+      potential_prefix = previous_hierarchy[:paragraph].rpartition("(").first
+      potential_update = potential_prefix + hierarchy[:paragraph]
+      if guess_paragraph_level(hierarchy[:paragraph]) != guess_paragraph_level(potential_prefix.rpartition("(").last)
+        puts "normalize_paragraph_ranges #{potential_update} <= #{hierarchy[:paragraph]}" if @debugging
+        hierarchy[:paragraph] = potential_update
+      elsif @debugging
+        puts "normalize_paragraph_ranges ignored same levels #{potential_update} <=/= #{hierarchy[:paragraph]}"
+      end
     end
+  end
+
+  def guess_paragraph_level(fragment)
+    clean_fragment = fragment.tr("(", "").tr(")", "")
+    clean_fragment&.to_i != 0 ? :numbers : :letters # pending ParagraphHierarchy::Level?
   end
 
   def repartition(captures, left, pivot, right, drop_divider: false)
@@ -760,10 +779,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def cleanup_hierarchy_for_list_ranges_if_needed(hierarchy, repeated_capture: :section, processing_a_list: nil)
     effective_capture = repeated_capture
     effective_capture = :part if effective_capture == :section && !hierarchy[effective_capture]
-    # byebug
-    if %i[section part].include?(effective_capture) && hierarchy[effective_capture]&.include?("-") && !hierarchy[effective_capture]&.include?(".")
+    if %i[section part paragraph].include?(effective_capture) && hierarchy[effective_capture]&.include?("-") && !hierarchy[effective_capture]&.include?(".")
       items = hierarchy[effective_capture].split("-")
-      if numbers_seem_like_a_range?(items.map(&:to_i))
+      if (effective_capture == :paragraph) || numbers_seem_like_a_range?(items.map(&:to_i))
         puts "cleanup_hierarchy_for_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{hierarchy[effective_capture]}\"" if @debugging
         hierarchy[effective_capture] = items.first.to_s
         hierarchy["#{effective_capture}_end".to_sym] = items.last.to_s

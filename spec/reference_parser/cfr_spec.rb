@@ -70,6 +70,35 @@ SCENERIOS_CFR = [
       {title: "39", section: "35787", section_end: "35796", expected_url: "/citation/39-FR-35787"}], context: {title: "50", chapter: "I", subchapter: "F", part: "82", section: "82.3"},
      with_surrounding_text: "(FMC 74-7) 34 CFR part 256, 39 FR 35787-35796, October 4, 1974"},
 
+    # (#5) /current/title-7/subtitle-A/part-1c/section-1c.111#p-1c.111(a)(8)(i)
+    {ex: "§ 1c.116(a)(1)-(4), (a)(6), and (d)",
+     citations: [{title: "7", section: "1c.116", paragraph: "(a)(1)", paragraph_end: "(4)"},
+       {title: "7", section: "1c.116", paragraph: "(a)(6)"},
+       {title: "7", section: "1c.116", paragraph: "(d)"}],
+     context: {title: "7", section: "1c.111", paragraph: "(a)(8)(i)"}},
+
+    # (#5) /current/title-21/chapter-I/subchapter-D/part-314/subpart-B/section-314.54#p-314.54(a)(1)(i)
+    {ex: "§ 314.50(a), (b), (c), (d)(1), (d)(3), (e), and (g)",
+     citations: [{title: "21", section: "314.50", paragraph: "(a)"},
+       {title: "21", section: "314.50", paragraph: "(b)"},
+       {title: "21", section: "314.50", paragraph: "(c)"},
+       {title: "21", section: "314.50", paragraph: "(d)(1)"},
+       {title: "21", section: "314.50", paragraph: "(d)(3)"},
+       {title: "21", section: "314.50", paragraph: "(e)"},
+       {title: "21", section: "314.50", paragraph: "(g)"},
+       {title: "21", section: "314.50", paragraph: "(d)(1)(ii)(c)"}],
+     context: {title: "21", section: "314.54", paragraph: "(a)(1)(i)"},
+     with_surrounding_text: "The information required under § 314.50(a), (b), (c), (d)(1), (d)(3), (e), and (g), except that § 314.50(d)(1)(ii)(c) must contain the proposed"},
+
+    # (#5) /current/title-40/chapter-I/subchapter-H/part-223/subpart-B/section-223.5
+    {ex: "§§ 222.10 (a), (b), (d), and (e) and 222.11",
+     citations: [{title: "40", section: "222.10", paragraph: "(a)"},
+       {title: "40", section: "222.10", paragraph: "(b)"},
+       {title: "40", section: "222.10", paragraph: "(d)"},
+       {title: "40", section: "222.10", paragraph: "(e)"},
+       {title: "40", section: "222.11"}],
+     context: {title: "40", section: "223.5"}},
+
     # (#6) /current/title-7/subtitle-A/part-9/subpart-A/section-9.7#p-9.7(e)(3)(i)
     {ex: "(e)(2)(ii) and (e)(2)(iii)", citations: [{title: "7", section: "9.7", paragraph: "(e)(2)(ii)"},
       {title: "7", section: "9.7", paragraph: "(e)(2)(iii)"}], context: {title: "7", section: "9.7", paragraph: "(e)(3)(i)"},

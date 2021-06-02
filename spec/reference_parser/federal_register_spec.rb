@@ -2,10 +2,10 @@ require "spec_helper"
 
 SCENERIOS_FR = [
   {ex: "Redesignated and amended at 53 FR 15991, 15999",
-   citations: [{volume: "53", page: "15991"}, {volume: "53", page: "15999"}]}
+   citations: [{volume: "53", page: "15991"}, {volume: "53", page: "15999"}]},
 
-  # {ex: "as amended at 43 FR 5786, Feb. 9, 1978. Redesignated and amended at 53 FR 15991, 15999, May 4, 1988; 57 FR 38146, Aug. 21, 1992;",
-  #  citations: [{volume: "53", page: "15991"}, {volume: "53", page: "15999"}]}
+  {ex: "as amended at 43 FR 5786, Feb. 9, 1978. Redesignated and amended at 53 FR 15991, 15999, May 4, 1988; 57 FR 38146, Aug. 21, 1992;",
+   citations: [{volume: "43", page: "5786"}, {volume: "53", page: "15991"}, {volume: "53", page: "15999"}, {volume: "57", page: "38146"}]}
 ]
 
 RSpec.describe ReferenceParser::FederalRegister do
