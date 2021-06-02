@@ -286,7 +286,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )?
     #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
     #{SECTIONS}
-    #{PARAGRAPH}
+    (?<paragraphs>#{PARAGRAPH_UNLABELLED}
+      (?:\s*and\s*#{PARAGRAPH_UNLABELLED})?
+    )
     #{TRAILING_BOUNDRY}
     /ix
   }, prepend_pattern: true)
@@ -551,9 +553,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         trailing_dividers = /and|or|through/ix
         if (split = clean&.split(any_divider)&.select { |s| s.length > 0 })
           x = 1
-          while x < (split.length - 1)
-            # puts "split z #{z} x #{x} split #{split}" if @debugging
-            if /\A#{all_dividers}\z/i.match?(split[x]) # only list cruft
+          while x < split.length
+            # puts "split x #{x} split #{split}" if @debugging
+            if /\A#{all_dividers}\z/i.match?(split[x]) # only list cruft              
               if (split[x] =~ trailing_dividers) && (x < (split.length - 1))
                 split[x + 1] = split[x] + split[x + 1]
               else
@@ -652,11 +654,20 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     slide_right(captures, :sections, :section) if captures[:sections] && !captures[:section] && !(LIST_DESIGNATORS =~ captures[:sections])
 
     restore_paragraph(captures)
+    
+    if list?(captures[:sections]) && list?(captures[:paragraphs])
+      captures[:rolled_up_paragraphs] = true
+      slide_left(captures, :sections, :paragraphs)
+    end
 
     split_lists_into_individual_items(captures, %i[subparts sections paragraphs])
     slide_left(captures, :section, :part_string)
 
     captures
+  end
+
+  def list?(capture)
+    LIST_DESIGNATORS =~ capture
   end
 
   def prepare_loop_captures(captures, processing_a_list: false)
@@ -671,8 +682,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
 
+  def normalize_sections(sections)
+    last_section = nil
+    sections.each do |section|      
+      puts "section #{section} last_section #{last_section}"
+      last_section = section
+    end    
+  end
+
   def normalize_paragraph_ranges(hierarchy, text: nil, previous_citation: nil, captures: {})
-    return unless previous_citation
+    return unless previous_citation    
     previous_hierarchy = previous_citation[:hierarchy]
     if ((hierarchy[:paragraph]&.count("(") || 0) == 0) &&
         (hierarchy[:paragraph]&.include?(".") || numbers_seem_like_a_range?([hierarchy[:paragraph], hierarchy[:section]].compact))
@@ -693,6 +712,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       elsif @debugging
         puts "normalize_paragraph_ranges ignored same levels #{potential_update} <=/= #{hierarchy[:paragraph]}"
       end
+    end
+
+    # paragraphs rolled up into sections
+    if captures[:rolled_up_paragraphs] && hierarchy[:section]&.start_with?("(") && !hierarchy[:paragraph] && previous_citation.dig(:hierarchy, :section)&.include?("(")
+      slide_right(hierarchy, :section, :paragraph)
+      hierarchy[:section] = previous_citation.dig(:hierarchy, :section).partition("(").first
     end
   end
 

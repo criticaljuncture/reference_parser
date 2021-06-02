@@ -60,7 +60,7 @@ class ReferenceParser
   private
 
   def default_parser_types
-    %i[cfr usc federal_register executive_order public_law patent email url]
+    %i[usc cfr federal_register executive_order public_law patent email url]
   end
 
   def new_parser(parser_type)
