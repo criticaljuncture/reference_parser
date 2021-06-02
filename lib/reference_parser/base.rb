@@ -17,15 +17,15 @@ class ReferenceParser::Base
   end
 
   def link_options(citation)
-    { class: default_link_classes, target: "_blank" }
+    {class: default_link_classes, target: "_blank"}
   end
 
   def default_link_classes
     [slug, "external"].compact.join(" ")
   end
 
-  def link_to(text, citation, options={})
-    if href = url(citation, options)
+  def link_to(text, citation, options = {})
+    if (href = url(citation, options))
       content_tag(:a, text.html_safe, **{href: href.gsub("&amp;", "&")}.merge(get_link_options(citation, options)))
     else
       text
@@ -56,12 +56,12 @@ class ReferenceParser::Base
   def get_link_options(citation, options)
     result = link_options(citation)
     result = result.call(citation) if result.respond_to?(:call)
-    
-    to_delete = options.select{ |k,v| !v }.keys
+
+    to_delete = options.select { |k, v| !v }.keys
     result = options.reverse_merge(result).except(*to_delete)
 
     if (result[:target] == "_blank") && !result[:rel].present?
-      result[:rel] = "noopener noreferrer" 
+      result[:rel] = "noopener noreferrer"
       # this is done automatically by safe_target_blank for
       # link_to but cfr parser is using content tag to avoid
       # reversing href & class attribute order (breaking

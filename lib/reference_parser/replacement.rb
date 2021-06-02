@@ -1,21 +1,20 @@
 class ReferenceParser::Replacement
-  attr_accessor :regexp,
-                :parser,
-                :pattern_slug,
-                :if_clause,
-                :prepend_pattern,
-                :will_consider_post_match,
-                :debug_pattern
+  attr_accessor :parser,
+    :pattern_slug,
+    :if_clause,
+    :prepend_pattern,
+    :will_consider_post_match,
+    :debug_pattern
 
-  delegate :link, 
-           :link_options,
-           :url, 
-           :slug,
-           :options,
-           :ignore?,
-           to: :parser
+  delegate :link,
+    :link_options,
+    :url,
+    :slug,
+    :options,
+    :ignore?,
+    to: :parser
 
-  def initialize(regexp=nil, pattern_slug: nil, if: nil, context_expected: nil, will_consider_post_match: false, prepend_pattern: false, debug_pattern: false, &block)
+  def initialize(regexp = nil, pattern_slug: nil, if: nil, context_expected: nil, will_consider_post_match: false, prepend_pattern: false, debug_pattern: false, &block)
     @regexp = regexp
     @prepend_pattern = prepend_pattern
     @debug_pattern = debug_pattern
@@ -40,6 +39,6 @@ class ReferenceParser::Replacement
   end
 
   def inspect
-    "#{self.object_id} #{describe}"
+    "#{object_id} #{describe}"
   end
 end

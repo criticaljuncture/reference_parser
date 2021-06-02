@@ -8,14 +8,15 @@ require_relative "reference_parser/all"
 
 class ReferenceParser
   class ParseError < StandardError; end
-  class ParseTimeout < StandardError; end  
+
+  class ParseTimeout < StandardError; end
 
   def initialize(only: nil, except: [], options: {})
     parser_types = [(only || options[:only] || default_parser_types)].flatten - except
     @options = options
     @debugging = false
     @parsers, @dependencies = parsers_for(parser_types)
-    @parsers.each{ |parser| parser.normalize_options(build_options(parser, @options, {})) }
+    @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }
   end
 
   def hyperlink(text, options: {}, default: {})
@@ -28,7 +29,7 @@ class ReferenceParser
     perform(text) do |parser, citation|
       original_text = citation[:text]
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default))
-      yield(citation) if block_given?
+      yield(citation) if block
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default)) if citation[:text] != original_text
       citation[:link]
     end
@@ -53,13 +54,13 @@ class ReferenceParser
       break
     end
     raise ParseError unless guess
-    guess    
+    guess
   end
 
   private
 
   def default_parser_types
-    %i'cfr usc federal_register executive_order public_law patent email url'
+    %i[cfr usc federal_register executive_order public_law patent email url]
   end
 
   def new_parser(parser_type)
@@ -67,8 +68,8 @@ class ReferenceParser
     when Class
       parser_type
     when Symbol
-      "ReferenceParser::#{parser_type.to_s.titleize.tr(' ', '')}".constantize
-    end.new(@options, debugging: @debugging)    
+      "ReferenceParser::#{parser_type.to_s.titleize.tr(" ", "")}".constantize
+    end.new(@options, debugging: @debugging)
   end
 
   def parsers_for(parser_types)
@@ -77,7 +78,7 @@ class ReferenceParser
       parser = new_parser(parser_type)
       if parser.depends_on_parser && !parser_types.include?(parser.depends_on_parser)
         dependencies << parser.depends_on_parser
-        parsers << new_parser(parser.depends_on_parser).tap{|p| p.dependency = true}
+        parsers << new_parser(parser.depends_on_parser).tap { |p| p.dependency = true }
       end
       parsers << parser
     end
@@ -86,16 +87,16 @@ class ReferenceParser
 
   def determine_effective_parser(parser, citation)
     return parser if !citation[:source] || (parser&.slug == citation[:source])
-    result = @parsers.detect{ |parser| parser.slug == citation[:source] }
+    result = @parsers.detect { |parser| parser.slug == citation[:source] }
     yield(result) if result && block_given?
     result
-  end  
+  end
 
   def perform(text, options: {}, &block)
     replacements = replacements_for(@options)
     return text || "" unless text && replacements.present?
-    
-    Timeout::timeout(20) do
+
+    Timeout.timeout(20) do
       text = replace_patterns(text, replacements: replacements, options: options, &block)
     end
 
@@ -117,14 +118,14 @@ class ReferenceParser
 
         # take captures associated with this replacement pattern
         captures = all_captures.shift(replacement.regexp.names.size)
-        
+
         # skip ahead unless this pattern has captures present
-        next unless captures.any?{|x| !x.nil?}
+        next unless captures.any? { |x| !x.nil? }
 
         # only captures used by this replacement
         named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
         if replacement.will_consider_post_match
-          named_captures[:post_match] = searchable_text[match.end(0)..match.end(0)+64]
+          named_captures[:post_match] = searchable_text[match.end(0)..match.end(0) + 64]
           named_captures[:pattern_slug] = replacement.pattern_slug
         end
         citations = replacement.clean_up_named_captures(named_captures, options: build_options(replacement.parser, @options, {}))
@@ -136,43 +137,41 @@ class ReferenceParser
         citations = [citations] unless citations.is_a?(Array)
 
         citations&.each do |citation|
-
           effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
             effective_parser.clean_up_named_captures(citation, options: build_options(effective_parser, @options, {}))
           end
 
-          unless effective_parser
-            citation = {text: match[0], result: match[0]} 
-          else
+          if effective_parser
             citation_result = nil
-            if block_given?
+            if block
               citation[:text] = citation[:text] || match[0]
-              prefix = citation[:prefix] || ''
+              prefix = citation[:prefix] || ""
               prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: true)
-              suffix = citation[:suffix] || ''
-              citation_result = "".html_safe << 
-                                prefix << 
-                                prefix_spacers <<
-                                (yield(effective_parser, citation) || '') <<
-                                suffix_spacers << 
-                                suffix
+              suffix = citation[:suffix] || ""
+              citation_result = "".html_safe <<
+                prefix <<
+                prefix_spacers <<
+                (yield(effective_parser, citation) || "") <<
+                suffix_spacers <<
+                suffix
             end
             if citation_result
               result ||= "".html_safe
-              result << citation_result  
+              result << citation_result
               citation[:result] = citation_result
             end
+          else
+            citation = {text: match[0], result: match[0]}
           end
-
         end
         break
       end
-      result.gsub!('"', "'") if result.respond_to?(:gsub!) # match fixture html quoting
+      result.tr!('"', "'") if result.respond_to?(:gsub!) # match fixture html quoting
       result || match[0]
     end.html_safe # !?
-  end  
+  end
 
-  ALL_DIVIDER_PATTERN = /(?<split>(,|\s+|and|or|through)+)/ix
+  ALL_DIVIDER_PATTERN = /(?<split>(?:,|\s+|and|or|through)+)/ix
   COMMA_WHITESPACE_PATTERN = /[\s,]+/ix
 
   def eject_spacers_from_tag(text, aggressive: false)
@@ -185,12 +184,12 @@ class ReferenceParser
       text.delete_prefix!(prefix_match[0])
       prefix = prefix_match[0]
     end
-    
+
     suffix_match = /#{pattern}\z/.match(text)
     if suffix_match
       text.delete_suffix!(suffix_match[0])
       suffix = suffix_match[0]
-    end     
+    end
 
     [prefix, suffix]
   end
@@ -201,7 +200,7 @@ class ReferenceParser
   end
 
   def build_link(parser, citation, str, options)
-    parser.link_to(str, citation, options)    
+    parser.link_to(str, citation, options)
   end
 
   def merge_patterns_from(replacements)
@@ -213,11 +212,11 @@ class ReferenceParser
     all = @parsers.flat_map(&:replacements)
 
     if @debugging
-      debug = all.detect{ |r| r.debug_pattern }
+      debug = all.detect { |r| r.debug_pattern }
       return [debug] if debug.present?
     end
 
-    # move prepend_pattern replacements to the front    
+    # move prepend_pattern replacements to the front
     prepended, other = all.partition(&:prepend_pattern)
 
     # check if_clauses

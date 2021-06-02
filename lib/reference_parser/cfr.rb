@@ -1,71 +1,70 @@
 class ReferenceParser::Cfr < ReferenceParser::Base
-  
   def link_options(citation)
-    { class: "cfr external" }
+    {class: "cfr external"}
   end
 
   # sub-patterns & utilities
 
-  TITLE_ID      = /\d+/  
-  SUBTITLE_ID   = /(?:[A-Z]{1,7})/ix
-  CHAPTER_ID    = /[IVXLCDM0-9]+/ix
+  TITLE_ID = /\d+/
+  SUBTITLE_ID = /(?:[A-Z]{1,7})/ix
+  CHAPTER_ID = /[IVXLCDM0-9]+/ix
   SUBCHAPTER_ID = /[A-Z]+[-_]?[A-Z]*/ix
-  PART_ID       = /\w+[\-–—]?\w*/ix
-  SUBPART_ID    = /\w+[\w\.\-–—]*\w*/ix
-  SECTION_ID    = /[\w\-]+.?[\w\-–—\(\)]*/ix
+  PART_ID = /\w+[\-–—]?\w*/ix
+  SUBPART_ID = /\w+[\w.\-–—]*\w*/ix
+  SECTION_ID = /[\w\-]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C\.?\s*F\.?\s*R\.?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
   FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
-  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL})\s*)/ix
-  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|\/)\s*)/ix
+  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL})\s*)/ixo
+  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|\/)\s*)/ixo
 
   TITLE_SOURCE = /
     (?<title>#{TITLE_ID})
     #{SOURCE_LABEL}
-    /ix
+    /ixo
 
   TITLE_SOURCE_ALLOW_SLASH_SHORTHAND = /
     (?<title>#{TITLE_ID})
     #{SOURCE_LABEL_ALLOW_SHORTHAND}
-    /ix
+    /ixo
 
-  # "1 CFR 11 and 2 CFR 22" vs "1 CFR 11 and 12" needed after 
+  # "1 CFR 11 and 2 CFR 22" vs "1 CFR 11 and 12" needed after
   # simple digits patterns that could match the next title
   NEXT_TITLE_STOP = /
-    (?!\s*(?:                               
-        C\.?F\.?R|                          
-        U\.?S\.?C|                          
+    (?!\s*(?:
+        C\.?F\.?R|
+        U\.?S\.?C|
         F\.?R\.?
-    ))/ix                                   
+    ))/ix
 
   TRAILING_BOUNDRY = /(?!\.?\d)/ix # don't stop mid-number
 
-  CHAPTER_LABEL    = /(?<chapter_label>\s*Ch(ap(ter)?)?\s*)/ix
-  CHAPTER          = /(?<chapter>#{CHAPTER_ID})/ix
-  SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(ap(ter)?)?\s*)/ix  
-  SUBCHAPTER       = /(?<subchapter>#{SUBCHAPTER_ID})/ix  
-  SUBPART_LABEL    = /(?<subpart_label>,?\s*subparts?\s*)/ix
-  SUBPART          = /(?<subpart>#{SUBPART_ID})/ix
-  PART_LABEL       = /(?<part_label>\s*Part\s*)/ix
-  PART             = /(?<part>#{PART_ID})/ix
+  CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?)?\s*)/ix
+  CHAPTER = /(?<chapter>#{CHAPTER_ID})/ixo
+  SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(?:ap(?:ter)?)?\s*)/ix
+  SUBCHAPTER = /(?<subchapter>#{SUBCHAPTER_ID})/ixo
+  SUBPART_LABEL = /(?<subpart_label>,?\s*subparts?\s*)/ix
+  SUBPART = /(?<subpart>#{SUBPART_ID})/ixo
+  PART_LABEL = /(?<part_label>\s*Part\s*)/ix
+  PART = /(?<part>#{PART_ID})/ixo
 
   PARENTHETICALS = /
     (?: \((?:<em>)?[a-z]{1,3}(?:<\/em>)?\)\s* | # (a)(b)...
-        \((?:<em>)?[\d]{1,3}(?:<\/em>)?\)\s*  | # (1)(2)...
+        \((?:<em>)?\d{1,3}(?:<\/em>)?\)\s*  | # (1)(2)...
         \((?:<em>)?[xvi]{1,7}(?:<\/em>)?\)\s*   # (i)(iv)...
-    ) 
+    )
     /ix
 
-  OPTIONAL_PARENTHETICALS = /#{PARENTHETICALS}*/ix
+  OPTIONAL_PARENTHETICALS = /#{PARENTHETICALS}*/ixo
 
-  PARAGRAPH_UNLABELLED          = /\s*#{PARENTHETICALS}*(-\d+)?/ix
-  PARAGRAPH_UNLABELLED_REQUIRED = /\s*#{PARENTHETICALS}+(-\d+)?/ix
-  
-  PARAGRAPH          = /(?<paragraph>#{PARAGRAPH_UNLABELLED})/ix
-  PARAGRAPH_REQUIRED = /(?<paragraph>#{PARAGRAPH_UNLABELLED_REQUIRED})/ix
-  
-  LIST_DESIGNATORS = /,|or|and|through/
+  PARAGRAPH_UNLABELLED = /\s*#{PARENTHETICALS}*(-\d+)?/ixo
+  PARAGRAPH_UNLABELLED_REQUIRED = /\s*#{PARENTHETICALS}+(-\d+)?/ixo
+
+  PARAGRAPH = /(?<paragraph>#{PARAGRAPH_UNLABELLED})/ixo
+  PARAGRAPH_REQUIRED = /(?<paragraph>#{PARAGRAPH_UNLABELLED_REQUIRED})/ixo
+
+  LIST_DESIGNATORS = /,|or|and|through/ix
 
   PARAGRAPHS = /
     (?<paragraphs>                          # list of paragraphs
@@ -77,7 +76,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         )*
       )
     )
-    /ix
+    /ixo
 
   PARAGRAPHS_OPTIONAL = /
     (?<paragraphs>                          # list of paragraphs
@@ -86,14 +85,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         #{PARAGRAPH_UNLABELLED_REQUIRED}
       )*
     )
-    /ix    
+    /ixo
 
   EXAMPLES = /
     (?:
-      (?:<em>)?\s*Examples?\s*\d+(?:<\/em>)?(?:\s*through\s*|\s*,\s*(?:and\s*)?)?      # Example 28, Example 29, and Example 30 
-    )+    
-    /ix   
-    
+      (?:<em>)?\s*Examples?\s*\d+(?:<\/em>)?(?:\s*through\s*|\s*,\s*(?:and\s*)?)?      # Example 28, Example 29, and Example 30
+    )+
+    /ix
+
   # lists of paragraphs w/ examples
   EXPANDED_PARAGRAPHS = /
     (?<paragraph_prefix>
@@ -104,7 +103,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<paragraphs>                                    # list of paragraphs
         (?:(?:\s+|,|and|or|through|\s\(last\ssentence\))+#{PARENTHETICALS}+(-\d+)?)*
     )
-    /ix
+    /ixo
 
   PARAGRAPH_EXAMPLE_PREFIX = /
     (<em>)?\s*Examples?\s*.                           # required example text
@@ -112,7 +111,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:<em>)?\s*(?:Examples?\s*)?                   # optional italics and or repeated example test
       \d+                                             # number
       (?:<\/em>)?                                     # close italics if needed
-      (?:\s*through\s*|\s*,\s*(?:and\s*)?)?  
+      (?:\s*through\s*|\s*,\s*(?:and\s*)?)?
     )+                                                # allow a list of examples
     (?:\s*in\s*)?                                     # in
     /ix
@@ -127,9 +126,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       \(T\)    # temporary may be marked w T suffix
     )*
     \s*#{NEXT_TITLE_STOP}
-    /ix 
+    /ixo
 
-  SECTION = /(?<section>#{SECTION_UNLABELLED})/ix
+  SECTION = /(?<section>#{SECTION_UNLABELLED})/ixo
 
   SECTIONS = /
     (?<sections>
@@ -139,7 +138,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         #{SECTION_UNLABELLED}                         # additional sections
       )*
     )
-    /ix
+    /ixo
 
   SUBPARTS = /
     (?<subparts>
@@ -149,7 +148,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         #{SUBPART_ID}                                   # additional sections
       )*
     )
-    /ix    
+    /ixo
 
   # reference replacements
 
@@ -157,13 +156,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{TITLE_SOURCE}                                   # title
       (?<part_label>part\s*)(?<part>\d+)                # labelled part
       #{SUBPART_LABEL}#{SUBPARTS}
-    /ix)
+    /ixo)
 
   replace(/
       #{TITLE_SOURCE}                                   # title
       (?<chapter_label>chapter\s*)                      # labelled chapter
-      (?<chapter>[A-Z]+\s*)      
-    /ix)
+      (?<chapter>[A-Z]+\s*)
+    /ixo)
 
   replace(/
       #{TITLE_SOURCE}
@@ -172,8 +171,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{SECTIONS}
       #{PARAGRAPH}
       #{TRAILING_BOUNDRY}
-    /ix)
-
+    /ixo)
 
   # partial reference replacements (of this ...)
 
@@ -181,35 +179,35 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<chapter_label>chapter\s*)(?<chapter>[A-Z]+)    # chapter - required
     (?<suffix>\s*of\s*this\s*title)                   # of this title
     /ix, if: :context_present?, context_expected: :title)
-  
+
   replace(/
     (?<subtitle_label>subtitle\s*)(?<subtitle>[A-Z])  # subtitle - required
     (?<suffix>\s*of\s*this\s*title)                   # of this title
     /ix, if: :context_present?, context_expected: :title)
 
   replace(/
-    ((?<prefixed_subpart_label>subpart\s*)(?<prefixed_subpart>[A-Z]+)
+    (?:(?<prefixed_subpart_label>subpart\s*)(?<prefixed_subpart>[A-Z]+)
     (?<prefixed_subpart_connector>\s*of\s*))?         # subpart C of...
     (?<part_label>part\s*)(?<part>\d+)                # part - required
-    (
+    (?:
       (?<subpart_label>\s*,\s*subpart\s*)(?<subpart>[A-Z]+) # part 30, subpart A of this chapter
-    )?            
-    (?<suffix>\s*of\s*this\s*(title|chapter))         # of this title.chapter
-    /ix, if: :context_present?, context_expected: %i'title in_suffix')
+    )?
+    (?<suffix>\s*of\s*this\s*(?:title|chapter))         # of this title.chapter
+    /ix, if: :context_present?, context_expected: %i[title in_suffix])
 
   replace(/
-    (
+    (?:
       (?<subpart_label>\s*subpart\s*)(?<subpart>[A-Z]+) # subpart
       |
       (?<section>(?<appendix_label>\s*appendix\s*)[A-Z]+) # appendix
     )
     (?<suffix>\s*of\s*this\s*part)                    # of this part
-    /ix, if: :context_present?, context_expected: %i'title part')
+    /ix, if: :context_present?, context_expected: %i[title part])
 
   LIKELY_EXTERNAL_SECTIONS = /
     of\s*
     (?:the|those)
-    (?:[\s\,a-z]{0,128})
+    (?:[\s,a-z]{0,128})
     (?:Act|Amendments|Code|regulations)
     /ix
 
@@ -225,18 +223,17 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{PARAGRAPHS_OPTIONAL}
     (?<suffix>\s*(of\s*this\s*(title|chapter))?)
     #{TRAILING_BOUNDRY}
-    /ix, pattern_slug: :loose_section, if: :context_present?, will_consider_post_match: true, context_expected: %i'title in_suffix')
-
+    /ixo, pattern_slug: :loose_section, if: :context_present?, will_consider_post_match: true, context_expected: %i[title in_suffix])
 
   # paragraphs
 
   # local list of paragraphs
-  #   paragraph (b)(2)(iv)(<em>d</em>)(<em>4</em>), 
+  #   paragraph (b)(2)(iv)(<em>d</em>)(<em>4</em>),
   #   ...
-  #   and <em>Examples 31</em> through <em>35</em> in paragraph (b)(5) 
+  #   and <em>Examples 31</em> through <em>35</em> in paragraph (b)(5)
   #   of this section
   replace(/
-    (?<paragraphs>        
+    (?<paragraphs>
       (?:
         (?:#{PARAGRAPH_EXAMPLE_PREFIX})?
         paragraph\s*
@@ -247,7 +244,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
           \s*of\sthis\ssection                        # of this section
     )
-    /ix, if: :context_present?, context_expected: %i'title section')
+    /ixo, if: :context_present?, context_expected: %i[title section])
 
   # expanded preable local list of paragraphs
   replace(/
@@ -259,7 +256,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
       \s*of\sthis\ssection                            # of this section
     )
-    /ix, if: :context_present?, context_expected: %i'title section')
+    /ixo, if: :context_present?, context_expected: %i[title section])
 
   # local list of paragraphs w/out "paragraph" prefix (of this section anchor remains)
   replace(/
@@ -268,25 +265,24 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
       \s*of\sthis\ssection
     )
-    /ix, if: :context_present?, context_expected: %i'title section')  
+    /ixo, if: :context_present?, context_expected: %i[title section])
 
   # "this paragraph"
   replace(/
     (?<prefix_unlinked>this\s*)
     (?<paragraph_label>paragraph\s*)
     #{PARAGRAPH}
-    /ix, if: :context_present?, context_expected: %i'title section')
-
+    /ixo, if: :context_present?, context_expected: %i[title section])
 
   # primarly list replacements
 
-  replace(->(context, options){
+  replace(->(context, options) {
     /
     (?:
       (?<prefixed_paragraph_label>paragraph\s*)
       (?<prefixed_paragraph>#{PARAGRAPH_UNLABELLED})
       (?<prefixed_paragraph_suffix>\s*of\s*)
-    )?    
+    )?
     #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
     #{SECTIONS}
     #{PARAGRAPH}
@@ -294,31 +290,29 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ix
   }, prepend_pattern: true)
 
-
   # context specific patterns
 
-  replace(->(context, _){
-    return unless context[:section].present? && context[:section].include?(".") && (3 < context[:section].length)
+  replace(->(context, _) {
+    return unless context[:section].present? && context[:section].include?(".") && (context[:section].length > 3)
     /
-    (?<!=('|")|=('|")p-|§\s)                          # properly labelled can be matched by non-context pattern, avoid tags
+    (?<!=(?:'|")|=(?:'|")p-|§\s)                          # properly labelled can be matched by non-context pattern, avoid tags
     (?<section>#{Regexp.escape(context[:section])})   # current section anchor
     (?<paragraph>
       #{PARAGRAPH}
     )
     /ix
   }, if: :context_present?, context_expected: :title)
-    
 
   # best guess fallback patterns
 
-  replace(->(context, options){
+  replace(->(context, options) {
     return unless options[:best_guess]
     /
     #{TITLE_SOURCE_ALLOW_SLASH_SHORTHAND}
-    /ix
+    /ixo
   }, prepend_pattern: true)
 
-  replace(->(context, options){
+  replace(->(context, options) {
     return unless options[:best_guess]
     /
     (?<title_label>Title\s*)(?<title>\d+)             # title pattern anchor
@@ -326,10 +320,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
     (?:#{PART_LABEL}#{PART})?
     (?:(?<section_label>\s*§\s*)#{SECTION})?
-    /ix
+    /ixo
   })
 
-  replace(->(context, options){
+  replace(->(context, options) {
     return unless options[:best_guess]
     /
     (?<title>\d+)                                     # title unlabelled
@@ -337,16 +331,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
     (?:#{PART_LABEL}#{PART})?
     (?:(?<section_label>\s*(\/|§)\s*)#{SECTION})?     # allow slash shorthand for best guess
-    /ix
+    /ixo
   })
 
   def context_present?(options)
     options[:context].present?
   end
 
-  def url(citation, url_options={})
+  def url(citation, url_options = {})
     return unless citation
-    citation = citation[:href_hierarchy] || citation[:hierarchy] || (citation&.include?(:title) ? citation : {})    
+    citation = citation[:href_hierarchy] || citation[:hierarchy] || (citation&.include?(:title) ? citation : {})
     result = ""
     result << "https://ecfr.federalregister.gov" if absolute?(url_options)
     result << url_current_compare_or_on(url_date_from_options(url_options || {}))
@@ -355,9 +349,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     result
   end
 
-  def url_date_from_options(url_options={})
+  def url_date_from_options(url_options = {})
     current = url_options[:current] ? :current : nil
-    on      = url_options[:on]
+    on = url_options[:on]
     compare = url_options[:compare] || {}
 
     result = current || on
@@ -372,34 +366,35 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     when nil, :current, "current"
       "/current"
     when Array
-      "/compare/#{date.map{ |endpoint| endpoint.respond_to?(:to_formatted_s) ? endpoint.to_formatted_s(:iso) : endpoint }.join("/to/")}"
+      "/compare/#{date.map { |endpoint| endpoint.respond_to?(:to_formatted_s) ? endpoint.to_formatted_s(:iso) : endpoint }.join("/to/")}"
     else
       "/on/#{date.respond_to?(:to_formatted_s) ? date.to_formatted_s(:iso) : date}"
-    end    
+    end
   end
 
   def url_messy_part(hierarchy)
-    result = part_or_section_string(hierarchy) << 
-                 sublocators_string(hierarchy)
+    result = part_or_section_string(hierarchy) <<
+      sublocators_string(hierarchy)
     result << "/subtitle-#{hierarchy[:subtitle]}" if hierarchy[:subtitle].present? && !result.present?
     result << "/chapter-#{hierarchy[:chapter]}" if hierarchy[:chapter].present? && !result.present?
     result
   end
 
-  EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS = %i'
+  EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS = %i[
     prefix
-    prefixed_subpart_label prefixed_subpart prefixed_subpart_connector 
+    prefixed_subpart_label prefixed_subpart prefixed_subpart_connector
     prefixed_paragraph_label prefixed_paragraph prefixed_paragraph_suffix
-    title_label title source_label 
-    subtitle_label subtitle 
-    chapter_label chapter 
+    title_label title source_label
+    subtitle_label subtitle
+    chapter_label chapter
     subchapter_label subchapter
-    part_label part 
-    subpart_label subpart 
+    part_label part
+    subpart_label subpart
     section_label section none
     paragraph_label paragraph paragraph_range_end
-    suffix'
-    # also: prefix_unlinked / suffix_unlinked
+    suffix
+  ]
+  # also: prefix_unlinked / suffix_unlinked
 
   def clean_up_named_captures(captures, options: {})
     results = []
@@ -409,42 +404,38 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     context_expected = [options&.[](:context_expected)].flatten
     captures = prepare_captures(captures)
 
-
     expected = { # determine expected captures
-      subtitle:   captures[:subtitle_label].present?,
+      subtitle: captures[:subtitle_label].present?,
       subchapter: captures[:subchapter_label].present?,
-      part:       captures.values_at(*%i'part_label appendix_label').detect(&:present?),
-      subpart:    captures.values_at(*%i'prefixed_subpart_label subpart_label').detect(&:present?),
-      section:    captures[:section_label].present?,
+      part: captures.values_at(*%i[part_label appendix_label]).detect(&:present?),
+      subpart: captures.values_at(*%i[prefixed_subpart_label subpart_label]).detect(&:present?),
+      section: captures[:section_label].present?
     }
-
 
     # determine repeated capture (if any)
     repeated, repeated_capture = determine_repeated_capture(captures)
-    processing_a_list = (1 < repeated.count) || captures[:part_label]&.include?("parts")
+    processing_a_list = (repeated.count > 1) || captures[:part_label]&.include?("parts")
 
-    # partition the available capture groups into a prefix set and suffix set based 
+    # partition the available capture groups into a prefix set and suffix set based
     # on the position of the repeated capture (if any)
     index = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS.find_index(repeated_capture)
     first_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[0..index]
-    last_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[index..-1]
+    last_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[index..]
 
     previous_citation = nil
     repeated&.each_with_index do |what, index|
-      loop_captures = { repeated_capture => what }.reverse_merge(captures.except(:prefix, :suffix))
+      loop_captures = {repeated_capture => what}.reverse_merge(captures.except(:prefix, :suffix))
       prepare_loop_captures(loop_captures, processing_a_list: processing_a_list)
 
-
       # build hierarchy
-      hierarchy_elements = %i'title chapter'
+      hierarchy_elements = %i[title chapter]
       hierarchy_elements << :subchapter if expected[:subchapter]
-      hierarchy_elements.concat(%i'section part')
+      hierarchy_elements.concat(%i[section part])
       hierarchy_elements << :subtitle if expected[:subtitle]
-      hierarchy_elements.concat(%i'subpart prefixed_subpart') if expected[:subpart]
+      hierarchy_elements.concat(%i[subpart prefixed_subpart]) if expected[:subpart]
       hierarchy_elements << :part if expected[:part]
-      hierarchy_elements.concat(%i'paragraph prefixed_paragraph')
+      hierarchy_elements.concat(%i[paragraph prefixed_paragraph])
       hierarchy = loop_captures.slice(*hierarchy_elements)
-
 
       # fill in hierarchy from context (if needed)
       if options[:context_expected].present?
@@ -455,18 +446,17 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       end
       next if hierarchy_appears_incomplete?(hierarchy, context_expected: context_expected || {}, captures: captures)
 
-
       # reassemble text for link
-      text_from_captures = (!processing_a_list || (0 == index)) ? first_loop_named_captures : []  # first loop/prefix
+      text_from_captures = !processing_a_list || (index == 0) ? first_loop_named_captures : [] # first loop/prefix
       text_from_captures << repeated_capture
-      text_from_captures.concat(last_loop_named_captures) if (index == (repeated.count - 1))        # last loop/suffix
+      text_from_captures.concat(last_loop_named_captures) if index == (repeated.count - 1) # last loop/suffix
 
-      loop_prefix_unlinked = (index == 0) ? captures[:prefix_unlinked] || "" : "" 
-      loop_prefix          = (index == 0) ? captures[:prefix]          || "" : "" 
-      loop_suffix          = (index == (repeated.count - 1)) ? captures[:suffix]          || "" : ""
-      loop_suffix_unlinked = (index == (repeated.count - 1)) ? captures[:suffix_unlinked] || "" : ""
+      loop_prefix_unlinked = index == 0 ? captures[:prefix_unlinked] || "" : ""
+      loop_prefix = index == 0 ? captures[:prefix] || "" : ""
+      loop_suffix = index == (repeated.count - 1) ? captures[:suffix] || "" : ""
+      loop_suffix_unlinked = index == (repeated.count - 1) ? captures[:suffix_unlinked] || "" : ""
 
-      text = (loop_prefix || "") + loop_captures.slice(*text_from_captures).values.join + (loop_suffix || "")      
+      text = (loop_prefix || "") + loop_captures.slice(*text_from_captures).values.join + (loop_suffix || "")
 
       # cleanup hierarchy
       hierarchy = cleanup_hierarchy(hierarchy, expected: expected)
@@ -474,34 +464,33 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       normalize_paragraph_ranges(hierarchy, text: text, previous_citation: previous_citation, captures: captures) if previous_citation
       href_hierarchy = cleanup_hierarchy_for_href(hierarchy, expected: expected)
 
+      # build citation
+      citation = {hierarchy: hierarchy,
+                  href_hierarchy: href_hierarchy,
+                  prefix: loop_prefix_unlinked,
+                  text: text,
+                  suffix: loop_suffix_unlinked}
 
-      # build citation      
-      citation = { hierarchy:      hierarchy,
-                   href_hierarchy: href_hierarchy,
-                   prefix:         loop_prefix_unlinked,
-                   text:           text,
-                   suffix:         loop_suffix_unlinked }
-                   
       previous_citation = citation
-      qualify_result_sources(citation, captures: captures)      
-      puts "adding citation #{citation}" if @debugging      
+      qualify_result_sources(citation, captures: captures)
+      puts "adding citation #{citation}" if @debugging
 
       results << citation
     end
 
-    return :skip unless qualify_match(captures, results: results)    
+    return :skip unless qualify_match(captures, results: results)
 
     results
   end
 
   def hierarchy_ranks
-    %i'subtitle chapter subchapter part subpart section paragraph'
+    %i[subtitle chapter subchapter part subpart section paragraph]
   end
 
   def hierarchy_appears_incomplete?(hierarchy, context_expected: [], captures: {})
-    result = hierarchy_ranks.detect do |rank| 
-      context_expected.include?(rank) && 
-      !hierarchy[rank].present?
+    result = hierarchy_ranks.detect do |rank|
+      context_expected.include?(rank) &&
+        !hierarchy[rank].present?
     end
 
     if context_expected.include?(:in_suffix)
@@ -519,22 +508,22 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def determine_repeated_capture(captures)
     repeated_capture, repeated = nil, nil
-    
-    to_consider = %i'section subpart paragraph'.map{|rank| ["#{rank}s".to_sym, rank] }    
+
+    to_consider = %i[section subpart paragraph].map { |rank| ["#{rank}s".to_sym, rank] }
 
     to_consider.each_with_index do |rank_keys, index|
-      rank_values = captures.values_at(*rank_keys).flatten.select(&:present?) 
+      rank_values = captures.values_at(*rank_keys).flatten.select(&:present?)
       if !repeated || (!repeated.present? && rank_values.present?) ||
           (
-            repeated.is_a?(Array) && ((repeated.count == 1) && 
+            repeated.is_a?(Array) && ((repeated.count == 1) &&
             rank_values.is_a?(Array) && ((rank_values&.count || 0) >= 2))
           )
         repeated = rank_values
         repeated_capture = rank_keys.last
       end
     end
-    
-    repeated_capture, repeated  = :none, [""] unless repeated.present?
+
+    repeated_capture, repeated = :none, [""] unless repeated.present?
     slide_left(captures, :paragraph, :paragraphs) if repeated != :paragraph
 
     [repeated, repeated_capture]
@@ -547,48 +536,49 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       clean = captures[key].dup
 
       specific_all_dividers = nil
-      specific_all_dividers = /(?<split>(,|\s+|and|or|through|#{PARAGRAPH_EXAMPLE_PREFIX})+)/ix if key == :paragraphs
-      
+      specific_all_dividers = /(?<split>(,|\s+|and|or|through|#{PARAGRAPH_EXAMPLE_PREFIX})+)/ixo if key == :paragraphs
+
       if simple
         # look-behind includes match in split (instead of discarding)
         clean[key] = clean[key]&.split(/(?<=(?:,|through|or|and))/)
       else
         # split on any list markers, then absorb into values prefering
-        # commas to the left and connectors to the right        
-        any_divider = /(?<split>(\s*(,|and|or|through)\s*))/ix
-        all_dividers = specific_all_dividers || /(?<split>(,|\s+|and|or|through)+)/ix
+        # commas to the left and connectors to the right
+        any_divider = /(?<split>(?:\s*(?:,|and|or|through)\s*))/ix
+        all_dividers = specific_all_dividers || /(?<split>(?:,|\s+|and|or|through)+)/ix
         trailing_dividers = /and|or|through/ix
-        z = 0
-        if split = clean&.split(any_divider)&.select{ |s| s.length > 0 }
+        if (split = clean&.split(any_divider)&.select { |s| s.length > 0 })
           x = 1
           while x < (split.length - 1)
             # puts "split z #{z} x #{x} split #{split}" if @debugging
-            if split[x] =~ /\A#{all_dividers}\z/i # only list cruft
+            if /\A#{all_dividers}\z/i.match?(split[x]) # only list cruft
               if (split[x] =~ trailing_dividers) && (x < (split.length - 1))
-                split[x+1] = split[x] + split[x+1]
+                split[x + 1] = split[x] + split[x + 1]
               else
-                split[x-1] = split[x-1] + split[x]
+                split[x - 1] = split[x - 1] + split[x]
               end
               split.delete_at(x)
             else
               x += 1
             end
           end
-          captures[key] = split if 1 < split.count
+          captures[key] = split if split.count > 1
         end
       end
-      puts "split_lists_into_individual_items \"#{original}\" into \"#{captures[key]}\"" if @debugging && original != captures[key] if @debugging
+      if @debugging
+        puts "split_lists_into_individual_items \"#{original}\" into \"#{captures[key]}\"" if @debugging && original != captures[key]
+      end
     end
   end
-  
+
   def qualify_match(captures, results: nil)
     result = true
     # return false if /\A\s*\[Reserved\]/ix =~ captures[:post_match]
-    if :loose_section == captures[:pattern_slug] && !captures[:section_label].include?("§")
-      
+    if captures[:pattern_slug] == :loose_section && !captures[:section_label].include?("§")
+
       puts "qualify_match captures[:post_match] #{captures[:post_match]}" if @debugging
       match = LIKELY_EXTERNAL_SECTIONS.match(captures[:post_match])
-      
+
       if match
         result = false
       end
@@ -599,11 +589,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         result = false if (@accumulated_context & potential_danger).present?
 
         # fails to match common formatting
-        result = false if !potential_danger.detect{ |r|r.include?(".") }
-
+        result = false unless potential_danger.detect { |r| r.include?(".") }
 
         @accumulated_context.concat(potential_danger).uniq!
-        
+
       end
       unless result
         @accumulated_context.concat(captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)).uniq!
@@ -615,7 +604,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def qualify_result_sources(citation, captures: {})
     if captures[:source_label]&.present?
-      citation[:source] = :usc if USC_LABEL =~ captures[:source_label]
+      citation[:source] = :usc if USC_LABEL.match?(captures[:source_label])
       citation[:source] = :federal_register if (FR_LABEL =~ captures[:source_label]) && !(CFR_LABEL =~ captures[:source_label])
     end
     captures[:source_label]
@@ -623,38 +612,38 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def determine_available_from_context(hierarchy, context: {}, context_expected: [], captures: {})
     results = []
-    
-    results << :title   if context[:title] && !hierarchy[:title].present? && 
-                           context_expected.include?(:title)
 
-    results << :section if context[:section] && !hierarchy[:section].present? && 
-                           (hierarchy[:paragraph].present? || hierarchy[:subpart].present?) &&
-                           (context_expected.include?(:section) ||
-                           context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+    results << :title if context[:title] && !hierarchy[:title].present? &&
+      context_expected.include?(:title)
 
-    results << :part    if context[:part] && !hierarchy[:part].present? && 
-                           (
-                             hierarchy[:paragraph].present? || 
-                             hierarchy[:subpart].present? ||
-                             (hierarchy[:section].present? && !hierarchy[:section]&.include?(".")) 
-                           ) &&
-                           (context_expected.include?(:part) ||
-                           context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("part"))
+    results << :section if context[:section] && !hierarchy[:section].present? &&
+      (hierarchy[:paragraph].present? || hierarchy[:subpart].present?) &&
+      (context_expected.include?(:section) ||
+      context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+
+    results << :part if context[:part] && !hierarchy[:part].present? &&
+      (
+        hierarchy[:paragraph].present? ||
+        hierarchy[:subpart].present? ||
+        (hierarchy[:section].present? && !hierarchy[:section]&.include?("."))
+      ) &&
+      (context_expected.include?(:part) ||
+      context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("part"))
 
     puts "determine_available_from_context \"#{results}\" context_expected \"#{context_expected}\"" if @debugging
     results
   end
 
   def prepare_captures(captures)
-    captures = captures.select{ |k,v| v }.symbolize_keys
+    captures = captures.select { |k, v| v }.symbolize_keys
 
     slide_right(captures, :paragraph, :suffix) if only_whitespace?(captures[:paragraph])
-    
+
     slide_right(captures, :sections, :section) if captures[:sections] && !captures[:section] && !(LIST_DESIGNATORS =~ captures[:sections])
 
     restore_paragraph(captures)
 
-    split_lists_into_individual_items(captures, %i'subparts sections paragraphs')
+    split_lists_into_individual_items(captures, %i[subparts sections paragraphs])
     slide_left(captures, :section, :part_string)
 
     captures
@@ -666,18 +655,18 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def restore_paragraph(captures)
     # sections aren't expected to have parentheticals w/out a dashed suffix
-    if captures[:section]&.include?("(") and !captures[:section]&.include?("-")
+    if captures[:section]&.include?("(") && !captures[:section]&.include?("-")
       paragraph_key = captures[:paragraphs].present? ? :paragraphs : :paragraph
       repartition(captures, :section, "(", paragraph_key)
     end
   end
 
   def normalize_paragraph_ranges(hierarchy, text: nil, previous_citation: nil, captures: {})
-    return unless previous_citation    
+    return unless previous_citation
     previous_hierarchy = previous_citation[:hierarchy]
-    if (1 == (hierarchy[:paragraph]&.count("(") || 0)) && 
-      (1 < (previous_hierarchy[:paragraph]&.count("(") || 0)) && 
-      ((/and|or|through/ =~ text) || (/and|or|through/ =~ captures[:paragraph]))
+    if ((hierarchy[:paragraph]&.count("(") || 0) == 1) &&
+        ((previous_hierarchy[:paragraph]&.count("(") || 0) > 1) &&
+        ((/and|or|through/ =~ text) || (/and|or|through/ =~ captures[:paragraph]))
       updated = previous_hierarchy[:paragraph].rpartition("(").first + hierarchy[:paragraph]
       puts "normalize_paragraph_ranges #{updated} <= #{hierarchy[:paragraph]}" if @debugging
       hierarchy[:paragraph] = updated
@@ -687,12 +676,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def repartition(captures, left, pivot, right, drop_divider: false)
     left_value, pivot_value, right_value = captures.values_at(left, right).compact.join.partition(pivot)
     right_value = [pivot_value, right_value].compact.join unless drop_divider
-    if 0 < left_value.length
+    if left_value.length > 0
       captures[left] = left_value
     else
       captures.delete(left)
     end
-    if 0 < right_value.length
+    if right_value.length > 0
       captures[right] = right_value
     else
       captures.delete(right)
@@ -706,12 +695,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def prepare_context(options)
     result = options&.[](:context) || {}
-    if composite_hierarchy = options&.[](:composite_hierarchy) || result[:composite_hierarchy]
-      hierarchy_from_composite = %i'title subtitle chapter subchapter part subpart section_identifier'.
-                                 zip(composite_hierarchy.
-                                 split(/:/)).to_h
+    if (composite_hierarchy = options&.[](:composite_hierarchy) || result[:composite_hierarchy])
+      hierarchy_from_composite = %i[title subtitle chapter subchapter part subpart section_identifier]
+        .zip(composite_hierarchy
+                                 .split(":")).to_h
 
-      hierarchy_from_composite.delete_if{ |k,v| v.blank? }
+      hierarchy_from_composite.delete_if { |k, v| v.blank? }
       hierarchy_from_composite[:section] = hierarchy_from_composite[:section_identifier] if hierarchy_from_composite[:section_identifier]
 
       result.reverse_merge!(hierarchy_from_composite)
@@ -726,20 +715,20 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     if result[:paragraph].present?
       result[:paragraph].gsub!(PARAGRAPH_EXAMPLE_PREFIX, "") if result[:paragraph].include?("xample")
     end
-    result.transform_values! do |value| 
+    result.transform_values! do |value|
       list_items = /(\s+|,|or|and|through)+/i
-      value.gsub(/\A#{list_items}/, ""). # prefixed whitespace / list items
-            gsub(/#{list_items}\z/, "")  # suffixed whitespace / list items
+      value.gsub(/\A#{list_items}/, "") # prefixed whitespace / list items
+        .gsub(/#{list_items}\z/, "") # suffixed whitespace / list items
     end
 
     # hierarchy shouldn't contain unknowns
-    result.reject!{ |k,v| v.blank? }
+    result.reject! { |k, v| v.blank? }
 
     decide_section_vs_part(result, expected: expected)
 
     slide_right(result, :prefixed_subpart, :subpart)
     slide_right(result, :prefixed_paragraph, :paragraph)
-    
+
     if result[:paragraph].present?
       result[:paragraph].gsub!(/paragraph\s*/, "")
       result[:paragraph] = result[:paragraph].partition("through").first.strip if result[:paragraph].include?("through")
@@ -752,11 +741,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     if !hierarchy[:part] && hierarchy[:section]
       if @options[:prefer_part] && !hierarchy[:section]&.include?(".")
         repartition(hierarchy, :part, ".", :section, drop_divider: true)
-      else
+      elsif expected[:part]
         # take section if missing part & expecting it
-        if expected[:part] 
-          slide_left(hierarchy, :part, :section)
-        end
+        slide_left(hierarchy, :part, :section)
       end
     end
   end
@@ -765,11 +752,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     effective_capture = repeated_capture
     effective_capture = :part if effective_capture == :section && !hierarchy[effective_capture]
     # byebug
-    if %i'section part'.include?(effective_capture) && hierarchy[effective_capture]&.include?("-") && !hierarchy[effective_capture]&.include?(".")
+    if %i[section part].include?(effective_capture) && hierarchy[effective_capture]&.include?("-") && !hierarchy[effective_capture]&.include?(".")
       items = hierarchy[effective_capture].split("-")
       if numbers_seem_like_a_range?(items.map(&:to_i))
-        puts "cleanup_hierarchy_for_list_ranges_if_needed AAA \"#{items.first.to_s}\"-\"#{items.last.to_s}\" <= \"#{hierarchy[effective_capture]}\"" if @debugging
-        hierarchy[effective_capture] = items.first.to_s 
+        puts "cleanup_hierarchy_for_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{hierarchy[effective_capture]}\"" if @debugging
+        hierarchy[effective_capture] = items.first.to_s
         hierarchy["#{effective_capture}_end".to_sym] = items.last.to_s
       end
     end
@@ -782,9 +769,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     if (result[:section] && !result[:part]) || (result[:part] && !result[:section])
       part_section = result.values_at(:section, :part).join
       if part_section.include?(".")
-        a, b, c = part_section.partition(".")
-        result[:part] = a
-        result[:section] = c
+        result[:part], _, result[:section] = part_section.partition(".")
       else
         unless expected[:section]
           result[:part] = part_section
@@ -802,12 +787,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     slide_left(result, :section, :paragraph) if result[:paragraph]&.include?("-")
 
     slide_right(result, :paragraph, :sublocators) # url uses "sublocators"
-        
+
     puts "cleanup_hierarchy_for_href #{result}" if @debugging
 
     result
   end
-
 
   # url related
 
@@ -825,7 +809,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     return "/section-#{hierarchy[:section]}" if hierarchy[:section] && !hierarchy[:part]
     return "" unless hierarchy[:part]
     return "/part-#{hierarchy[:part]}/subpart-#{hierarchy[:subpart]}" if !hierarchy[:section] && hierarchy[:subpart]
-    return "/part-#{hierarchy[:part]}" if !hierarchy[:section]
+    return "/part-#{hierarchy[:part]}" unless hierarchy[:section]
     "/section-#{hierarchy[:part]}.#{hierarchy[:section]}"
   end
 
@@ -833,10 +817,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     return "" unless hierarchy[:sublocators]
     result = "#p-#{hierarchy[:part]}"
     result << "." if hierarchy[:part] && hierarchy[:section]
-    result << "#{hierarchy[:section]}" if hierarchy[:section]
-    result << "#{hierarchy[:sublocators]}"
+    result << (hierarchy[:section]).to_s if hierarchy[:section]
+    result << (hierarchy[:sublocators]).to_s
   end
-
 
   # utility
 
@@ -845,11 +828,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def numbers_similarish(numbers)
-    numbers.all?{ |n| n < 50} ||
+    numbers.all? { |n| n < 50 } ||
       ((numbers.max - numbers.min) < 50) ||
       (numbers.min > numbers.max * 0.5)
   end
-  
+
   def only_whitespace?(text)
     text =~ /\A\s*\Z/
   end
@@ -857,7 +840,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def drop_whitespace_and_italics(captures, which)
     if captures[which].present?
       captures[which] = captures[which].gsub(/\s+/, "").gsub(/<\/?em>/, "")
-    end    
+    end
   end
 
   def slide_left(captures, left, right)
@@ -866,7 +849,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def slide_right(captures, left, right)
-    captures[right] = captures.values_at(left, right).compact.join    
+    captures[right] = captures.values_at(left, right).compact.join
     captures.delete(left)
     captures.delete(right) if captures[right]&.length == 0
   end

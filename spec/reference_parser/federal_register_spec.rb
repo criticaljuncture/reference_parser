@@ -1,38 +1,36 @@
-require 'spec_helper'
+require "spec_helper"
+
+SCENERIOS_FR = [
+  {ex: "Redesignated and amended at 53 FR 15991, 15999",
+   citations: [{volume: "53", page: "15991"}, {volume: "53", page: "15999"}]}
+
+  # {ex: "as amended at 43 FR 5786, Feb. 9, 1978. Redesignated and amended at 53 FR 15991, 15999, May 4, 1988; 57 FR 38146, Aug. 21, 1992;",
+  #  citations: [{volume: "53", page: "15991"}, {volume: "53", page: "15999"}]}
+]
 
 RSpec.describe ReferenceParser::FederalRegister do
   describe "links Federal Register" do
-    it 'example usage' do
+    it "example usage" do
       expect(
-
         ReferenceParser.new(only: :federal_register).hyperlink(
-          "Lorem ipsum dolor sit amet, 60 FR 1000 consectetur adipiscing elit.", 
+          "Lorem ipsum dolor sit amet, 60 FR 1000 consectetur adipiscing elit.",
           default: {target: nil, class: nil}
         )
-
       ).to eql "Lorem ipsum dolor sit amet, <a href='https://www.federalregister.gov/citation/60-FR-1000' data-reference='60 FR 1000'>60 FR 1000</a> consectetur adipiscing elit."
     end
-    
-    it 'relative urls' do
-      expect(
 
+    it "relative urls" do
+      expect(
         ReferenceParser.new(only: :federal_register).hyperlink(
-          "Lorem ipsum dolor sit amet, 60 FR 1000 consectetur adipiscing elit.", 
+          "Lorem ipsum dolor sit amet, 60 FR 1000 consectetur adipiscing elit.",
           default: {target: nil, class: nil, relative: true}
         )
-
       ).to eql "Lorem ipsum dolor sit amet, <a href='/citation/60-FR-1000' data-reference='60 FR 1000'>60 FR 1000</a> consectetur adipiscing elit."
     end
 
-    SCENERIOS_FR = [
-      { ex: "Redesignated and amended at 53 FR 15991, 15999", citations: [{volume: "53", page: "15991"}, 
-                                                                          {volume: "53", page: "15999"}],},
-    ]
-
     SCENERIOS_FR.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|        
-        it "#{example}" do
-
+      [scenerio[:ex]].flatten.each do |example|
+        it example.to_s do
           result_html = ReferenceParser.new(only: :federal_register).hyperlink(example, default: {target: nil, class: nil})
 
           citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
@@ -42,25 +40,23 @@ RSpec.describe ReferenceParser::FederalRegister do
             expect(
               result_html
             ).to have_tag("a", text: scenerio[:text] || example,
-                              with: { href: fr_url(citation) })
+                               with: {href: fr_url(citation)})
 
           else
 
             citations.each do |citation|
-
-                expect(
-                  result_html
-                ).to have_tag("a", with: { href: fr_url(citation) })
-
+              expect(
+                result_html
+              ).to have_tag("a", with: {href: fr_url(citation)})
             end
 
             expect(result_html).to have_tag("a", count: citations.count)
-            
+
           end
         end
       end
     end
-    
+
     def fr_url(options)
       ReferenceParser::FederalRegister.new({}).url(options)
     end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "spec_helper"
 
 RSpec.describe ReferenceParser do
@@ -6,78 +7,68 @@ RSpec.describe ReferenceParser do
     expect(ReferenceParser::VERSION).not_to be nil
   end
 
-  let(:lorem){ "Lorem ipsum dolor sit amet, consectetur adipiscing elit." }
+  let(:lorem) { "Lorem ipsum dolor sit amet, consectetur adipiscing elit." }
 
   describe "example usage" do
     it "links partial references with context" do
       text = "please see part 300 of this title."
       expect(
-
         ReferenceParser.new(
           options: {
-            cfr: {context: {title: '1', part: '100'}}
+            cfr: {context: {title: "1", part: "100"}}
           }
-        ).hyperlink(text, default: {relative: true, class: nil, target: nil}, options: {cfr: {on: '2020-01-01'}})
-
+        ).hyperlink(text, default: {relative: true, class: nil, target: nil}, options: {cfr: {on: "2020-01-01"}})
       ).to eql("please see <a href='/on/2020-01-01/title-1/part-300'>part 300 of this title</a>.")
     end
 
     it "links to comparison pages" do
       text = "please see 1 CFR Part 2."
       expect(
-
         ReferenceParser.new(
-          only: %i(cfr),
-        ).hyperlink(text, default: {relative: true, target: "_blank"}, options: {cfr: {compare: {from: '2020-01-01', to: '2021-01-01'}}})
-        
+          only: %i[cfr]
+        ).hyperlink(text, default: {relative: true, target: "_blank"}, options: {cfr: {compare: {from: "2020-01-01", to: "2021-01-01"}}})
       ).to eql("please see <a href='/compare/2020-01-01/to/2021-01-01/title-1/part-2' class='cfr external' target='_blank' rel='noopener noreferrer'>1 CFR Part 2</a>.")
     end
 
     it "allows customization of text" do
       text = "40 CFR 273.13, and 273.52"
       expect(
-
         ReferenceParser.new(
-          only: %i(cfr),
+          only: %i[cfr]
         ).each(text, default: {relative: true, class: nil, target: nil}) do |citation|
           citation[:text] = "((((#{citation[:text].strip}))))"
         end
-
       ).to eql("<a href='/current/title-40/section-273.13'>((((40 CFR 273.13))))</a>, and <a href='/current/title-40/section-273.52'>((((273.52))))</a>")
     end
 
     it "provides absolute urls" do
       text = "please see 1 CFR Part 2."
       expect(
-
         ReferenceParser.new(
-          only: %i(cfr),
-        ).hyperlink(text, options: {cfr: {compare: {from: '2020-01-01', to: '2021-01-01'}}})
-        
+          only: %i[cfr]
+        ).hyperlink(text, options: {cfr: {compare: {from: "2020-01-01", to: "2021-01-01"}}})
       ).to eql("please see <a href='https://ecfr.federalregister.gov/compare/2020-01-01/to/2021-01-01/title-1/part-2' class='cfr external'>1 CFR Part 2</a>.")
-    end    
+    end
   end
 
   it "shouldn't break if there is nothing to do" do
     expect(
       ReferenceParser.new(only: []).hyperlink(lorem)
-    ).to eql(lorem)  
+    ).to eql(lorem)
   end
 
   it "will only link requested items" do
     expect(
-      ReferenceParser.new(only: %i(email)).hyperlink("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by test@nil.local")
-    ).to eql("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by <a href='mailto:test@nil.local' class='email'>test@nil.local</a>")  
+      ReferenceParser.new(only: %i[email]).hyperlink("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by test@nil.local")
+    ).to eql("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by <a href='mailto:test@nil.local' class='email'>test@nil.local</a>")
   end
-  
-  describe 'usable' do
+
+  describe "usable" do
     it "for CFR text (internal references with context)" do
       expect(
-
         ReferenceParser.new(
           options: {cfr: {context: {title: "7"}}}
         ).hyperlink("please refer to 1 CFR 2.7(a)(2) and chapter II of this title", default: {relative: true, class: nil, target: nil}, options: {cfr: {current: true}})
-      
       ).to eql(
         "please refer to <a href='/current/title-1/section-2.7#p-2.7(a)(2)'>1 CFR 2.7(a)(2)</a> and <a href='/current/title-7/chapter-II'>chapter II of this title</a>"
       )
@@ -85,9 +76,7 @@ RSpec.describe ReferenceParser do
 
     it "for CFR text (complete references without context)" do
       expect(
-        
         ReferenceParser.new.hyperlink("please refer to 1 CFR 2.7(a)(2) and chapter II of this title", default: {relative: true, class: nil, target: nil}, options: {cfr: {current: true}})
-      
       ).to eql(
         "please refer to <a href='/current/title-1/section-2.7#p-2.7(a)(2)'>1 CFR 2.7(a)(2)</a> and chapter II of this title"
       )
@@ -95,9 +84,7 @@ RSpec.describe ReferenceParser do
 
     it "for Issues" do
       expect(
-
-        ReferenceParser.new.hyperlink("8 CFR 1208, 1209-1212, 1235 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {cfr: {compare: {from: '2020-05-30', to: '2020-06-01'}, relative: true}})
-
+        ReferenceParser.new.hyperlink("8 CFR 1208, 1209-1212, 1235 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}, relative: true}})
       ).to eql(
         "<a href='/compare/2020-05-30/to/2020-06-01/title-8/part-1208' class='cfr external'>8 CFR 1208</a>, <a href='/compare/2020-05-30/to/2020-06-01/title-8/part-1209' class='cfr external'>1209-1212</a>, <a href='/compare/2020-05-30/to/2020-06-01/title-8/part-1235' class='cfr external'>1235</a> (<a href='https://www.federalregister.gov/citation/85-FR-23904' class='fr-reference' data-reference='85 FR 23904'>85 FR 23904</a>, Apr. 30, 2020)"
       )
@@ -105,61 +92,54 @@ RSpec.describe ReferenceParser do
 
     it "for Issues (reverse ecfr/fr absolute/relative)" do
       expect(
-
-        ReferenceParser.new.hyperlink("8 CFR 1208 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {federal_register: {relative: true}, cfr: {compare: {from: '2020-05-30', to: '2020-06-01'}}})
-
+        ReferenceParser.new.hyperlink("8 CFR 1208 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {federal_register: {relative: true}, cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}}})
       ).to eql(
         "<a href='https://ecfr.federalregister.gov/compare/2020-05-30/to/2020-06-01/title-8/part-1208' class='cfr external'>8 CFR 1208</a> (<a href='/citation/85-FR-23904' class='fr-reference' data-reference='85 FR 23904'>85 FR 23904</a>, Apr. 30, 2020)"
       )
-    end    
+    end
 
     it "for Agency Page" do
       expect(
-        
-        ReferenceParser.new.render({cfr: {citations: [ { "id"=>1, "agency_id"=>1, "title"=>"1", "subtitle"=>nil, "chapter"=>"III" } ]}}, default: {relative: true, class: "cfr-reference", target: nil}, options: {cfr: {current: true}})
-      
+        ReferenceParser.new.render({cfr: {citations: [{"id" => 1, "agency_id" => 1, "title" => "1", "subtitle" => nil, "chapter" => "III"}]}}, default: {relative: true, class: "cfr-reference", target: nil}, options: {cfr: {current: true}})
       ).to eql(
         '<a href="/current/title-1/chapter-III" class="cfr-reference">1 CFR Chapter III</a>'
       )
     end
 
     it "for Search suggestions" do
-      query_params = { "date"=>"2021-05-18", "per_page"=>50, "query"=>"17 CFR 240.11a1-1(T)" }
+      query_params = {"date" => "2021-05-18", "per_page" => 50, "query" => "17 CFR 240.11a1-1(T)"}
 
       results = []
       ReferenceParser.new.each(query_params["query"]) do |citation|
-        results << { "type" => "cfr_citation", 
-          "summary" => citation[:text], 
-          "hierarchy"=> citation[:hierarchy].stringify_keys,
-        }
+        results << {"type" => "cfr_citation",
+                    "summary" => citation[:text],
+                    "hierarchy" => citation[:hierarchy].stringify_keys}
       end
 
       expect(results).to eql(
-        [ { "type" => "cfr_citation", "summary" => "17 CFR 240.11a1-1(T)", "hierarchy" => { "title" => "17", "section" => "240.11a1-1(T)" } } ]
-      )      
+        [{"type" => "cfr_citation", "summary" => "17 CFR 240.11a1-1(T)", "hierarchy" => {"title" => "17", "section" => "240.11a1-1(T)"}}]
+      )
     end
 
     it "for Admin entry" do
-      params = { freeform_text_entry_value: "40 CFR 273.13, 273.33, and 273.52" }
-      
+      params = {freeform_text_entry_value: "40 CFR 273.13, 273.33, and 273.52"}
+
       results = []
       ReferenceParser.new.each(params[:freeform_text_entry_value]) do |citation|
-        results << citation[:hierarchy].slice(*%i'title part subpart section')
+        results << citation[:hierarchy].slice(*%i[title part subpart section])
       end
 
       expect(results).to eql(
-        [ { title: "40", section: "273.13" }, { title: "40", section: "273.33" }, { title: "40", section: "273.52" } ]
+        [{title: "40", section: "273.13"}, {title: "40", section: "273.33"}, {title: "40", section: "273.52"}]
       )
     end
 
     it "to call a block for CFR references" do
       x = 0
       expect(
-
         ReferenceParser.new.each("apple 42 CFR 273 banana 40 CFR 273.13, 273.33, and 273.52 cherry") do |citation|
           citation[:link] = "(link_#{citation.dig(:hierarchy, :title)}_#{x += 1})"
         end
-
       ).to eql(
         "apple (link_42_1) banana (link_40_2), (link_40_3), and (link_40_4) cherry"
       )

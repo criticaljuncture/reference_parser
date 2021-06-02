@@ -1,62 +1,56 @@
 require "spec_helper"
 
+HTML_FRAGMENT = <<-HTML
+                <p class="food">
+                  <em>Foo</em>d
+                  is good
+                </p>
+HTML
+
+SCENERIOS_URL = [
+  {ex: "<p>https://a.local www.b.local</p>", result: "<p><a href='https://a.local' class='external'>https://a.local</a> <a href='https://www.b.local' class='external'>www.b.local</a></p>"},
+  {ex: "<img src='https://images.null.local/AB01CD23.456/original.gif'/>", result: :no_change},
+  {ex: "visit www.example.com", result: "visit <a href='https://www.example.com' class='external'>www.example.com</a>"},
+  {ex: "visit www.example.com.", result: "visit <a href='https://www.example.com' class='external'>www.example.com</a>."},
+  {ex: HTML_FRAGMENT, result: :no_change}
+]
+
 RSpec.describe ReferenceParser::Url do
   describe "links urls" do
     it "example usage" do
       expect(
-
         ReferenceParser.new(only: :url).hyperlink(
-          "Lorem ipsum dolor sit amet, https://example.local consectetur adipiscing elit.", 
+          "Lorem ipsum dolor sit amet, https://example.local consectetur adipiscing elit.",
           default: {target: nil, class: nil}
         )
-  
       ).to eql "Lorem ipsum dolor sit amet, <a href='https://example.local'>https://example.local</a> consectetur adipiscing elit."
     end
 
     it "w/ an option to ignore" do
       text = "Lorem ipsum dolor sit amet, https://images.example.local consectetur adipiscing elit."
-      expect(        
-
+      expect(
         ReferenceParser.new(only: :url,
-          options: {
-            url: {
-              ignore: -> (citation) {citation[:url]&.start_with?("https://images.example.local")}
-            }
-          }).hyperlink(text)
-  
+                            options: {
+                              url: {
+                                ignore: ->(citation) { citation[:url]&.start_with?("https://images.example.local") }
+                              }
+                            }).hyperlink(text)
       ).to eql(text)
     end
 
-    HTML_FRAGMENT = <<-HTML
-                    <p class="food">
-                      <em>Foo</em>d
-                      is good
-                    </p>
-                    HTML
-
-    SCENERIOS_URL = [
-      {ex: "<p>https://a.local www.b.local</p>", result: "<p><a href='https://a.local' class='external'>https://a.local</a> <a href='https://www.b.local' class='external'>www.b.local</a></p>" },
-      {ex: "<img src='https://images.null.local/AB01CD23.456/original.gif'/>", result: :no_change},
-      {ex: "visit www.example.com", result: "visit <a href='https://www.example.com' class='external'>www.example.com</a>"},
-      {ex: "visit www.example.com.", result: "visit <a href='https://www.example.com' class='external'>www.example.com</a>."},
-      {ex: HTML_FRAGMENT, result: :no_change},
-    ]
-
-    include RSpecHtmlMatchers
-
     SCENERIOS_URL.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|        
-        it "#{example}" do
+      [scenerio[:ex]].flatten.each do |example|
+        it example.to_s do
           expect(
-            ReferenceParser.new().hyperlink(example, default: {target: nil})
-          ).to eq((:no_change == scenerio[:result]) ? example : scenerio[:result])
+            ReferenceParser.new.hyperlink(example, default: {target: nil})
+          ).to eq(scenerio[:result] == :no_change ? example : scenerio[:result])
         end
       end
-    end    
+    end
   end
 
-  def hyperlink(text, options={})
-    ReferenceParser.new(only: :url).hyperlink(text, default: {class: nil, target: nil}, options: { url: options })
+  def hyperlink(text, options = {})
+    ReferenceParser.new(only: :url).hyperlink(text, default: {class: nil, target: nil}, options: {url: options})
   end
 
   def h(str)
@@ -69,24 +63,24 @@ RSpec.describe ReferenceParser::Url do
 
   def generate_result(link_text, href = nil)
     href ||= link_text
-    %{<a href='#{CGI::escapeHTML(href)}'>#{link_text}</a>}
+    %(<a href='#{CGI.escapeHTML(href)}'>#{link_text}</a>)
     # %{<a href="#{CGI::escapeHTML(href)}">#{Hyperlinker::Url.add_line_break_indicators(link_text)}</a>}
   end
 
   it "handles brackets" do
-    link1_raw = 'http://en.wikipedia.org/wiki/Sprite_(computer_graphics)'
+    link1_raw = "http://en.wikipedia.org/wiki/Sprite_(computer_graphics)"
     link1_result = generate_result(link1_raw)
-    expect(hyperlink(link1_raw)).to eql( link1_result )
+    expect(hyperlink(link1_raw)).to eql(link1_result)
     expect(hyperlink("(link: #{link1_raw})")).to eql("(link: #{link1_result})")
 
-    link2_raw = 'http://en.wikipedia.org/wiki/Sprite_[computer_graphics]'
+    link2_raw = "http://en.wikipedia.org/wiki/Sprite_[computer_graphics]"
     link2_result = generate_result(link2_raw)
-    expect(hyperlink(link2_raw)).to eql( link2_result )
+    expect(hyperlink(link2_raw)).to eql(link2_result)
     expect(hyperlink("[link: #{link2_raw}]")).to eql("[link: #{link2_result}]")
 
-    link3_raw = 'http://en.wikipedia.org/wiki/Sprite_{computer_graphics}'
+    link3_raw = "http://en.wikipedia.org/wiki/Sprite_{computer_graphics}"
     link3_result = generate_result(link3_raw)
-    expect(hyperlink(link3_raw)).to eql( link3_result )
+    expect(hyperlink(link3_raw)).to eql(link3_result)
     expect(hyperlink("{link: #{link3_raw}}")).to eql("{link: #{link3_result}}")
   end
 
@@ -112,12 +106,12 @@ RSpec.describe ReferenceParser::Url do
   end
 
   it "handle misc formatting" do
-    link_raw     = 'http://www.rubyonrails.com'
-    link_result  = generate_result(link_raw)
-    link_result_with_options = %{<a href='#{link_raw}' target='_blank' rel='noopener noreferrer'>#{link_raw}</a>}
+    link_raw = "http://www.rubyonrails.com"
+    link_result = generate_result(link_raw)
+    link_result_with_options = %(<a href='#{link_raw}' target='_blank' rel='noopener noreferrer'>#{link_raw}</a>)
 
-    expect(hyperlink(nil)).to eql('')
-    expect(hyperlink('')).to eql('')
+    expect(hyperlink(nil)).to eql("")
+    expect(hyperlink("")).to eql("")
     expect(hyperlink("#{link_raw} #{link_raw} #{link_raw}")).to eql("#{link_result} #{link_result} #{link_result}")
 
     expect(hyperlink("Go to #{link_raw}")).to eql(%(Go to #{link_result}))
@@ -126,75 +120,75 @@ RSpec.describe ReferenceParser::Url do
     expect(hyperlink("<p>Link #{link_raw}</p>", {target: "_blank", rel: "noopener noreferrer"})).to eql(%(<p>Link #{link_result_with_options}</p>))
     expect(hyperlink(%(Go to #{link_raw}.))).to eql(%(Go to #{link_result}.))
 
-    link2_raw    = 'www.rubyonrails.com'
+    link2_raw = "www.rubyonrails.com"
     link2_result = generate_result(link2_raw, "https://#{link2_raw}")
     expect(hyperlink("Go to #{link2_raw}")).to eql(%(Go to #{link2_result}))
     expect(hyperlink("<p>Link #{link2_raw}</p>")).to eql(%(<p>Link #{link2_result}</p>))
     expect(hyperlink("<p>#{link2_raw} Link</p>")).to eql(%(<p>#{link2_result} Link</p>))
     expect(hyperlink(%(Go to #{link2_raw}.))).to eql(%(Go to #{link2_result}.))
 
-    link3_raw    = 'http://manuals.ruby-on-rails.com/read/chapter.need_a-period/103#page281'
+    link3_raw = "http://manuals.ruby-on-rails.com/read/chapter.need_a-period/103#page281"
     link3_result = generate_result(link3_raw)
     expect(hyperlink("Go to #{link3_raw}")).to eql(%(Go to #{link3_result}))
     expect(hyperlink("<p>Link #{link3_raw}</p>")).to eql(%(<p>Link #{link3_result}</p>))
     expect(hyperlink("<p>#{link3_raw} Link</p>")).to eql(%(<p>#{link3_result} Link</p>))
     expect(hyperlink(%(Go to #{link3_raw}.))).to eql(%(Go to #{link3_result}.))
 
-    link4_raw    = 'http://foo.example.com/controller/action?parm=value&p2=v2#anchor123'
+    link4_raw = "http://foo.example.com/controller/action?parm=value&p2=v2#anchor123"
     link4_result = generate_result(link4_raw)
     expect(hyperlink("<p>Link #{link4_raw}</p>")).to eql(%(<p>Link #{link4_result}</p>))
     expect(hyperlink("<p>#{link4_raw} Link</p>")).to eql(%(<p>#{link4_result} Link</p>))
 
-    link5_raw    = 'http://foo.example.com:3000/controller/action'
+    link5_raw = "http://foo.example.com:3000/controller/action"
     link5_result = generate_result(link5_raw)
     expect(hyperlink("<p>#{link5_raw} Link</p>")).to eql(%(<p>#{link5_result} Link</p>))
 
-    link6_raw    = 'http://foo.example.com:3000/controller/action+pack'
+    link6_raw = "http://foo.example.com:3000/controller/action+pack"
     link6_result = generate_result(link6_raw)
     expect(hyperlink("<p>#{link6_raw} Link</p>")).to eql(%(<p>#{link6_result} Link</p>))
 
-    link7_raw    = 'http://foo.example.com/controller/action?parm=value&p2=v2#anchor-123'
+    link7_raw = "http://foo.example.com/controller/action?parm=value&p2=v2#anchor-123"
     link7_result = generate_result(link7_raw)
     expect(hyperlink("<p>#{link7_raw} Link</p>")).to eql(%(<p>#{link7_result} Link</p>))
 
-    link8_raw    = 'http://foo.example.com:3000/controller/action.html'
+    link8_raw = "http://foo.example.com:3000/controller/action.html"
     link8_result = generate_result(link8_raw)
     expect(hyperlink("Go to #{link8_raw}")).to eql(%(Go to #{link8_result}))
     expect(hyperlink("<p>Link #{link8_raw}</p>")).to eql(%(<p>Link #{link8_result}</p>))
     expect(hyperlink("<p>#{link8_raw} Link</p>")).to eql(%(<p>#{link8_result} Link</p>))
     expect(hyperlink(%(Go to #{link8_raw}.))).to eql(%(Go to #{link8_result}.))
 
-    link9_raw    = 'http://business.timesonline.co.uk/article/0,,9065-2473189,00.html'
+    link9_raw = "http://business.timesonline.co.uk/article/0,,9065-2473189,00.html"
     link9_result = generate_result(link9_raw)
     expect(hyperlink("Go to #{link9_raw}")).to eql(%(Go to #{link9_result}))
     expect(hyperlink("<p>Link #{link9_raw}</p>")).to eql(%(<p>Link #{link9_result}</p>))
     expect(hyperlink("<p>#{link9_raw} Link</p>")).to eql(%(<p>#{link9_result} Link</p>))
     expect(hyperlink(%(Go to #{link9_raw}.))).to eql(%(Go to #{link9_result}.))
 
-    link10_raw    = 'http://www.mail-archive.com/ruby-talk@ruby-lang.org/'
+    link10_raw = "http://www.mail-archive.com/ruby-talk@ruby-lang.org/"
     link10_result = generate_result(link10_raw)
     expect(hyperlink("<p>#{link10_raw} Link</p>")).to eql(%(<p>#{link10_result} Link</p>))
 
-    link11_raw    = 'http://asakusa.rubyist.net/'
+    link11_raw = "http://asakusa.rubyist.net/"
     link11_result = generate_result(link11_raw)
     expect(hyperlink("浅草.rbの公式サイトはこちら#{link11_raw}")).to eql(%(浅草.rbの公式サイトはこちら#{link11_result}))
 
-    link12_raw    = 'http://tools.ietf.org/html/rfc3986'
+    link12_raw = "http://tools.ietf.org/html/rfc3986"
     link12_result = generate_result(link12_raw)
     expect(hyperlink("<p>#{link12_raw} text-after-nonbreaking-space</p>")).to eql(%(<p>#{link12_result} text-after-nonbreaking-space</p>))
 
-    link13_raw    = 'HTtP://www.rubyonrails.com'
+    link13_raw = "HTtP://www.rubyonrails.com"
     expect(hyperlink(link13_raw)).to eql(generate_result(link13_raw))
   end
 
   it "handles www2 URLs" do
-    link_raw    = 'www2.ed.gov'
+    link_raw = "www2.ed.gov"
     link_result = generate_result(link_raw, "https://#{link_raw}")
     expect(hyperlink("Go to #{link_raw}")).to eql(%(Go to #{link_result}))
   end
 
   it "doesn't match non-URLs" do
-    %w(foo http:// https://).each do |fragment|
+    %w[foo http:// https://].each do |fragment|
       expect(hyperlink(fragment)).to eql fragment
     end
   end
@@ -239,7 +233,7 @@ RSpec.describe ReferenceParser::Url do
   end
 
   xit "doesn't link previously linked" do
-    linked_1 = generate_result('Ruby On Rails', 'http://www.rubyonrails.com')
+    linked_1 = generate_result("Ruby On Rails", "http://www.rubyonrails.com")
     linked_2 = %('<a href="http://www.example.com">www.example.com</a>')
     linked_3 = %('<a href="http://www.example.com" rel="nofollow">www.example.com</a>')
     linked_4 = %('<a href="http://www.example.com"><b>www.example.com</b></a>')
@@ -314,5 +308,4 @@ RSpec.describe ReferenceParser::Url do
       </E>
     XML
   end
-
 end

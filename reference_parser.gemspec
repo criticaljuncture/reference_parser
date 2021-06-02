@@ -3,14 +3,14 @@
 require_relative "lib/reference_parser/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "reference_parser"
-  spec.version       = ReferenceParser::VERSION
-  spec.authors       = [""]
-  spec.email         = [""]
+  spec.name = "reference_parser"
+  spec.version = ReferenceParser::VERSION
+  spec.authors = [""]
+  spec.email = [""]
 
-  spec.summary       = "Common public reference extraction & linking."
-  spec.description   = "Common public reference extraction & linking."
-  spec.homepage      = "https://github.com/criticaljuncture/reference_parser"
+  spec.summary = "Common public reference extraction & linking."
+  spec.description = "Common public reference extraction & linking."
+  spec.homepage = "https://github.com/criticaljuncture/reference_parser"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.4.0")
 
   spec.metadata["allowed_push_host"] = ""
@@ -24,8 +24,8 @@ Gem::Specification.new do |spec|
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{\A(?:test|spec|features)/}) }
   end
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+  spec.bindir = "exe"
+  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activesupport"
@@ -33,7 +33,8 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rspec-html-matchers"
-  spec.add_development_dependency "byebug"    
+  spec.add_development_dependency "byebug"
+  spec.add_development_dependency "standard"
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
