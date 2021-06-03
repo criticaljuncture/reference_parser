@@ -319,7 +319,9 @@ SCENERIOS_CFR = [
       {title: "14", section: "404"},
       {title: "14", section: "413", section_end: "415"},
       {title: "14", section: "417"},
-      {title: "14", section: "420"}]}
+      {title: "14", section: "420"}]},
+    {ex: "41 CFR 50-203, 60-30", citations: [{title: "41", section: "50-203"},
+      {title: "41", section: "60-30"}]}
   ],
 
   "mentioned", [
