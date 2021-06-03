@@ -28,7 +28,7 @@ SCENERIOS_USC = [
   {ex: "23 U.S.C. 107 and 317", citations: [{title: "23", part: "107"}, {title: "23", part: "317"}]},
 
   {ex: "17 U.S.C. 203, 304(c)", citations: [{title: "17", part: "203"}, {title: "17", part: "304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
-  {ex: "17 U.S.C. 203, 304(c) and (d)", citations: [{title: "17", part: "203", expected_url: "https://www.govinfo.gov/link/uscode/17/203"}, {title: "17", part: "304", expected_text: "304(c)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}, {title: "17", part: "304", expected_text: "(d)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
+  {ex: "17 U.S.C. 203, 304(c) and (d)", citations: [{title: "17", part: "203", expected_url: "https://www.govinfo.gov/link/uscode/17/203"}, {title: "17", part: "304", expected_text: "304(c)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}, {title: "17", part: "304", expected_text: "(d)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"}
 ]
 
 RSpec.describe ReferenceParser::Usc do
@@ -63,7 +63,7 @@ RSpec.describe ReferenceParser::Usc do
                 expect(
                   result_html
                 ).to have_tag("a", text: citation[:expected_text], with: {href: citation[:expected_url] || usc_url(citation)})
-              else                
+              else
                 expect(
                   result_html
                 ).to have_tag("a", with: {href: citation[:expected_url] || usc_url(citation)})

@@ -459,7 +459,7 @@ RSpec.describe ReferenceParser::Cfr do
                 expect(references.map { |r| r[:hierarchy] }.compact).to be_empty
               else
                 # verify extracted references (if present)
-                expect(references.map { |r| r[:hierarchy] }.compact).to eq(expected_citation.map { |c| c.except(:expected_url) })
+                expect(references.map { |r| r[:hierarchy].to_h }.compact).to eq(expected_citation.map { |c| c.except(:expected_url) })
 
                 expected_citation.map { |expected_citation| expected_citation[:expected_url] }.compact.each do |expected_url|
                   expect(result_html).to have_tag("a", with: {href: expected_url})
