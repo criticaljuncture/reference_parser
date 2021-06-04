@@ -28,7 +28,27 @@ SCENERIOS_USC = [
   {ex: "23 U.S.C. 107 and 317", citations: [{title: "23", part: "107"}, {title: "23", part: "317"}]},
 
   {ex: "17 U.S.C. 203, 304(c)", citations: [{title: "17", part: "203"}, {title: "17", part: "304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
-  {ex: "17 U.S.C. 203, 304(c) and (d)", citations: [{title: "17", part: "203", expected_url: "https://www.govinfo.gov/link/uscode/17/203"}, {title: "17", part: "304", expected_text: "304(c)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}, {title: "17", part: "304", expected_text: "(d)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"}
+  {ex: "17 U.S.C. 203, 304(c) and (d)", citations: [{title: "17", part: "203", expected_url: "https://www.govinfo.gov/link/uscode/17/203"}, {title: "17", part: "304", expected_text: "304(c)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}, {title: "17", part: "304", expected_text: "(d)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
+
+  {ex: "(15 U.S.C. 78<em>o</em>(b)(11)(A))", text: "15 U.S.C. 78<em>o</em>(b)(11)(A)", citation: {title: "15", part: "78o"}},
+  {ex: "pursuant to section 6(a) of the Act (15 U.S.C. 78f(a)) or a national", text: "15 U.S.C. 78f(a)", citation: {title: "15", part: "78f"}},
+  {ex: "(15 U.S.C. 78<em>o</em>-3(a))", text: "15 U.S.C. 78<em>o</em>-3(a)", citation: {title: "15", part: "78o-3"}},
+
+  {ex: "15 U.S.C. 77c, 77o, 77s, 77z-3, 77sss, 78d, 78d-1, 78d-2, 78o-4, 78w, 78<em>ll</em>(d), 78mm, 80a-37, 80b-11, 7202, and 7211 <em>et seq.,</em> unless otherwise noted. ",
+   citations: %w[77c 77o 77s 77z-3 77sss 78d 78d-1 78d-2 78o-4 78w 78ll 78mm 80a-37 80b-11 7202 7211].map { |part| {title: "15", part: part} }},
+
+  {ex: "Sections 200.27 and 200.30-6 are also issued under 15 U.S.C. 77e, 77f, 77g, 77h, 77j, 77q, 77u, 78e, 78g, 78h, 78i, 78k, 78m, 78o, 78o-4, 78q, 78q-1, 78t-1, 78u, 77hhh, 77uuu, 80a-41, 80b-5, and 80b-9.",
+   citations: %w[77e 77f 77g 77h 77j 77q 77u 78e 78g 78h 78i 78k 78m 78o 78o-4 78q 78q-1 78t-1 78u 77hhh 77uuu 80a-41 80b-5 80b-9].map { |part| {title: "15", part: part} }},
+
+  {ex: "Section 200.30-1 is also issued under 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b) 78<em>l,</em> 78m, 78n, 78<em>o</em>(d).",
+   citations: %w[77f 77g 77h 77j 78c 78l 78m 78n 78o].map { |part| {title: "15", part: part} }},
+
+  {ex: "Section 200.30-3 is also issued under 15 U.S.C. 78b, 78d, 78f, 78k-1, 78q, 78s, and 78eee.",
+   citations: %w[78b 78d 78f 78k-1 78q 78s 78eee].map { |part| {title: "15", part: part} }},
+
+  {ex: "Section 200.30-5 is also issued under 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b), 78<em>l,</em> 78m, 78n, 78o(d), 80a-8, 80a-20, 80a-24, 80a-29, 80b-3, 80b-4.",
+   citations: %w[77f 77g 77h 77j 78c 78l 78m 78n 78o 80a-8 80a-20 80a-24 80a-29 80b-3 80b-4].map { |part| {title: "15", part: part} }}
+
 ]
 
 RSpec.describe ReferenceParser::Usc do

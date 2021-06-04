@@ -4,7 +4,7 @@ module ReferenceParser::HierarchyContainer
   delegate :dig, :values_at, :except, :stringify_keys,
     :[], :"[]=",
     :merge, :merge!, :reverse_merge, :reverse_merge!,
-    :slice,
+    :slice, :delete,
     :inspect, :to_s,
     to: :@data
 

@@ -28,7 +28,7 @@ class ReferenceParser::HierarchyCaptures
       slide_left(:sections, :paragraphs)
     end
 
-    split_lists_into_individual_items(%i[subparts sections paragraphs])
+    split_lists_into_individual_items(%i[parts subparts sections paragraphs])
 
     slide_left(:section, :part_string)
     self
@@ -62,7 +62,7 @@ class ReferenceParser::HierarchyCaptures
   def determine_repeated_capture
     @repeated_capture, @repeated = nil, nil
 
-    to_consider = %i[section subpart paragraph].map { |rank| ["#{rank}s".to_sym, rank] }
+    to_consider = %i[section subpart paragraph part].map { |rank| ["#{rank}s".to_sym, rank] }
 
     to_consider.each_with_index do |rank_keys, index|
       rank_values = @data.values_at(*rank_keys).flatten.select(&:present?)
@@ -77,7 +77,11 @@ class ReferenceParser::HierarchyCaptures
     end
 
     @repeated_capture, @repeated = :none, [""] unless repeated.present?
-    slide_left(:paragraph, :paragraphs) if repeated != :paragraph
+
+    # move repeat captures to normal if not selected (ie paragraph <= paragraphs)
+    to_consider.each do |rank_keys|
+      slide_left(*rank_keys.reverse) if repeated != rank_keys.last
+    end
   end
 
   def loop_captures_for(what)
@@ -114,9 +118,16 @@ class ReferenceParser::HierarchyCaptures
         # split on any list markers, then absorb into values prefering
         # commas to the left and connectors to the right
         any_divider = /(?<split>(?:\s*(?:,|and|or|through)\s*))/ix
-        all_dividers = specific_all_dividers || /(?<split>(?:,|\s+|and|or|through)+)/ix
+        all_dividers = specific_all_dividers || /(?<split>(?:,|\s+|and|or|through|<\/?em>)+)/ix
         trailing_dividers = /and|or|through/ix
-        if (split = clean&.split(any_divider)&.select { |s| s.length > 0 })
+        split = clean&.split(any_divider)&.select { |s| s.length > 0 }
+        if @data[:source] && @data[:source] != :cfr
+          split = split.map do |s|
+            resplit = s.split(/\s+/)
+            resplit.count(&:present?) == 2 ? resplit : s
+          end.flatten
+        end
+        if split.present?
           x = 1
           while x < split.length
             # puts "split x #{x} split #{split}" if @debugging

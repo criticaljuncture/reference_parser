@@ -13,14 +13,14 @@ SCENERIOS_CFR = [
     {ex: "§ 300.19 of this title", citation: {title: "1", chapter: "I", section: "300.19"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "250.10"}, context_specific: true},
     {ex: "part 30 of this chapter", citation: {title: "1", chapter: "I", part: "30"}, context: {title: "1", chapter: "I", part: "20"}, context_specific: true},
     {ex: "part 30, subpart A of this chapter", citation: {title: "1", chapter: "I", part: "30", subpart: "A"}, context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true},
-    {ex: "§ 30.19 of this chapter", citation: {title: "1", chapter: "III", section: "30.19"}, optional: [:chapter], context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true, expected_url: "/current/title-1/section-30.19"}
+    {ex: "§ 30.19 of this chapter", citation: {title: "1", chapter: "I", section: "30.19"}, context: {title: "1", chapter: "I", section: "20.10"}, context_specific: true, expected_url: "/current/title-1/section-30.19"}
   ],
   "DDH table 2-9 (p69/2-51)", [
     {ex: "subpart A of this part", citation: {title: "1", part: "20", subpart: "A"}, context: {title: "1", part: "20", section: "20.5"},
      expected_url: "/current/title-1/part-20/subpart-A", context_specific: true},
     {ex: "§ 20.15", citation: {title: "1", section: "20.15"}, context: {title: "1", section: "20.5"}, context_specific: true},
     {ex: "§ 20.15(a)", citation: {title: "1", section: "20.15", paragraph: "(a)"}, context: {title: "1", section: "20.5"}, context_specific: true},
-    {ex: "Appendix A of this part", citation: {title: "1", part: "20", section: "Appendix A"}, context: {title: "1", part: "20", section: "20.5"}, context_specific: true}
+    {ex: "Appendix A of this part", citation: {title: "1", part: "20", appendix: "Appendix A"}, context: {title: "1", part: "20", section: "20.5"}, context_specific: true}
   ],
   "DDH table 2-10 (p69/2-51)", [
     {ex: "paragraph (b) of this section", text: "paragraph (b)", citation: {title: "1", section: "1", paragraph: "(b)"}, context: {title: "1", section: "1", paragraph: "(a)"}, context_specific: true},
@@ -60,7 +60,7 @@ SCENERIOS_CFR = [
     {ex: "§§ 173.60 through 173.62", citations: [{title: "49", section: "173.60"},
       {title: "49", section: "173.62"}], context: {title: "49", section: "173.1"}, context_specific: true},
 
-    {ex: "subpart C of part 261 of this chapter", citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
+    {ex: "subpart C of part 261 of this chapter", citation: {title: "40", chapter: "I", part: "261", subchapter: "I", subpart: "C"}, context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
      expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
 
     {ex: "36 CFR parts 1252-1258", citation: {title: "36", part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"},
@@ -137,6 +137,7 @@ SCENERIOS_CFR = [
       {title: "17", section: "240.3a51-1", paragraph: "(d)"},
       {title: "17", section: "240.3a51-1", paragraph: "(f)"},
       {title: "17", section: "240.3a51-1", paragraph: "(g)"}], context: {title: "17", chapter: "II", part: "240", section: "240.3a51-1", paragraph: "(e)(2)"}},
+
     # (#8) /current/title-17/section-240.6h-1#p-240.6h-1(b)(3)
     {ex: "paragraph (b)(1) or (b)(2) of this section", citations: [{title: "17", section: "240.6h-1", paragraph: "(b)(1)"},
       {title: "17", section: "240.6h-1", paragraph: "(b)(2)"}], context: {title: "17", chapter: "II", part: "240", section: "240.6h-1", paragraph: "(b)(3)"}},
@@ -165,10 +166,47 @@ SCENERIOS_CFR = [
       {title: "37", section: "201.16", paragraph: "(c)(3)"}], context: {title: "37", chapter: "II", subchapter: "A", part: "201", section: "201.16", paragraph: "(c)(4)"},
      with_surrounding_text: "the Office under paragraphs (c)(1) through (3) of this section"},
 
+    # (#16) /title-37/chapter-II/subchapter-A/part-201#p-201.16(c)(4)
+    {ex: "paragraphs (c)(1)(i)(A) through (E) of this section", citations: [{title: "40", section: "63.3094", paragraph: "(c)(1)(i)(A)"},
+      {title: "40", section: "63.3094", paragraph: "(c)(1)(i)(E)"}], context: {title: "40", section: " 63.3094 ", paragraph: "(c)(1)(i)"},
+     with_surrounding_text: "techniques listed in paragraphs (c)(1)(i)(A) through (E) of this section, or"},
+
     # /current/title-7/subtitle-A/part-9/subpart-A/section-9.4#p-9.4(d)
     {ex: "§ 9.203(a) or (b)", citations: [{title: "7", section: "9.203", paragraph: "(a)"},
       {title: "7", section: "9.203", paragraph: "(b)"}], context: {title: "7", section: "9.4", paragraph: "(d)"},
-     with_surrounding_text: "subject to § 9.203(a) or (b) must file"}
+     with_surrounding_text: "subject to § 9.203(a) or (b) must file"},
+
+    # /current/title-37/chapter-III/subchapter-B/part-350
+    {ex: "parts 351 through 354 of this subchapter", citations: [{title: "37", chapter: "III", subchapter: "C", part: "351"},
+      {title: "37", chapter: "III", subchapter: "C", part: "354"}], context: {title: "37", chapter: "III", subchapter: "C", part: "350"},
+     with_surrounding_text: "procedures set forth in parts 351 through 354 of this subchapter shall govern"},
+
+    {ex: "part 355 of this subchapter", citation: {title: "37", chapter: "III", subchapter: "C", part: "355"}, context: {title: "37", chapter: "III", subchapter: "C", part: "350"}},
+
+    {ex: "§§ 240.15c3-1e(a)(1)(viii)(G), 240.15c3-1e(a)(1)(ix)(C) and (a)(4), 240.18a-1(d)(2), and 240.15c3-1g(b)(1)(i)(H), and (b)(2)(i)(C) of this chapter",
+     citations: [
+       {title: "17", chapter: "II", section: "240.15c3-1e", paragraph: "(a)(1)(viii)(G)"},
+       {title: "17", chapter: "II", section: "240.15c3-1e", paragraph: "(a)(1)(ix)(C)"},
+       {title: "17", chapter: "II", section: "240.15c3-1e", paragraph: "(a)(4)"},
+       {title: "17", chapter: "II", section: "240.18a-1", paragraph: "(d)(2)"},
+       {title: "17", chapter: "II", section: "240.15c3-1g", paragraph: "(b)(1)(i)(H)"},
+       {title: "17", chapter: "II", section: "240.15c3-1g", paragraph: "(b)(2)(i)(C)"}
+     ], context: {title: "17", chapter: "II", part: "200"},
+     with_surrounding_text: "pursuant to §§ 240.15c3-1e(a)(1)(viii)(G), 240.15c3-1e(a)(1)(ix)(C) and (a)(4), 240.18a-1(d)(2), and 240.15c3-1g(b)(1)(i)(H), and (b)(2)(i)(C) of this chapter"},
+
+    {ex: "§§ 240.14e-4(c), 240.14e-5(d), and 240.15c2-11(h) of this chapter",
+     citations: [
+       {title: "17", chapter: "II", section: "240.14e-4", paragraph: "(c)"},
+       {title: "17", chapter: "II", section: "240.14e-5", paragraph: "(d)"},
+       {title: "17", chapter: "II", section: "240.15c2-11", paragraph: "(h)"}
+     ], context: {title: "17", chapter: "II", part: "200.30-3"}},
+
+    # /current/title-7/subtitle-A/part-9/subpart-A/section-9.4#p-9.4(d)
+    {ex: "appendix B of this part",
+     citation: {title: "40", part: "191", appendix: "appendix B"},
+     context: {title: "40", chapter: "I", subchapter: "F", part: "191", section: "191.15", paragraph: "(b)"},
+     with_surrounding_text: "calculated in accordance with appendix B of this part.",
+     expected_url: "/current/title-40/part-191/appendix-Appendix%20B%20to%20Part%20191"}
 
     # {ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"},
     #                                                       {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
@@ -300,7 +338,13 @@ SCENERIOS_CFR = [
     {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: nil, chapter: "I", part: "5", section: "5.9"}},
     {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", chapter: "I", part: "5"}},
     {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", chapter: "I"}},
-    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1"}}
+    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1"}},
+
+    # footnote
+    {ex: '<sup>[<a class="footnote-reference" href="#406.2-footnote-1" id="406.2-footref-1" data-turbolinks="false">1</a>] </sup>', citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}},
+    {ex: "<sup>[<a class='footnote-reference' href='#406.2-footnote-1' id='406.2-footref-1' data-turbolinks='false'>1</a>] </sup>", citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}},
+    {ex: '<sup>[<a class="footnote-reference" href="#406.2-footref-1" data-turbolinks="false">1</a>]</sup>', citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}},
+    {ex: "<sup>[<a class='footnote-reference' href='#406.2-footref-1' data-turbolinks='false'>1</a>]</sup>", citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}}
 
   ],
 

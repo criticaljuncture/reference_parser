@@ -14,7 +14,7 @@ class ReferenceParser::Hierarchy
     if context_expected.include?(:in_suffix)
       RANKS.each do |rank|
         if captures[:suffix]&.downcase&.include?(rank.to_s)
-          result ||= !@data[rank].present? && (!%i[chapter].include?(rank) || !@data[:section].present?)
+          result ||= !@data[rank].present? && (!%i[chapter subchapter].include?(rank) || !@data[:section].present?)
           break if result
         end
       end
@@ -52,6 +52,8 @@ class ReferenceParser::Hierarchy
     slide_right(:prefixed_subpart, :subpart)
     slide_right(:prefixed_paragraph, :paragraph)
 
+    slide_right(:section, :appendix) if /\AAppendix/ix.match?(@data[:section])
+
     if @data[:paragraph].present?
       @data[:paragraph].gsub!(/paragraph\s*/, "")
       @data[:paragraph] = @data[:paragraph].partition("through").first.strip if @data[:paragraph].include?("through")
@@ -66,18 +68,38 @@ class ReferenceParser::Hierarchy
     if %i[section part paragraph].include?(effective_capture) && @data[effective_capture]&.include?("-") && !@data[effective_capture]&.include?(".")
       items = @data[effective_capture].split("-")
       if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
-        puts "cleanup_hierarchy_for_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{@data[effective_capture]}\"" if @debugging
+        puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{@data[effective_capture]}\"" if @debugging
         @data[effective_capture] = items.first.to_s
         @data["#{effective_capture}_end".to_sym] = items.last.to_s
       end
     end
   end
 
-  def normalize_paragraph_ranges(text: nil, previous_citation: nil, captures: {})
+  def normalize_paragraph_ranges(text: nil, previous_citation: nil, captures: {}, processing_a_list: nil)
     return unless previous_citation
     previous_hierarchy = previous_citation[:hierarchy]
-    if ((@data[:paragraph]&.count("(") || 0) == 0) &&
-        (@data[:paragraph]&.include?(".") || ReferenceParser::Guesses.numbers_seem_like_a_range?([@data[:paragraph], @data[:section]].compact))
+
+    # paragraph is section+paragraph?
+    if context[:mixed_paragraph_and_section_list] || (processing_a_list && starts_with_a_section?(@data[:paragraph], section: @data[:section]))
+      context[:mixed_paragraph_and_section_list] = true
+      puts "normalize_paragraph_ranges removing section #{captures[:section]}" if @debugging
+      captures.delete(:section)
+
+      if @data[:section].present? && @data[:paragraph]&.start_with?(@data[:section])
+        puts "normalize_paragraph_ranges removing section prefix from paragraph #{@data[:paragraph]} #{@data[:section]}" if @debugging
+        @data[:paragraph].delete_prefix!(@data[:section])
+      else
+        original_section = @data[:section]
+        @data.delete(:section)
+        repartition(:section, "(", :paragraph)
+        @data[:section] = previous_hierarchy[:section] || original_section unless @data[:section].present?
+        puts "normalize_paragraph_ranges replacing section #{@data[:section]}" if @debugging
+      end
+    end
+
+    # paragraph is section?
+    move_paragraph_to_section = ((@data[:paragraph]&.count("(") || 0) == 0) && (@data[:paragraph]&.include?(".") || ReferenceParser::Guesses.numbers_seem_like_a_range?([@data[:paragraph], @data[:section]].compact))
+    if move_paragraph_to_section
       # this seems like the list has jumped back up to sections
       @data[:section] = @data[:paragraph]
       @data.delete(:paragraph)
@@ -98,10 +120,17 @@ class ReferenceParser::Hierarchy
     end
 
     # paragraphs rolled up into sections
-    if captures[:rolled_up_paragraphs] && @data[:section]&.start_with?("(") && !@data[:paragraph] && previous_citation.dig(:hierarchy, :section)&.include?("(")
+    allow_rollup = captures[:rolled_up_paragraphs] || (captures[:source] != :cfr)
+    if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] && previous_citation.dig(:hierarchy, :section)&.include?("(")
       slide_right(:section, :paragraph)
       @data[:section] = previous_citation.dig(:hierarchy, :section).partition("(").first
     end
+  end
+
+  def starts_with_a_section?(paragraph, section: nil)
+    return unless paragraph.present?
+    match = /^A[\d[a-z].\-]+/.match(@data[:paragraph])
+    match || (section && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
   end
 
   def to_href_hierarchy(expected: {})
@@ -117,21 +146,30 @@ class ReferenceParser::Hierarchy
         unless expected[:section]
           @data[:part] = part_section
           @data.delete(:section)
-          puts "cleanup_hierarchy_for_href deleting section" if @debugging
+          puts "cleanup_for_href deleting section" if @debugging
         end
       end
     end
 
     @data[:paragraph].gsub!(/\s*\(last\s*sentence\)\s*/ix, "") if @data[:paragraph].present?
 
+    drop_whitespace_and_italics(:part)
     drop_whitespace_and_italics(:paragraph)
+    drop_whitespace_and_italics(:section)
+
+    @data[:part].tr!(",", "") if @data[:part].present?
+    @data[:section].tr!(",", "") if @data[:section].present?
+
+    if @data[:appendix].present?
+      @data[:appendix] = "#{@data[:appendix]} to Part #{@data[:part]}".gsub(" ", "%20").gsub("appendix", "Appendix")
+    end
 
     # from match 12 CFR § 275.206(a)(3)-3 expecting "/on/2021-05-17/title-12/section-275.206(a)(3)-3"
     slide_left(:section, :paragraph) if @data[:paragraph]&.include?("-")
 
     slide_right(:paragraph, :sublocators) # url uses "sublocators"
 
-    puts "cleanup_hierarchy_for_href #{self}" if @debugging
+    puts "cleanup_for_href #{self}" if @debugging
 
     self
   end
@@ -153,8 +191,21 @@ class ReferenceParser::Hierarchy
         (@data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?) &&
         !@data[:section].present? && !results.include?(:section) &&
         (!context_expected.include?(:section) ||
-        context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("chapter"))
+        context_expected.include?(:in_suffix) && !captures[:suffix]&.downcase&.include?("subchapter") && captures[:suffix]&.downcase&.include?("chapter"))
       results << :chapter
+    end
+
+    if context[:chapter] && !@data[:chapter].present? &&
+        context_expected.include?(:in_suffix) && !captures[:suffix]&.downcase&.include?("subchapter") && captures[:suffix]&.downcase&.include?("chapter")
+      results << :chapter
+    end
+
+    if context[:subchapter] && !@data[:subchapter].present? &&
+        (@data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?) &&
+        !@data[:section].present? && !results.include?(:section) &&
+        (!context_expected.include?(:section) ||
+        context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("subchapter"))
+      results << :subchapter
     end
 
     results << :part if context[:part] && !@data[:part].present? &&

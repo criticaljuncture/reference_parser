@@ -11,7 +11,7 @@ class ReferenceParser::Usc < ReferenceParser::Base
 
   def clean_up_named_captures(captures, options: {})
     puts "ReferenceParser::Usc clean_up_named_captures captures #{captures}" if @debugging
-    captures.reverse_merge!(captures[:hierarchy]) if captures[:hierarchy].present?
+    captures.reverse_merge!(captures[:href_hierarchy] || captures[:hierarchy]) if captures[:href_hierarchy].present? || captures[:hierarchy].present?
     captures[:part] = captures[:section] if !captures[:part] && captures[:section]
     captures[:part] = captures[:chapter] + "01" if !captures[:part] && captures[:chapter]
     captures[:part] = captures[:part].partition("(").first if captures[:part]&.include?("(")
