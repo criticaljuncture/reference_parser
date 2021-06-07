@@ -43,12 +43,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # simple digits patterns that could match the next title
   NEXT_TITLE_STOP = /
     (?!\s*(?:
-        C\.?F\.?R|
-        U\.?S\.?C|
-        F\.?R\.?
+        C\.?F\.?R| # CFR
+        U\.?S\.?C| # USC
+        F\.?R\.?|  # FR
+        \/         # dates
     ))/ix
 
-  TRAILING_BOUNDRY = /(?!\.?\d)/ix # don't stop mid-number
+  TRAILING_BOUNDRY = /(?!\.?\d|\/)/ix # don't stop mid-number or date
 
   CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?)?\s*)/ix
   CHAPTER = /(?<chapter>#{CHAPTER_ID})/ixo
@@ -62,7 +63,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   PARTS = /
     (?<parts>
       (?:
-        (?:\s|,|and|or|through|-)+
+        (?:\s|,|and|or|through|-|(?:\s*part\s*))+
         (?:\d+)
       )+
     )

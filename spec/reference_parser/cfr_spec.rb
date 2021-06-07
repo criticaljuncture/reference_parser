@@ -206,10 +206,15 @@ SCENERIOS_CFR = [
      citation: {title: "40", part: "191", appendix: "appendix B"},
      context: {title: "40", chapter: "I", subchapter: "F", part: "191", section: "191.15", paragraph: "(b)"},
      with_surrounding_text: "calculated in accordance with appendix B of this part.",
-     expected_url: "/current/title-40/part-191/appendix-Appendix%20B%20to%20Part%20191"}
+     expected_url: "/current/title-40/part-191/appendix-Appendix%20B%20to%20Part%20191"},
 
-    # {ex: "part 121 or part 135 of this chapter",citations:[{title: "40", chapter: "I", part: "121"},
-    #                                                       {title: "40", chapter: "I", part: "135"}], optional: [:chapter], context: {title: "40", chapter: "I", subchapter: "A", part: "1", section: "1.1"}, },
+    {ex: "part 121 or part 135 of this chapter", citations: [{title: "40", chapter: "I", subchapter: "A", part: "121"},
+      {title: "40", chapter: "I", subchapter: "A", part: "135"}], context: {title: "40", chapter: "I", subchapter: "A", part: "1", section: "1.1"}},
+
+    # avoid grabbing trailing date
+    {ex: "40 CFR 273.13, 273.33, and 273.52",
+     citations: [{title: "40", section: "273.13"}, {title: "40", section: "273.33"}, {title: "40", section: "273.52"}],
+     with_surrounding_text: "40 CFR 273.13, 273.33, and 273.52, 6/7/2021"}
 
   ],
 
@@ -375,8 +380,10 @@ SCENERIOS_CFR = [
     {ex: "subtitle B of this title", citation: {title: "2", subtitle: "B"}, context: {title: "2", part: "1", section: "220"},
      with_surrounding_text: "agency regulations in subtitle B of this title and/or in policy and", expected_url: "/current/title-2/subtitle-B"},
 
-    # {ex: "46 CFR chapter I, subchapters F and J", citation: {title: "46", chapter: "I", subchapter: "F"}, context: {title: "46", part: "39", section: "39.1009"},
-    #   with_surrounding_text: "the requirements of 46 CFR chapter I, subchapters F and J apply", expected_url: "/current/title-46/chapter-I/subchapter-F"},
+    # {ex: "46 CFR chapter I, subchapters F and J", citations: [{title: "46", chapter: "I"},
+    #   {title: "46", chapter: "I", subchapter: "F"},
+    #   {title: "46", chapter: "I", subchapter: "J"}], context: {title: "46", part: "39", section: "39.1009"},
+    #  with_surrounding_text: "the requirements of 46 CFR chapter I, subchapters F and J apply", expected_url: "/current/title-46/chapter-I/subchapter-F"},
 
     {ex: "26 CFR 1.1311(a)-1", citation: {title: "26", section: "1.1311(a)-1"}, context: {title: "17", part: "200", section: "800"},
      expected_url: "/current/title-26/section-1.1311(a)-1"},

@@ -54,6 +54,9 @@ class ReferenceParser::Hierarchy
 
     slide_right(:section, :appendix) if /\AAppendix/ix.match?(@data[:section])
 
+    # drop list duplicated labels
+    @data[:part]&.gsub!(/\s*part\s*/ix, "")
+
     if @data[:paragraph].present?
       @data[:paragraph].gsub!(/paragraph\s*/, "")
       @data[:paragraph] = @data[:paragraph].partition("through").first.strip if @data[:paragraph].include?("through")
@@ -203,7 +206,7 @@ class ReferenceParser::Hierarchy
     if context[:subchapter] && !@data[:subchapter].present? &&
         (@data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?) &&
         !@data[:section].present? && !results.include?(:section) &&
-        (!context_expected.include?(:section) ||
+        ((!context_expected.include?(:section) && !context_expected.include?(:chapter)) ||
         context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("subchapter"))
       results << :subchapter
     end
