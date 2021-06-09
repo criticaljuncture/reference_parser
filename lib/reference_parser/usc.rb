@@ -1,11 +1,10 @@
 class ReferenceParser::Usc < ReferenceParser::Base
-
   replace(/section\s*(?<section>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{ReferenceParser::Cfr::USC_LABEL}/ixo)
   replace(/chapter\s*(?<chapter>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{ReferenceParser::Cfr::USC_LABEL}/ixo)
   replace(/(?<irc_label>#{ReferenceParser::Cfr::IRC_LABEL})(?<section_label>\s*§\s*)(?<section>\d+)/ixo) # I.R.C. § 6212
 
   def url(citation, url_options = {})
-    return unless citation&.values_at(*%i[title part])&.all?(&:present?)
+    return unless citation&.values_at(:title, :part)&.all?(&:present?)
     "https://www.govinfo.gov/link/uscode/#{citation[:title]}/#{citation[:part]}"
   end
 

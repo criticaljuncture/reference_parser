@@ -369,8 +369,12 @@ SCENERIOS_CFR = [
     {ex: ">9.400 Scope of subpart.<", citation: :expect_none, html_appearance: :expect_none, context: {title: "48", section: "9.400"}},
 
     # (#20)
-    {ex: ">§ 20.510 Fraud or false statements", citation: :expect_none, html_appearance: :expect_none, context: {title: "43", section: "20.510"}}
+    {ex: ">§ 20.510 Fraud or false statements", citation: :expect_none, html_appearance: :expect_none, context: {title: "43", section: "20.510"}},
 
+    {ex: "Section 744.9 of the EAR imposes", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
+    {ex: "See § 734.2(a) of the EAR for items", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
+    {ex: "See §§ 742.6 and 746.3 of the EAR", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
+    {ex: "See § 740.11(b)(1) of the EAR for the definition of 'agency of the U.S. Government' and § 740.11(c)(1) for the definition of 'agency of a cooperating government.'", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}}
   ],
 
   "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1

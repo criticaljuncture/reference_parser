@@ -229,10 +229,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ix, if: :context_present?, context_expected: %i[title part])
 
   LIKELY_EXTERNAL_SECTIONS = /
-    of\s*
-    (?:the|those)
-    (?:[\s,a-z]{0,128})
-    (?:Act|Amendments|Code|regulations)
+      of\s*
+      (?:the|those)
+      (?:
+          \s*EAR |
+        (?:
+          (?:[\s,a-z]{0,128})
+          (?:Act|Amendments|Code|regulations)
+        )
+      )
     /ix
 
   # loose section
@@ -524,43 +529,43 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def qualify_match(captures, results: nil)
-    result = true
+    issue = nil
     # return false if /\A\s*\[Reserved\]/ix =~ captures[:post_match]
-    if captures[:pattern_slug] == :loose_section && !captures[:section_label].include?("§")
-
+    if captures[:pattern_slug] == :loose_section
       puts "qualify_match captures[:post_match] #{captures[:post_match]}" if @debugging
       match = LIKELY_EXTERNAL_SECTIONS.match(captures[:post_match])
-
       if match
-        result = false
+        issue = :direct_match
       end
-      if result
+      unless issue
         potential_danger = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
 
         # previously identified as unrelated
-        result = false if (@accumulated_context & potential_danger).present?
+        if (@accumulated_context & potential_danger).present?
+          issue = :context_match
+        end
 
         # fails to match common formatting
-        result = false unless potential_danger.detect { |r| r.include?(".") }
-
-        @accumulated_context.concat(potential_danger).uniq!
-
+        if potential_danger.present? && !potential_danger.detect { |r| r.include?(".") }
+          issue = :formating
+        end
       end
-      unless result
+      if issue
         @accumulated_context.concat(captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)).uniq!
+        puts "qualify_match @accumulated_context #{@accumulated_context}" if @debugging
       end
     end
-    puts "qualify_match #{result}" if @debugging && !result
-    result
+    puts "qualify_match #{issue}" if @debugging && issue
+    !issue
   end
 
   def citation_source_for(captures = {})
     source = nil
     if captures[:source_label]&.present?
       if USC_LABEL.match?(captures[:source_label]) || IRC_LABEL.match?(captures[:source_label])
-        source = :usc 
+        source = :usc
       elsif (FR_LABEL =~ captures[:source_label]) && !(CFR_LABEL =~ captures[:source_label])
-        source = :federal_register 
+        source = :federal_register
       end
     end
     captures[:source] = source if source
