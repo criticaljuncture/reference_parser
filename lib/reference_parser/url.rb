@@ -15,7 +15,7 @@ class ReferenceParser::Url < ReferenceParser::Base
   end
 
   def url(citation, url_options = {})
-    citation[:url] || "#{url_options[:default_scheme] || "https"}://#{citation[:url_without_scheme]}"
+    citation[:url] || "#{url_options[:default_scheme] || "http"}://#{citation[:url_without_scheme]}"
   end
 
   def clean_up_named_captures(captures, options: {})

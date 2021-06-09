@@ -214,7 +214,18 @@ SCENERIOS_CFR = [
     # avoid grabbing trailing date
     {ex: "40 CFR 273.13, 273.33, and 273.52",
      citations: [{title: "40", section: "273.13"}, {title: "40", section: "273.33"}, {title: "40", section: "273.52"}],
-     with_surrounding_text: "40 CFR 273.13, 273.33, and 273.52, 6/7/2021"}
+     with_surrounding_text: "40 CFR 273.13, 273.33, and 273.52, 6/7/2021"},
+
+    # (#20)
+    {ex: "31 CFR chapter IX § 901.1", text: "31 CFR chapter IX § 901.1", citation: {title: "31", chapter: "IX", section: "901.1"}, context: {title: "29", section: "100.609"}},
+
+    # (#20)
+    {ex: "1 CFR part 51", citations: [{title: "5", section: "552", paragraph: "(a)"}, {title: "1", part: "51"}], context: {title: "39", section: "20.1"},
+     with_surrounding_text: "5 U.S.C. 552(a) and 1 CFR part 51."},
+
+    # (#20)
+    {ex: "5 CFR part 2634, subpart J", citation: {title: "5", part: "2634", subpart: "J"}, context: {title: "43", section: "20.602"},
+     with_surrounding_text: "See 5 CFR part 2634, subpart J."}
 
   ],
 
@@ -286,24 +297,24 @@ SCENERIOS_CFR = [
      with_surrounding_text: "<h8>§§ 240.3a4-2-240.3a4-6   [Reserved]</h8>"},
 
     # don't link paragraph identifiers
-    {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"},
+    {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "14", section: "1266.102(c)"},
      with_surrounding_text: '<div id="p-1266.102(c)"></div>'},
 
-    {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "14", section: "1266.102(c)"},
+    {ex: "1266.102(c)", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "14", section: "1266.102(c)"},
      with_surrounding_text: "<div id='p-1266.102(c)'></div>"},
 
     # don't link section identifiers
-    {ex: '<div class="section" id="1.100">...</div>', context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"}},
-    {ex: "<div class='section' id='1.100'>...</div>", context_specific: true, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.100"}},
+    {ex: '<div class="section" id="1.100">...</div>', context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.100"}},
+    {ex: "<div class='section' id='1.100'>...</div>", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.100"}},
 
-    {ex: "section 1506 of title 44, United States Code", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "1.1"},
+    {ex: "section 1506 of title 44, United States Code", options: {only: [:cfr]}, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.1"},
      with_surrounding_text: "established under section 1506 of title 44, United States Code"},
 
-    {ex: "Section 1258.14", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", section: "3.3"},
+    {ex: "Section 1258.14", citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "3.3"},
      with_surrounding_text: "them. Section 1258.14 of those regulations"},
 
     # (#10) avoid USC §
-    {ex: "5 U.S.C. § 5584", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"},
+    {ex: "5 U.S.C. § 5584", options: {only: [:cfr]}, citation: :expect_none, html_appearance: :expect_none, context: {title: "31", part: "5"},
      with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver"},
 
     {ex: "5 U.S.C. § 5584", options: {only: [:cfr, :usc]}, citation: {title: "5", section: "5584"}, context: {title: "31", part: "5"},
@@ -312,7 +323,7 @@ SCENERIOS_CFR = [
     {ex: "5 U.S.C. § 5584", options: {only: [:usc]}, citation: {title: "5", section: "5584"}, context: {title: "31", part: "5"},
      with_surrounding_text: "a. 5 U.S.C. § 5584 authorizes the waiver", expected_url: "https://www.govinfo.gov/link/uscode/5/5584"},
 
-    {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:cfr]}, citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"},
+    {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:cfr]}, citation: :expect_none, html_appearance: :expect_none, context: {title: "31", part: "5"},
      with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", expected_url: "https://www.govinfo.gov/link/uscode/5/5514"},
 
     {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:cfr, :usc]}, citation: {title: "5", section: "5514", paragraph: "(a)(2)(D)"}, context: {title: "31", part: "5"},
@@ -321,35 +332,44 @@ SCENERIOS_CFR = [
     {ex: "5 U.S.C. § 5514(a)(2)(D)", options: {only: [:usc]}, citation: {title: "5", section: "5514", paragraph: "(a)(2)(D)"}, context: {title: "31", part: "5"},
      with_surrounding_text: "under 5 U.S.C. § 5514(a)(2)(D) for a hearing", expected_url: "https://www.govinfo.gov/link/uscode/5/5514"},
 
-    # {ex: "", citation: :expect_none, html_appearace: :expect_none, context: {title: "31", part: "5"},
+    # {ex: "", citation: :expect_none, html_appearance: :expect_none, context: {title: "31", part: "5"},
     #  with_surrounding_text: "The General Accounting Office Act of 1996 (Pub. L. 104-316), Title I, § 103(d), enacted October 19, 1996", },
 
     # (future) inter-section
-    {ex: "section 4471 of the Internal Revenue Code", citation: :expect_none, html_appearace: :expect_none, context: {title: "26", section: "43.0-1"},
+    {ex: "section 4471 of the Internal Revenue Code", citation: :expect_none, html_appearance: :expect_none, context: {title: "26", section: "43.0-1"},
      with_surrounding_text: "transportation by water imposed by section 4471 of the Internal Revenue Code."},
 
-    {ex: "section 3", citation: :expect_none, html_appearace: :expect_none, context: {title: "8", section: "101", paragraph: "(d)"},
+    {ex: "section 3", citation: :expect_none, html_appearance: :expect_none, context: {title: "8", section: "101", paragraph: "(d)"},
      with_surrounding_text: "Asiatic zone defined in section 3 of the Act of February 5, 1917"},
 
-    {ex: "section 104(d)", citation: :expect_none, html_appearace: :expect_none, context: {title: "40", section: "223.2", paragraph: "(a)"},
+    {ex: "section 104(d)", citation: :expect_none, html_appearance: :expect_none, context: {title: "40", section: "223.2", paragraph: "(a)"},
      with_surrounding_text: "proceedings under section 104(d) of the Marine Protection, Research, and Sanctuaries Act of 1972, as amended (33 [IGNORE USC] 1414(d)), to revise, revoke or limit the terms and conditions of any permit issued pursuant to section 102 of the Act. Section 104(d) provides that"},
 
     # incomplete context / invalid link generation
-    {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {title: nil, chapter: "I"}},
-    {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {chapter: "I"}},
-    {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {}},
-    {ex: "chapter II of this title", citation: :expect_none, html_appearace: :expect_none, context: {a: "b"}},
+    {ex: "chapter II of this title", citation: :expect_none, html_appearance: :expect_none, context: {title: nil, chapter: "I"}},
+    {ex: "chapter II of this title", citation: :expect_none, html_appearance: :expect_none, context: {chapter: "I"}},
+    {ex: "chapter II of this title", citation: :expect_none, html_appearance: :expect_none, context: {}},
+    {ex: "chapter II of this title", citation: :expect_none, html_appearance: :expect_none, context: {a: "b"}},
 
-    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: nil, chapter: "I", part: "5", section: "5.9"}},
-    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", chapter: "I", part: "5"}},
-    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1", chapter: "I"}},
-    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearace: :expect_none, context: {title: "1"}},
+    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearance: :expect_none, context: {title: nil, chapter: "I", part: "5", section: "5.9"}},
+    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearance: :expect_none, context: {title: "1", chapter: "I", part: "5"}},
+    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearance: :expect_none, context: {title: "1", chapter: "I"}},
+    {ex: "paragraph (b) of this section", citation: :expect_none, html_appearance: :expect_none, context: {title: "1"}},
 
     # footnote
-    {ex: '<sup>[<a class="footnote-reference" href="#406.2-footnote-1" id="406.2-footref-1" data-turbolinks="false">1</a>] </sup>', citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}},
-    {ex: "<sup>[<a class='footnote-reference' href='#406.2-footnote-1' id='406.2-footref-1' data-turbolinks='false'>1</a>] </sup>", citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}},
-    {ex: '<sup>[<a class="footnote-reference" href="#406.2-footref-1" data-turbolinks="false">1</a>]</sup>', citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}},
-    {ex: "<sup>[<a class='footnote-reference' href='#406.2-footref-1' data-turbolinks='false'>1</a>]</sup>", citation: :expect_none, html_appearace: :expect_none, context: {title: "29", section: "406.2"}}
+    {ex: '<sup>[<a class="footnote-reference" href="#406.2-footnote-1" id="406.2-footref-1" data-turbolinks="false">1</a>] </sup>', citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "406.2"}},
+    {ex: "<sup>[<a class='footnote-reference' href='#406.2-footnote-1' id='406.2-footref-1' data-turbolinks='false'>1</a>] </sup>", citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "406.2"}},
+    {ex: '<sup>[<a class="footnote-reference" href="#406.2-footref-1" data-turbolinks="false">1</a>]</sup>', citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "406.2"}},
+    {ex: "<sup>[<a class='footnote-reference' href='#406.2-footref-1' data-turbolinks='false'>1</a>]</sup>", citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "406.2"}},
+
+    # (#20)
+    {ex: "(3 CFR, 1980 Comp., pp. 409-412)", citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "100.603"}},
+
+    # (#20)
+    {ex: ">9.400 Scope of subpart.<", citation: :expect_none, html_appearance: :expect_none, context: {title: "48", section: "9.400"}},
+
+    # (#20)
+    {ex: ">§ 20.510 Fraud or false statements", citation: :expect_none, html_appearance: :expect_none, context: {title: "43", section: "20.510"}}
 
   ],
 
@@ -533,7 +553,7 @@ RSpec.describe ReferenceParser::Cfr do
             result_html_text = Nokogiri::HTML.parse(result_html).text
 
             expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:text] || example[:ex]).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none])
-            expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearace] == :expect_none
+            expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearance] == :expect_none
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 
             if expected_citation == [:expect_none]

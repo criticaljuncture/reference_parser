@@ -8,10 +8,10 @@ HTML_FRAGMENT = <<-HTML
 HTML
 
 SCENERIOS_URL = [
-  {ex: "<p>https://a.local www.b.local</p>", result: "<p><a href='https://a.local' class='external'>https://a.local</a> <a href='https://www.b.local' class='external'>www.b.local</a></p>"},
+  {ex: "<p>https://a.local www.b.local</p>", result: "<p><a href='https://a.local' class='external'>https://a.local</a> <a href='http://www.b.local' class='external'>www.b.local</a></p>"},
   {ex: "<img src='https://images.null.local/AB01CD23.456/original.gif'/>", result: :no_change},
-  {ex: "visit www.example.com", result: "visit <a href='https://www.example.com' class='external'>www.example.com</a>"},
-  {ex: "visit www.example.com.", result: "visit <a href='https://www.example.com' class='external'>www.example.com</a>."},
+  {ex: "visit www.example.com", result: "visit <a href='http://www.example.com' class='external'>www.example.com</a>"},
+  {ex: "visit www.example.com.", result: "visit <a href='http://www.example.com' class='external'>www.example.com</a>."},
   {ex: HTML_FRAGMENT, result: :no_change}
 ]
 
@@ -121,7 +121,7 @@ RSpec.describe ReferenceParser::Url do
     expect(hyperlink(%(Go to #{link_raw}.))).to eql(%(Go to #{link_result}.))
 
     link2_raw = "www.rubyonrails.com"
-    link2_result = generate_result(link2_raw, "https://#{link2_raw}")
+    link2_result = generate_result(link2_raw, "http://#{link2_raw}")
     expect(hyperlink("Go to #{link2_raw}")).to eql(%(Go to #{link2_result}))
     expect(hyperlink("<p>Link #{link2_raw}</p>")).to eql(%(<p>Link #{link2_result}</p>))
     expect(hyperlink("<p>#{link2_raw} Link</p>")).to eql(%(<p>#{link2_result} Link</p>))
@@ -183,7 +183,7 @@ RSpec.describe ReferenceParser::Url do
 
   it "handles www2 URLs" do
     link_raw = "www2.ed.gov"
-    link_result = generate_result(link_raw, "https://#{link_raw}")
+    link_result = generate_result(link_raw, "http://#{link_raw}")
     expect(hyperlink("Go to #{link_raw}")).to eql(%(Go to #{link_result}))
   end
 

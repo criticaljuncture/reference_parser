@@ -47,8 +47,27 @@ SCENERIOS_USC = [
    citations: %w[78b 78d 78f 78k-1 78q 78s 78eee].map { |part| {title: "15", part: part} }},
 
   {ex: "Section 200.30-5 is also issued under 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b), 78<em>l,</em> 78m, 78n, 78o(d), 80a-8, 80a-20, 80a-24, 80a-29, 80b-3, 80b-4.",
-   citations: %w[77f 77g 77h 77j 78c 78l 78m 78n 78o 80a-8 80a-20 80a-24 80a-29 80b-3 80b-4].map { |part| {title: "15", part: part} }}
+   citations: %w[77f 77g 77h 77j 78c 78l 78m 78n 78o 80a-8 80a-20 80a-24 80a-29 80b-3 80b-4].map { |part| {title: "15", part: part} }},
 
+  # (#20)
+  {ex: "defined under 47 U.S.C. 1428(a) and 47 U.S.C. 1442(f).",
+   citations: [{title: "47", part: "1428"}, {title: "47", part: "1442"}], context: {title: "47", section: "500.2"}},
+
+  # (#20)
+  {ex: "pursuant to 5 U.S.C. 552a(g) and the right",
+   citations: [{title: "5", part: "552a"}], context: {title: "5", section: "1630.14"}},
+
+  # (#20)
+  {ex: "5 U.S.C. 552(a)", citation: {title: "5", part: "552"}, context: {title: "39", section: "20.1"},
+   with_surrounding_text: "5 U.S.C. 552(a) and 1 CFR part 51."},
+
+  # (#20)
+  {ex: "Code (26 U.S.C.).", citation: :expect_none},
+
+  # (#20)
+  {ex: "I.R.C. § 6212", citation: {title: "26", part: "6212"}, context: {title: "48", section: "9.406-2"},
+   with_surrounding_text: "under I.R.C. § 6212, which entitles"},
+  
 ]
 
 RSpec.describe ReferenceParser::Usc do
@@ -65,33 +84,28 @@ RSpec.describe ReferenceParser::Usc do
     SCENERIOS_USC.each do |scenerio|
       [scenerio[:ex]].flatten.each do |example|
         it example.to_s do
-          result_html = ReferenceParser.new(only: :usc).hyperlink(example, default: {target: nil, class: nil})
+          result_html = ReferenceParser.new.hyperlink(example, default: {target: nil, class: nil})
 
           citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
 
-          if citations == 1
-
-            expect(
-              result_html
-            ).to have_tag("a", text: scenerio[:text] || example,
-                               with: {href: citation[:expected_url] || usc_url(citation)})
-
-          else
-
-            citations.each do |citation|
-              if citation[:expected_text]
-                expect(
-                  result_html
-                ).to have_tag("a", text: citation[:expected_text], with: {href: citation[:expected_url] || usc_url(citation)})
-              else
-                expect(
-                  result_html
-                ).to have_tag("a", with: {href: citation[:expected_url] || usc_url(citation)})
-              end
+          citations.each do |citation|
+            next if citation == :expect_none
+            if citation[:expected_text]
+              expect(
+                result_html
+              ).to have_tag("a", text: citation[:expected_text], with: {href: citation[:expected_url] || usc_url(citation)})
+            else
+              expect(
+                result_html
+              ).to have_tag("a", with: {href: citation[:expected_url] || usc_url(citation)})
             end
+          end
 
+          citations.delete(:expect_none)
+          if citations.present?
             expect(result_html).to have_tag("a", count: citations.count)
-
+          else
+            expect(result_html).to_not have_tag("a")
           end
         end
       end

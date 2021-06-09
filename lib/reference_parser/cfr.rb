@@ -15,15 +15,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   CFR_LABEL = /C\.?\s*F\.?\s*R\.?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
+  IRC_LABEL = /I(?:nternal)?\.?\s*R(?:evenue)?\.?\s*C(?:ode)?\.?/ix
   FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
 
-  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL})\s*)/ixo
+  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL})\s*)/ixo
   SOURCE_LABEL_CFR = /(?<source_label>\s*#{CFR_LABEL}\s*)/ixo
-  SOURCE_LABEL_NON_CFR = /(?<source_label>\s*(?:#{USC_LABEL}|#{FR_LABEL})\s*)/ixo
+  SOURCE_LABEL_NON_CFR = /(?<source_label>\s*(?:#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL})\s*)/ixo
 
-  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|\/)\s*)/ixo
+  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL}|\/)\s*)/ixo
   SOURCE_LABEL_ALLOW_SHORTHAND_CFR = /(?<source_label>\s*(?:#{CFR_LABEL}|\/)\s*)/ixo
-  SOURCE_LABEL_ALLOW_SHORTHAND_NON_CFR = /(?<source_label>\s*(?:#{USC_LABEL}|#{FR_LABEL}|\/)\s*)/ixo
+  SOURCE_LABEL_ALLOW_SHORTHAND_NON_CFR = /(?<source_label>\s*(?:#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL}|\/)\s*)/ixo
 
   TITLE_SOURCE = /(?<title>#{TITLE_ID})#{SOURCE_LABEL}/ixo
   TITLE_SOURCE_CFR = /(?<title>#{TITLE_ID})#{SOURCE_LABEL_CFR}/ixo
@@ -46,6 +47,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         C\.?F\.?R| # CFR
         U\.?S\.?C| # USC
         F\.?R\.?|  # FR
+        I\.?R\.?C| # IRC
+        Comp\.|
         \/         # dates
     ))/ix
 
@@ -305,15 +308,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
             (?<section_label>\s*§\s*)?
             (?<sections>
               (?:
-                (?: <em>|<\/em>|,|-|\s*through\s*|\s*and\s*)*
-
+                (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|-|\s*through\s*|\s*and\s*)*
                 (?:
-                  \s*\d+ |
-                  [a-z]{1,5} |
+                  \s*\d+(?:[a-z]{1,5})? |
                   \(\s*\d+\s*\) |
                   \(\s*[a-z]{1,5}\s*\) |
                 )
                 ([a-z]{1,5}-\d+)?
+                #{NEXT_TITLE_STOP}
               )+
             )
             #{TRAILING_BOUNDRY}
@@ -330,6 +332,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?<prefixed_paragraph_suffix>\s*of\s*)
     )?
     #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
+    (?:(?<chapter_label>chapter\s*)(?<chapter>[A-Z]+\s*)(?<section_label>§?\s*))?
     #{SECTIONS}
     (?<paragraphs>#{PARAGRAPH_UNLABELLED}
       (?:\s*and\s*#{PARAGRAPH_UNLABELLED})?
@@ -343,7 +346,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, _) {
     return unless context[:section].present? && context[:section].include?(".") && (context[:section].length > 3)
     /
-    (?<!=(?:'|"|\#)|=(?:'|"|\#)p-|§\s|\#)                          # properly labelled can be matched by non-context pattern, avoid tags
+    (?<!=(?:'|"|\#)|=(?:'|"|\#)p-|>|§\s|\#)           # properly labelled can be matched by non-context pattern, avoid tags
     (?<section>#{Regexp.escape(context[:section])})   # current section anchor
     (?<paragraph>
       #{PARAGRAPH}
@@ -554,8 +557,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def citation_source_for(captures = {})
     source = nil
     if captures[:source_label]&.present?
-      source = :usc if USC_LABEL.match?(captures[:source_label])
-      source = :federal_register if (FR_LABEL =~ captures[:source_label]) && !(CFR_LABEL =~ captures[:source_label])
+      if USC_LABEL.match?(captures[:source_label]) || IRC_LABEL.match?(captures[:source_label])
+        source = :usc 
+      elsif (FR_LABEL =~ captures[:source_label]) && !(CFR_LABEL =~ captures[:source_label])
+        source = :federal_register 
+      end
     end
     captures[:source] = source if source
     source

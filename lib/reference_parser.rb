@@ -29,7 +29,7 @@ class ReferenceParser
     perform(text) do |parser, citation|
       original_text = citation[:text]
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default))
-      yield(citation) if block
+      yield(citation) if block && (citation[:link] != citation[:text])
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default)) if citation[:text] != original_text
       citation[:link]
     end
@@ -60,7 +60,7 @@ class ReferenceParser
   private
 
   def default_parser_types
-    %i[usc cfr federal_register executive_order public_law patent email url]
+    %i[usc email cfr federal_register executive_order public_law patent url]
   end
 
   def new_parser(parser_type)

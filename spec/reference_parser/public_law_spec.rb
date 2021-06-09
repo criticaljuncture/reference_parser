@@ -7,7 +7,9 @@ SCENERIOS_PL = [
   {ex: ["Public Law 107-295",
     "Pub. Law 107-295",
     "Pub. L. 107-295",
-    "P.L. 107-295"], citation: {congress: 107, law: 295}}
+    "P.L. 107-295"], citation: {congress: 107, law: 295}},
+
+  {ex: "phone number 202-693-0126 or e-mailed", citation: :expect_none}
 ]
 
 RSpec.describe ReferenceParser::PublicLaw do
@@ -24,10 +26,16 @@ RSpec.describe ReferenceParser::PublicLaw do
     SCENERIOS_PL.each do |scenerio|
       [scenerio[:ex]].flatten.each do |example|
         it example.to_s do
-          expect(
-            ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})
-          ).to have_tag("a", text: scenerio[:text] || example,
-                             with: {href: public_law_url(scenerio[:citation])})
+          if scenerio[:citation] == :expect_none
+            expect(
+              ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})
+            ).to_not have_tag("a")
+          else
+            expect(
+              ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})
+            ).to have_tag("a", text: scenerio[:text] || example,
+                               with: {href: public_law_url(scenerio[:citation])})
+          end
         end
       end
     end

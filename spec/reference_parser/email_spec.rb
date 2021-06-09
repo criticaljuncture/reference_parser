@@ -3,7 +3,9 @@ require "spec_helper"
 SCENERIOS_EMAIL = [
   {ex: "part by email to <em>FOIA@example.local</em> or in writing ", text: "FOIA@example.local", href: "mailto:FOIA@example.local"},
   {ex: "email at <em>ogis@example.local,</em> or via the telephone", text: "ogis@example.local", href: "mailto:ogis@example.local"},
-  {ex: "contact robot@example.com", result: "contact <a href='mailto:robot@example.com' class='email'>robot@example.com</a>"}
+  {ex: "contact robot@example.com", result: "contact <a href='mailto:robot@example.com' class='email'>robot@example.com</a>"},
+  {ex: "or e-mailed to OLMS-TransitGrant@dol.gov.", result: "or e-mailed to <a href='mailto:OLMS-TransitGrant@dol.gov' class='email'>OLMS-TransitGrant@dol.gov</a>."}
+
 ]
 
 RSpec.describe ReferenceParser::Email do

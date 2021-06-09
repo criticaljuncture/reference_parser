@@ -19,6 +19,9 @@ class ReferenceParser::HierarchyCaptures
     # normalize captures & discard empty groups
     @data = named_captures.select { |k, v| v }.symbolize_keys
 
+    # eject trailing period
+    repartition(@data.keys.last, ".", :suffix_unlinked) if @data[@data.keys.last].to_s&.end_with?(".")
+
     # cleanup
     slide_right(:paragraph, :suffix) if only_whitespace?(:paragraph)
     slide_right(:sections, :section) if @data[:sections] && !@data[:section] && !(LIST_DESIGNATORS =~ @data[:sections])
