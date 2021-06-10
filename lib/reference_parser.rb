@@ -14,6 +14,7 @@ class ReferenceParser
   def initialize(only: nil, except: [], options: {})
     parser_types = [(only || options[:only] || default_parser_types)].flatten - except
     @options = options
+    @timeout = @options.delete(:timeout) || 20
     @debugging = false
     @parsers, @dependencies = parsers_for(parser_types)
     @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }
@@ -95,8 +96,7 @@ class ReferenceParser
   def perform(text, options: {}, &block)
     replacements = replacements_for(@options)
     return text || "" unless text && replacements.present?
-
-    Timeout.timeout(20) do
+    Timeout.timeout(@timeout) do
       text = replace_patterns(text, replacements: replacements, options: options, &block)
     end
 
