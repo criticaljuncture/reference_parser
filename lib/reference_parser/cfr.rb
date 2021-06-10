@@ -156,10 +156,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   SECTION = /(?<section>#{SECTION_UNLABELLED})/ixo
 
+  JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|through)\s*/ixo
+
   SECTIONS = /
     (?<sections>
       (
-        (\s*(?!CFR)(,|(,\s*|)and|(,\s*|)or|through)\s*)? # join
+        (?:#{JOIN})?
         #{SECTION_UNLABELLED}                         # additional sections
       )+
     )
@@ -168,7 +170,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBPARTS = /
     (?<subparts>
       (
-        (\s*(?!CFR)(,|(,\s*|)and|(,\s*|)or|through)\s*)?   # join
+        (?:#{JOIN})?
         #{SUBPART_ID}                                   # additional sections
       )+
     )

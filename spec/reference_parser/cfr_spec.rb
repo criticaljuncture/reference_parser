@@ -225,7 +225,11 @@ SCENERIOS_CFR = [
 
     # (#20)
     {ex: "5 CFR part 2634, subpart J", citation: {title: "5", part: "2634", subpart: "J"}, context: {title: "43", section: "20.602"},
-     with_surrounding_text: "See 5 CFR part 2634, subpart J."}
+     with_surrounding_text: "See 5 CFR part 2634, subpart J."},
+
+    # (#20) trailing orem
+    {ex: "5 CFR part 2634, subpart J", citation: {title: "5", part: "2634", subpart: "J"}, context: {title: "43", section: "20.602"},
+     with_surrounding_text: "Lo See 5 CFR part 2634, subpart J. orem ipsum"},
 
   ],
 
@@ -522,8 +526,7 @@ RSpec.describe ReferenceParser::Cfr do
           example[:index] = index
           it "(#{index}) #{example[:ex].truncate(24)}" do
             # embed example in text
-            i = rand(lorem.length)
-            text = lorem[0..i] << " " << (example[:with_surrounding_text] || example[:ex]) << " " << lorem[i..] << "."
+            text = lorem[0..16] << " " << (example[:with_surrounding_text] || example[:ex]) << " " << lorem[18..] << "."
             expected_citation = [example[:citation], example[:citations]].flatten.compact.map do |target|
               target.respond_to?(:except) ? target.except(*example[:optional]) : target
             end
