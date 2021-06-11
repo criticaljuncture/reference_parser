@@ -1,5 +1,5 @@
 class ReferenceParser::HierarchyCaptures
-  LIST_DESIGNATORS = /,|or|and|through/ix
+  LIST_DESIGNATORS = /,|or|and|through|to/ix
 
   LIST_EXAMPLES = /
     (<em>)?\s*Examples?\s*.                           # required example text
@@ -31,7 +31,7 @@ class ReferenceParser::HierarchyCaptures
       slide_left(:sections, :paragraphs)
     end
 
-    split_lists_into_individual_items(%i[parts subparts sections paragraphs])
+    split_lists_into_individual_items(%i[prefixed_paragraphs parts subparts sections paragraphs])
 
     slide_left(:section, :part_string)
     self
@@ -65,7 +65,7 @@ class ReferenceParser::HierarchyCaptures
   def determine_repeated_capture
     @repeated_capture, @repeated = nil, nil
 
-    to_consider = %i[section subpart paragraph part].map { |rank| ["#{rank}s".to_sym, rank] }
+    to_consider = %i[prefixed_paragraph section subpart paragraph part].map { |rank| ["#{rank}s".to_sym, rank] }
 
     to_consider.each_with_index do |rank_keys, index|
       rank_values = @data.values_at(*rank_keys).flatten.select(&:present?)
@@ -105,48 +105,51 @@ class ReferenceParser::HierarchyCaptures
 
   private
 
-  def split_lists_into_individual_items(keys, simple: false)
+  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|and|or|through/ixo
+  # LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|and|or/ixo
+
+  # dividers that should be kept with the subsequent item
+  TRAILING_DIVIDERS = /and|or|to|through/ix
+  # TRAILING_DIVIDERS = /and|or|to/ix
+
+  ANY_DIVIDER = /(?<split>(?:\s*(?:#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS})\s*))/ix
+
+  # patterns to indicate if an entire value is composed of dividers (ie in the list ["item a", " and ", "item b"] the middle value should match to be merged)
+  ALL_DIVIDERS = /\A(?<split>(?:\s+|#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS}|<\/?em>)+)\z/ixo
+  ALL_DIVIDERS_IN_PARAGRAPH = /\A(?<split>(\s+|#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS}|#{LIST_EXAMPLES})+)\z/ixo # skipping "examples" for the moment
+
+  def split_lists_into_individual_items(keys)
     keys.each do |key|
       original = @data[key]
       next unless original.present?
       clean = @data[key].dup
 
-      specific_all_dividers = nil
-      specific_all_dividers = /(?<split>(,|\s+|and|or|through|#{LIST_EXAMPLES})+)/ixo if key == :paragraphs
-
-      if simple
-        # look-behind includes match in split (instead of discarding)
-        clean[key] = clean[key]&.split(/(?<=(?:,|through|or|and))/)
-      else
-        # split on any list markers, then absorb into values prefering
-        # commas to the left and connectors to the right
-        any_divider = /(?<split>(?:\s*(?:,|and|or|through)\s*))/ix
-        all_dividers = specific_all_dividers || /(?<split>(?:,|\s+|and|or|through|<\/?em>)+)/ix
-        trailing_dividers = /and|or|through/ix
-        split = clean&.split(any_divider)&.select { |s| s.length > 0 }
-        if @data[:source] && @data[:source] != :cfr
-          split = split.map do |s|
-            resplit = s.split(/\s+/)
-            resplit.count(&:present?) == 2 ? resplit : s
-          end.flatten
-        end
-        if split.present?
-          x = 1
-          while x < split.length
-            # puts "split x #{x} split #{split}" if @debugging
-            if /\A#{all_dividers}\z/i.match?(split[x]) # only list cruft
-              if (split[x] =~ trailing_dividers) && (x < (split.length - 1))
-                split[x + 1] = split[x] + split[x + 1]
-              else
-                split[x - 1] = split[x - 1] + split[x]
-              end
-              split.delete_at(x)
+      # split on any list markers, then absorb lone makers back into neighbors prefering
+      # trailing dividers to the right and the remainder (commas, etc) to the left
+      split = clean&.split(ANY_DIVIDER)&.select { |s| s.length > 0 }
+      if @data[:source] && @data[:source] != :cfr
+        split = split.map do |s|
+          resplit = s.split(/\s+/)
+          resplit.count(&:present?) == 2 ? resplit : s
+        end.flatten
+      end
+      if split.present?
+        all_dividers = key == :paragraphs ? ALL_DIVIDERS_IN_PARAGRAPH : ALL_DIVIDERS
+        x = 1
+        while x < split.length
+          puts "split x #{x} split #{split}" if @debugging
+          if all_dividers.match?(split[x]) # only list cruft
+            if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1))
+              split[x + 1] = split[x] + split[x + 1]
             else
-              x += 1
+              split[x - 1] = split[x - 1] + split[x]
             end
+            split.delete_at(x)
+          else
+            x += 1
           end
-          @data[key] = split if split.count > 1
         end
+        @data[key] = split if split.count > 1
       end
       if @debugging
         puts "split_lists_into_individual_items \"#{original}\" into \"#{@data[key]}\"" if @debugging && original != @data[key]

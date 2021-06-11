@@ -54,15 +54,26 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   TRAILING_BOUNDRY = /(?!\.?\d|\/)/ix # don't stop mid-number or date
 
+  JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
+
   CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?)?\s*)/ix
   CHAPTER = /(?<chapter>#{CHAPTER_ID})/ixo
   SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(?:ap(?:ter)?)?\s*)/ix
   SUBCHAPTER = /(?<subchapter>#{SUBCHAPTER_ID})/ixo
+
   SUBPART_LABEL = /(?<subpart_label>,?\s*subparts?\s*)/ix
   SUBPART = /(?<subpart>#{SUBPART_ID})/ixo
+  SUBPARTS = /
+    (?<subparts>
+      (
+        (?:#{JOIN})?
+        #{SUBPART_ID}
+      )+
+    )
+    /ixo
+
   PART_LABEL = /(?<part_label>\s*Part\s*)/ix
   PART = /(?<part>#{PART_ID})/ixo
-
   PARTS = /
     (?<parts>
       (?:
@@ -98,6 +109,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       )
     )
     /ixo
+
+  PREFIXED_PARAGRAPHS = /
+  (?<prefixed_paragraphs>                          # list of paragraphs
+    (?:
+      (?:\s*and\s*)?
+      #{PARAGRAPH_UNLABELLED_REQUIRED}
+    )*
+  )
+  /ixo
 
   # empty connection option intentional for paragraphs directly following section
   PARAGRAPHS_OPTIONAL = /
@@ -156,22 +176,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   SECTION = /(?<section>#{SECTION_UNLABELLED})/ixo
 
-  JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|through)\s*/ixo
-
   SECTIONS = /
     (?<sections>
       (
         (?:#{JOIN})?
         #{SECTION_UNLABELLED}                         # additional sections
-      )+
-    )
-    /ixo
-
-  SUBPARTS = /
-    (?<subparts>
-      (
-        (?:#{JOIN})?
-        #{SUBPART_ID}                                   # additional sections
       )+
     )
     /ixo
@@ -223,12 +232,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   replace(/
     (?:
-      (?<subpart_label>\s*subpart\s*)(?<subpart>[A-Z]+) # subpart
+      (?<subpart_label>\s*subparts?\s*)#{SUBPARTS}
       |
       (?<section>(?<appendix_label>\s*appendix\s*)[A-Z]+) # appendix
     )
     (?<suffix>\s*of\s*this\s*part)                    # of this part
-    /ix, if: :context_present?, context_expected: %i[title part])
+    /ixo, if: :context_present?, context_expected: %i[title part])
 
   LIKELY_EXTERNAL_SECTIONS = /
       of\s*
@@ -247,9 +256,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(/
     (?<![>"'§])                                       # avoid matching start of tag for section header
     (?:
-      (?<prefixed_paragraph_label>paragraph\s*)
-      (?<prefixed_paragraph>#{PARAGRAPH_UNLABELLED})
-      (?<prefixed_paragraph_suffix>\s*of\s*)
+      (?<prefixed_paragraph_label>paragraphs?\s*)
+      #{PREFIXED_PARAGRAPHS}
+      (?<prefixed_paragraph_suffix>\s*(?:of|in)\s*)
     )?
     (?<section_label>(§+|section)\s*)#{SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}
@@ -334,16 +343,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, options) {
     /
     (?:
-      (?<prefixed_paragraph_label>paragraph\s*)
-      (?<prefixed_paragraph>#{PARAGRAPH_UNLABELLED})
-      (?<prefixed_paragraph_suffix>\s*of\s*)
+      (?<prefixed_paragraph_label>paragraphs?\s*)
+      #{PREFIXED_PARAGRAPHS}
+      (?<prefixed_paragraph_suffix>\s*(?:of|in)\s*)
     )?
     #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
     (?:(?<chapter_label>chapter\s*)(?<chapter>[A-Z]+\s*)(?<section_label>§?\s*))?
     #{SECTIONS}
-    (?<paragraphs>#{PARAGRAPH_UNLABELLED}
-      (?:\s*and\s*#{PARAGRAPH_UNLABELLED})?
-    )
+    #{PARAGRAPHS_OPTIONAL_LIST}
     #{TRAILING_BOUNDRY}
     /ix
   }, prepend_pattern: true)

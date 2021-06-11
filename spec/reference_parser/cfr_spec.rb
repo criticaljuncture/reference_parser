@@ -216,6 +216,24 @@ SCENERIOS_CFR = [
      citations: [{title: "40", section: "273.13"}, {title: "40", section: "273.33"}, {title: "40", section: "273.52"}],
      with_surrounding_text: "40 CFR 273.13, 273.33, and 273.52, 6/7/2021"},
 
+    # (#19)
+    {ex: "subpart C, D, E, or G of this part", citations: [{title: "19", part: "206", subpart: "C"},
+      {title: "19", part: "206", subpart: "D"},
+      {title: "19", part: "206", subpart: "E"},
+      {title: "19", part: "206", subpart: "G"}], context: {title: "19", part: "206", section: "206.5"}},
+
+    # (#19)
+    {ex: "Paragraphs (a) and (b) in § 206.3", citations: [{title: "19", section: "206.3", paragraph: "(a)"},
+      {title: "19", section: "206.3", paragraph: "(b)"}], context: {title: "19", part: "206", section: "206.64"}},
+
+    # (#19) subdivision (i) of this subparagraph /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR632c5067a0ebd91#p-1.562-1(b)(1)(ii)(a)
+    # (#19) see (c) of this subdivision (ii)     /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR632c5067a0ebd91#p-1.562-1(b)(2)(ii)(b)(3)
+    # (#19) subparagraph (4) of this paragraph   /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR0fae723d7dddcf0#p-1.582-1(e)(1)(ii)
+
+    # (#19)
+    {ex: "§§ 101.8 to 101.15", citation: {title: "29", section: "101.8", section_end: "101.15"}, context: {title: "29", section: "101.36"},
+     with_surrounding_text: "outlined in §§ 101.8 to 101.15, inclusive."},
+
     # (#20)
     {ex: "31 CFR chapter IX § 901.1", text: "31 CFR chapter IX § 901.1", citation: {title: "31", chapter: "IX", section: "901.1"}, context: {title: "29", section: "100.609"}},
 
@@ -231,6 +249,17 @@ SCENERIOS_CFR = [
     {ex: "5 CFR part 2634, subpart J", citation: {title: "5", part: "2634", subpart: "J"}, context: {title: "43", section: "20.602"},
      with_surrounding_text: "Lo See 5 CFR part 2634, subpart J. orem ipsum"},
 
+    {ex: "29 CFR 102.119(a), (b), (c), (d), (e), and (f)", citations: [{title: "29", section: "102.119", paragraph: "(a)"},
+      {title: "29", section: "102.119", paragraph: "(b)"},
+      {title: "29", section: "102.119", paragraph: "(c)"},
+      {title: "29", section: "102.119", paragraph: "(d)"},
+      {title: "29", section: "102.119", paragraph: "(e)"},
+      {title: "29", section: "102.119", paragraph: "(f)"}], context: {title: "29", section: "102.119"},
+     with_surrounding_text: "and from 29 CFR 102.119(a), (b), (c), (d), (e), and (f), insofar as the system"},
+
+    # # table of local references /current/title-26/section-1.704-1
+    # {ex: "1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>)", citation: {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>k</em>)(<em>3</em>)"}, context: {title: "26", section: "1.704-1"},
+    #  with_surrounding_text: '<td class="align-left">1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>) </td>'}
   ],
 
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1

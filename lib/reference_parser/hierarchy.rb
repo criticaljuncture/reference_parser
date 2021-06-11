@@ -68,12 +68,14 @@ class ReferenceParser::Hierarchy
   def cleanup_list_ranges_if_needed!(repeated_capture: :section, processing_a_list: nil)
     effective_capture = repeated_capture
     effective_capture = :part if effective_capture == :section && !@data[effective_capture]
-    if %i[section part paragraph].include?(effective_capture) && @data[effective_capture]&.include?("-") && !@data[effective_capture]&.include?(".")
-      items = @data[effective_capture].split("-")
+    value = @data[effective_capture]
+    puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
+    if %i[section part paragraph].include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !value&.include?(".")))
+      items = value.split(/\bto\b|-|through/)
       if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
-        puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{@data[effective_capture]}\"" if @debugging
-        @data[effective_capture] = items.first.to_s
-        @data["#{effective_capture}_end".to_sym] = items.last.to_s
+        puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
+        @data[effective_capture] = items.first.to_s.strip
+        @data["#{effective_capture}_end".to_sym] = items.last.to_s.strip
       end
     end
   end
@@ -231,6 +233,7 @@ class ReferenceParser::Hierarchy
       elsif expected[:part]
         # take section if missing part & expecting it
         slide_left(:part, :section)
+        slide_left(:part_end, :section_end)
       end
     end
   end

@@ -106,26 +106,17 @@ RSpec.describe ReferenceParser do
       )
     end
 
-    it "for Search suggestions" do
-      query_params = {"date" => "2021-05-18", "per_page" => 50, "query" => "17 CFR 240.11a1-1(T)"}
-
-      results = []
-      ReferenceParser.new.each(query_params["query"]) do |citation|
-        results << {"type" => "cfr_citation",
-                    "summary" => citation[:text],
-                    "hierarchy" => citation[:hierarchy].stringify_keys}
-      end
-
-      expect(results).to eql(
-        [{"type" => "cfr_citation", "summary" => "17 CFR 240.11a1-1(T)", "hierarchy" => {"title" => "17", "section" => "240.11a1-1(T)"}}]
+    it "provides best-guess suggestions" do
+      expect(
+        ReferenceParser.cfr_best_guess_hierarchy("17 CFR 240.11a1-1(T)")
+      ).to eql(
+        {title: "17", section: "240.11a1-1(T)"}
       )
     end
 
-    it "for Admin entry" do
-      params = {freeform_text_entry_value: "40 CFR 273.13, 273.33, and 273.52"}
-
+    it "allows plucking values" do
       results = []
-      ReferenceParser.new.each(params[:freeform_text_entry_value]) do |citation|
+      ReferenceParser.new.each("40 CFR 273.13, 273.33, and 273.52") do |citation|
         results << citation[:hierarchy].slice(*%i[title part subpart section])
       end
 
@@ -134,14 +125,14 @@ RSpec.describe ReferenceParser do
       )
     end
 
-    it "to call a block for CFR references" do
+    it "allows simple transformation" do
       x = 0
       expect(
-        ReferenceParser.new.each("apple 42 CFR 273 banana 40 CFR 273.13, 273.33, and 273.52 cherry") do |citation|
+        ReferenceParser.new.each("Lorem ipsum dolor 42 CFR 273 sit amet, consectetur 40 CFR 273.13, 273.33, and 273.52 adipiscing elit.") do |citation|
           citation[:link] = "(link_#{citation.dig(:hierarchy, :title)}_#{x += 1})"
         end
       ).to eql(
-        "apple (link_42_1) banana (link_40_2), (link_40_3), and (link_40_4) cherry"
+        "Lorem ipsum dolor (link_42_1) sit amet, consectetur (link_40_2), (link_40_3), and (link_40_4) adipiscing elit."
       )
     end
   end

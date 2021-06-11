@@ -49,6 +49,10 @@ SCENERIOS_USC = [
   {ex: "Section 200.30-5 is also issued under 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b), 78<em>l,</em> 78m, 78n, 78o(d), 80a-8, 80a-20, 80a-24, 80a-29, 80b-3, 80b-4.",
    citations: %w[77f 77g 77h 77j 78c 78l 78m 78n 78o 80a-8 80a-20 80a-24 80a-29 80b-3 80b-4].map { |part| {title: "15", part: part} }},
 
+  # (#19)
+  {ex: "5 U.S.C. 552a(b)(1) through (11)",
+   citations: [{title: "5", part: "552a"}, {title: "5", part: "552a"}], context: {title: "29", section: "102.18"}},
+
   # (#20)
   {ex: "defined under 47 U.S.C. 1428(a) and 47 U.S.C. 1442(f).",
    citations: [{title: "47", part: "1428"}, {title: "47", part: "1442"}], context: {title: "47", section: "500.2"}},
