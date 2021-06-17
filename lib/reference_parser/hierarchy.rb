@@ -208,7 +208,7 @@ class ReferenceParser::Hierarchy
     if context[:subchapter] && !@data[:subchapter].present? &&
         (@data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?) &&
         !@data[:section].present? && !results.include?(:section) &&
-        ((!context_expected.include?(:section) && !context_expected.include?(:chapter)) ||
+        ((!context_expected.include?(:section) && (!context_expected.include?(:chapter) && !results.include?(:chapter))) ||
         context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("subchapter"))
       results << :subchapter
     end

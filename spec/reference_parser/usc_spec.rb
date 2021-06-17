@@ -50,8 +50,25 @@ SCENERIOS_USC = [
    citations: %w[77f 77g 77h 77j 78c 78l 78m 78n 78o 80a-8 80a-20 80a-24 80a-29 80b-3 80b-4].map { |part| {title: "15", part: part} }},
 
   # (#19)
+  {ex: "5 U.S.C. 552a(k)(2)",
+   citation: {title: "5", part: "552a"}, context: {title: "29", section: "102.119"}},
+
+  # (#19)
   {ex: "5 U.S.C. 552a(b)(1) through (11)",
    citations: [{title: "5", part: "552a"}, {title: "5", part: "552a"}], context: {title: "29", section: "102.18"}},
+
+  # (#19) no results for https://www.govinfo.gov/link/uscode/5/3
+  # {ex: "5 U.S.C. App. 3", citation: {title: "5", part: "3"}, context: {title: "39", part: "221"}},
+
+  # (#19)
+  {ex: "Internal Revenue Code section 402A(d)(2)", citation: {title: "26", part: "402A"}, context: {title: "5", part: "1605.31"}},
+
+  # (#19)
+  {ex: "I.R.C. section 402(g)", citation: {title: "26", part: "402"}, context: {title: "5", part: "1605.11"}},
+
+  # (#19)
+  {ex: "5 U.S.C. 5312, 5313, 5314, 5315 or 5316",
+   citations: [{title: "5", part: "5312"}, {title: "5", part: "5313"}, {title: "5", part: "5314"}, {title: "5", part: "5315"}, {title: "5", part: "5316"}], context: {title: "5", section: "1603.3", paragraph: "(b)(2)"}},
 
   # (#20)
   {ex: "defined under 47 U.S.C. 1428(a) and 47 U.S.C. 1442(f).",

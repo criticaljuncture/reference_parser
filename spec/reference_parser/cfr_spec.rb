@@ -60,7 +60,7 @@ SCENERIOS_CFR = [
     {ex: "§§ 173.60 through 173.62", citations: [{title: "49", section: "173.60"},
       {title: "49", section: "173.62"}], context: {title: "49", section: "173.1"}, context_specific: true},
 
-    {ex: "subpart C of part 261 of this chapter", citation: {title: "40", chapter: "I", part: "261", subchapter: "I", subpart: "C"}, context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
+    {ex: "subpart C of part 261 of this chapter", citation: {title: "40", chapter: "I", part: "261", subpart: "C"}, context: {title: "40", chapter: "I", subchapter: "I", part: "273", subpart: "G", section: "273.81"},
      expected_url: "/current/title-40/part-261/subpart-C"}, # expanded as: /current/title-40/chapter-I/subchapter-I/part-261/subpart-C
 
     {ex: "36 CFR parts 1252-1258", citation: {title: "36", part: "1252", part_end: "1258"}, context: {title: "1", chapter: "I", subchapter: "A", part: "3", section: "3.3"},
@@ -208,8 +208,8 @@ SCENERIOS_CFR = [
      with_surrounding_text: "calculated in accordance with appendix B of this part.",
      expected_url: "/current/title-40/part-191/appendix-Appendix%20B%20to%20Part%20191"},
 
-    {ex: "part 121 or part 135 of this chapter", citations: [{title: "40", chapter: "I", subchapter: "A", part: "121"},
-      {title: "40", chapter: "I", subchapter: "A", part: "135"}], context: {title: "40", chapter: "I", subchapter: "A", part: "1", section: "1.1"}},
+    {ex: "part 121 or part 135 of this chapter", citations: [{title: "40", chapter: "I", part: "121"},
+      {title: "40", chapter: "I", part: "135"}], context: {title: "40", chapter: "I", subchapter: "A", part: "1", section: "1.1"}},
 
     # avoid grabbing trailing date
     {ex: "40 CFR 273.13, 273.33, and 273.52",
@@ -257,9 +257,12 @@ SCENERIOS_CFR = [
       {title: "29", section: "102.119", paragraph: "(f)"}], context: {title: "29", section: "102.119"},
      with_surrounding_text: "and from 29 CFR 102.119(a), (b), (c), (d), (e), and (f), insofar as the system"},
 
+    {ex: "part 17 of this chapter", citation: {title: "1", chapter: "I", part: "17"}, context: {title: "1", chapter: "I", subchapter: "A", part: "1", section: "1.1"}}
+
     # # table of local references /current/title-26/section-1.704-1
     # {ex: "1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>)", citation: {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>k</em>)(<em>3</em>)"}, context: {title: "26", section: "1.704-1"},
     #  with_surrounding_text: '<td class="align-left">1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>) </td>'}
+
   ],
 
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1

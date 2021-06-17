@@ -10,6 +10,7 @@ class ReferenceParser::Base
     @debugging = debugging
     @dependency = false
     @options = options&.[](slug) || {}
+    @validation_and_persistence = @options.delete(:validation_and_persistence)
     @accumulated_context = []
   end
 

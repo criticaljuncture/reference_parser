@@ -324,7 +324,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
             (?<section_label>\s*§\s*)?
             (?<sections>
               (?:
-                (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|-|\s*through\s*|\s*and\s*)*
+                (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|-|\s*through\s*|\s*and\s*|\s*or\s*)*
                 (?:
                   \s*\d+(?:[a-z]{1,5})? |
                   \(\s*\d+\s*\) |
@@ -533,6 +533,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
 
     return :skip unless qualify_match(captures, results: results)
+    validate_and_persist(context: options[:context], references: results) if @validation_and_persistence
 
     results
   end
@@ -579,6 +580,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
     captures[:source] = source if source
     source
+  end
+
+  def validate_and_persist(context: nil, references: nil)
+    references = references.select { |r| !r[:source] || (r[:source] == :cfr) }
+    return unless references.present?
+    @validation_and_persistence&.persist(context: context, references: references)
   end
 
   def normalize_options(options)
