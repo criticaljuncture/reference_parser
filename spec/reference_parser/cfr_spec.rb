@@ -410,7 +410,14 @@ SCENERIOS_CFR = [
     {ex: "Section 744.9 of the EAR imposes", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
     {ex: "See § 734.2(a) of the EAR for items", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
     {ex: "See §§ 742.6 and 746.3 of the EAR", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
-    {ex: "See § 740.11(b)(1) of the EAR for the definition of 'agency of the U.S. Government' and § 740.11(c)(1) for the definition of 'agency of a cooperating government.'", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}}
+    {ex: "See § 740.11(b)(1) of the EAR for the definition of 'agency of the U.S. Government' and § 740.11(c)(1) for the definition of 'agency of a cooperating government.'", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", section: "774"}},
+
+    # typo resulting in title zero
+    {ex: "Central Mass Intrastate Area (See 4r0 CFR 81.142)", citation: :expect_none, html_appearance: :expect_none, context: {title: "40", section: "52.1127"}},
+
+    # corrupted text
+    {ex: "The regulati2 CFR 200.3332 CFR 200.3332 CFR 200.33356 FR 37004, Aug. 2, 1991", citation: :expect_none, html_appearance: :expect_none, context: {title: "23", section: "635.601"}}
+
   ],
 
   "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1

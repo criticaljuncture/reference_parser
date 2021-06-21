@@ -1,4 +1,7 @@
 class ReferenceParser::Cfr < ReferenceParser::Base
+  MAX_EXPECTED_CFR_TITLE = 50
+  MAX_EXPECTED_FR_TITLE = 999
+
   def link_options(citation)
     {class: "cfr external"}
   end
@@ -352,6 +355,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}
     #{TRAILING_BOUNDRY}
+    #{NEXT_TITLE_STOP}
     /ix
   }, prepend_pattern: true)
 
@@ -565,8 +569,22 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         puts "qualify_match @accumulated_context #{@accumulated_context}" if @debugging
       end
     end
+
+    if !captures[:source] || (captures[:source] == :cfr)
+      issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_CFR_TITLE)
+    elsif captures[:source] == :federal_register
+      issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)
+    end
+
     puts "qualify_match #{issue}" if @debugging && issue
     !issue
+  end
+
+  def enforce_title_range(title, min: nil, max: nil)
+    if title.present?
+      title_value = title.to_i
+      :invalid_title if (min && (title_value < min)) || (max && (title_value > max))
+    end
   end
 
   def citation_source_for(captures = {})
