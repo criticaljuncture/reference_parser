@@ -13,7 +13,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   CHAPTER_ID = /[IVXLCDM0-9]+/ix
   SUBCHAPTER_ID = /[A-Z]+[-_]?[A-Z]*/ix
   PART_ID = /\w+[\-–—]?\w*/ix
-  SUBPART_ID = /\w+[\w.\-–—]*\w*/ix
+  SUBPART_ID = /\w{1,4}[\w\.\-–—]{0,6}(?:suspended)?|ECFR[0-9A-Z]{15,16}/ix # constraint /\w+[\w.\-–—]*\w*/ix
   SECTION_ID = /[\w\-]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C\.?\s*F\.?\s*R\.?/ix
@@ -67,12 +67,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   SUBPART_LABEL = /(?<subpart_label>,?\s*subparts?\s*)/ix
   SUBPART = /(?<subpart>#{SUBPART_ID})/ixo
+
   SUBPARTS = /
     (?<subparts>
-      (
-        (?:#{JOIN})?
+      #{SUBPART_ID}
+      (?:        
+        (?:#{JOIN})
         #{SUBPART_ID}
-      )+
+      )*
     )
     /ixo
 
@@ -182,7 +184,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   SECTIONS = /
     (?<sections>
-      (
+      (?:
         (?:#{JOIN_SECTION})?
         #{SECTION_UNLABELLED}                         # additional sections
       )+
