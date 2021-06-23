@@ -57,7 +57,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   TRAILING_BOUNDRY = /(?!\.?\d|\/)/ix # don't stop mid-number or date
 
-  JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
+  JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|through)\s*/ixo
+  JOIN_SECTION = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
 
   CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?)?\s*)/ix
   CHAPTER = /(?<chapter>#{CHAPTER_ID})/ixo
@@ -182,7 +183,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SECTIONS = /
     (?<sections>
       (
-        (?:#{JOIN})?
+        (?:#{JOIN_SECTION})?
         #{SECTION_UNLABELLED}                         # additional sections
       )+
     )

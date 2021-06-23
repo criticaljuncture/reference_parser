@@ -12,8 +12,8 @@ class ReferenceParser
   class ParseTimeout < StandardError; end
 
   def initialize(only: nil, except: [], options: {})
-    parser_types = [(only || options[:only] || default_parser_types)].flatten - except
-    @options = options
+    @options = options || {}
+    parser_types = [(only || @options[:only] || default_parser_types)].flatten - except
     @timeout = @options.delete(:timeout) || 20
     @debugging = false
     @parsers, @dependencies = parsers_for(parser_types)
