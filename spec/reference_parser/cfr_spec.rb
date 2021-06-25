@@ -20,7 +20,7 @@ SCENERIOS_CFR = [
      expected_url: "/current/title-1/part-20/subpart-A", context_specific: true},
     {ex: "§ 20.15", citation: {title: "1", section: "20.15"}, context: {title: "1", section: "20.5"}, context_specific: true},
     {ex: "§ 20.15(a)", citation: {title: "1", section: "20.15", paragraph: "(a)"}, context: {title: "1", section: "20.5"}, context_specific: true},
-    {ex: "Appendix A of this part", citation: {title: "1", part: "20", appendix: "Appendix A"}, context: {title: "1", part: "20", section: "20.5"}, context_specific: true}
+    {ex: "Appendix A of this part", citation: {title: "1", part: "20", appendix: "A"}, context: {title: "1", part: "20", section: "20.5"}, context_specific: true}
   ],
   "DDH table 2-10 (p69/2-51)", [
     {ex: "paragraph (b) of this section", text: "paragraph (b)", citation: {title: "1", section: "1", paragraph: "(b)"}, context: {title: "1", section: "1", paragraph: "(a)"}, context_specific: true},
@@ -203,7 +203,7 @@ SCENERIOS_CFR = [
 
     # /current/title-7/subtitle-A/part-9/subpart-A/section-9.4#p-9.4(d)
     {ex: "appendix B of this part",
-     citation: {title: "40", part: "191", appendix: "appendix B"},
+     citation: {title: "40", part: "191", appendix: "B"},
      context: {title: "40", chapter: "I", subchapter: "F", part: "191", section: "191.15", paragraph: "(b)"},
      with_surrounding_text: "calculated in accordance with appendix B of this part.",
      expected_url: "/current/title-40/part-191/appendix-Appendix%20B%20to%20Part%20191"},
@@ -257,11 +257,73 @@ SCENERIOS_CFR = [
       {title: "29", section: "102.119", paragraph: "(f)"}], context: {title: "29", section: "102.119"},
      with_surrounding_text: "and from 29 CFR 102.119(a), (b), (c), (d), (e), and (f), insofar as the system"},
 
-    {ex: "part 17 of this chapter", citation: {title: "1", chapter: "I", part: "17"}, context: {title: "1", chapter: "I", subchapter: "A", part: "1", section: "1.1"}}
+    {ex: "part 17 of this chapter", citation: {title: "1", chapter: "I", part: "17"}, context: {title: "1", chapter: "I", subchapter: "A", part: "1", section: "1.1"}},
 
     # # table of local references /current/title-26/section-1.704-1
     # {ex: "1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>)", citation: {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>k</em>)(<em>3</em>)"}, context: {title: "26", section: "1.704-1"},
     #  with_surrounding_text: '<td class="align-left">1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>) </td>'}
+
+    # (badger 404) /current/title-49/subtitle-A/part-38/subpart-H/section-38.175
+    {ex: "§§ 38.111(d), 38.113 (a) through (c) and (e), 38.115 (a) and (b), 38.117 (a) and (b), 38.121 through 38.123, 38.125(d), and 38.127", citations: [
+      {title: "49", section: "38.111", paragraph: "(d)"},
+      {title: "49", section: "38.113", paragraph: "(a)"},
+      {title: "49", section: "38.113", paragraph: "(c)"},
+      {title: "49", section: "38.113", paragraph: "(e)"},
+      {title: "49", section: "38.115", paragraph: "(a)"},
+      {title: "49", section: "38.115", paragraph: "(b)"},
+      {title: "49", section: "38.117", paragraph: "(a)"},
+      {title: "49", section: "38.117", paragraph: "(b)"},
+      {title: "49", section: "38.121"},
+      {title: "49", section: "38.123"},
+      {title: "49", section: "38.125", paragraph: "(d)"},
+      {title: "49", section: "38.127"}
+    ], context: {title: "49", section: "38.175"}},
+
+    # /current/title-49/section-382.217
+    {ex: "49 CFR part 40, subpart O", citation: {title: "49", part: "40", subpart: "O"}, context: {title: "49", section: "382.217"},
+     with_surrounding_text: "requirements in 49 CFR part 40, subpart O, after the"},
+
+    # /current/title-30/section-585.612
+    {ex: "15 CFR part 930, subpart D", citation: {title: "15", part: "930", subpart: "D"}, context: {title: "30", section: "585.612"},
+     with_surrounding_text: "pursuant to 15 CFR part 930, subpart D, to the applicable"},
+
+    # /current/title-30/section-585.612
+    {ex: "15 CFR part 930, subpart E", citation: {title: "15", part: "930", subpart: "E"}, context: {title: "30", section: "585.612"},
+     with_surrounding_text: "under 15 CFR part 930, subpart E, after BOEM"},
+
+    # /current/title-30/section-585.647
+    {ex: "15 CFR 930, subpart E", citation: {title: "15", part: "930", subpart: "E"}, context: {title: "30", section: "585.647"},
+     with_surrounding_text: "pursuant to 15 CFR 930, subpart E to BOEM"},
+
+    # /current/title-9/section-317.380
+    {ex: "Paragraph (e)(1)", citation: {title: "9", section: "317.380", paragraph: "(e)(1)"}, context: {title: "9", section: "317.380"},
+     with_surrounding_text: "Paragraph (e)(1) of this section shall not apply to any"},
+
+    # /current/title-10/section-490.307
+    {ex: "10 CFR part 1003, subpart C", citation: {title: "10", part: "1003", subpart: "C"}, context: {title: "10", section: "490.307"},
+     with_surrounding_text: "pursuant to 10 CFR part 1003, subpart C, with the"},
+
+    # /current/title-10/appendix-Appendix%20B%20to%20Part%20851
+    {ex: "10 CFR part 1003, Subpart G", citation: {title: "10", part: "1003", subpart: "G"}, context: {title: "10", appendix: "Appendix%20B%20to%20Part%20851"},
+     with_surrounding_text: "accordance with 10 CFR part 1003, Subpart G, within 30 calendar"},
+
+    # /current/title-10/section-429.53
+    {ex: "10 CFR part 431, subpart R, appendix C", citation: {title: "10", part: "431", subpart: "R", appendix: "C"}, context: {title: "10", appendix: "429.53"},
+     with_surrounding_text: "test procedure in 10 CFR part 431, subpart R, appendix C. Follow"},
+
+    # /current/title-12/section-238.153
+    {ex: "12 CFR part 217, subparts D and E", citations: [{title: "12", part: "217", subpart: "D"},
+      {title: "12", part: "217", subpart: "E"}], context: {title: "12", appendix: "238.153"},
+     with_surrounding_text: "use under 12 CFR part 217, subparts D and E to value"},
+
+    # /current/title-42/section-51c.112
+    {ex: "45 CFR 75.307, 75.371 through 75.385, and 75.316-75.325", citations: [
+      {title: "45", section: "75.307"},
+      {title: "45", section: "75.371"},
+      {title: "45", section: "75.385"},
+      {title: "45", section: "75.316", section_end: "75.325"}
+    ], context: {title: "42", section: "51c.112"},
+     with_surrounding_text: "Any other amounts due pursuant to 45 CFR 75.307, 75.371 through 75.385, and 75.316-75.325."}
 
   ],
 
@@ -416,7 +478,10 @@ SCENERIOS_CFR = [
     {ex: "Central Mass Intrastate Area (See 4r0 CFR 81.142)", citation: :expect_none, html_appearance: :expect_none, context: {title: "40", section: "52.1127"}},
 
     # corrupted text
-    {ex: "The regulati2 CFR 200.3332 CFR 200.3332 CFR 200.33356 FR 37004, Aug. 2, 1991", citation: :expect_none, html_appearance: :expect_none, context: {title: "23", section: "635.601"}}
+    {ex: "The regulati2 CFR 200.3332 CFR 200.3332 CFR 200.33356 FR 37004, Aug. 2, 1991", citation: :expect_none, html_appearance: :expect_none, context: {title: "23", section: "635.601"}},
+
+    # current/title-32/section-2001.43
+    {ex: "required under section 5.4(d)(2) of the Order", citation: :expect_none, html_appearance: :expect_none, context: {title: "32", section: "2001.43"}}
 
   ],
 

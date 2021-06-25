@@ -37,6 +37,7 @@ class ReferenceParser::Hierarchy
     # drop any list or range related items that made it through
     if @data[:paragraph].present?
       @data[:paragraph].gsub!(ReferenceParser::HierarchyCaptures::LIST_EXAMPLES, "") if @data[:paragraph].include?("xample")
+      @data[:paragraph].gsub!(/paragraph/i, "")
     end
     @data.transform_values! do |value|
       list_items = /(\s+|,|or|and|through)+/i
@@ -70,7 +71,7 @@ class ReferenceParser::Hierarchy
     effective_capture = :part if effective_capture == :section && !@data[effective_capture]
     value = @data[effective_capture]
     puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
-    if %i[section part paragraph].include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !value&.include?(".")))
+    if %i[section part paragraph].include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !(1 == value&.count("."))))
       items = value.split(/\bto\b|-|through/)
       if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
         puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
@@ -81,8 +82,7 @@ class ReferenceParser::Hierarchy
   end
 
   def normalize_paragraph_ranges(text: nil, previous_citation: nil, captures: {}, processing_a_list: nil)
-    return unless previous_citation
-    previous_hierarchy = previous_citation[:hierarchy]
+    previous_hierarchy = previous_citation&.[](:hierarchy) || {}
 
     # paragraph is section+paragraph?
     if context[:mixed_paragraph_and_section_list] || (processing_a_list && starts_with_a_section?(@data[:paragraph], section: @data[:section]))
@@ -100,6 +100,12 @@ class ReferenceParser::Hierarchy
         @data[:section] = previous_hierarchy[:section] || original_section unless @data[:section].present?
         puts "normalize_paragraph_ranges replacing section #{@data[:section]}" if @debugging
       end
+    elsif processing_a_list && ends_with_a_paragraph?(@data[:section], paragraph: @data[:paragraph])
+      # section is section+paragraph?
+      repartition(:section, "(", :paragraph)
+      @data[:section] = previous_hierarchy[:section] || original_section unless @data[:section].present?
+      @data[:section] = @data[:section].strip
+      puts "normalize_paragraph_ranges [section is section+paragraph] #{@data[:section]} #{@data[:paragraph]}" if @debugging
     end
 
     # paragraph is section?
@@ -126,7 +132,8 @@ class ReferenceParser::Hierarchy
 
     # paragraphs rolled up into sections
     allow_rollup = captures[:rolled_up_paragraphs] || (captures[:source] != :cfr)
-    if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] && previous_citation.dig(:hierarchy, :section)&.include?("(")
+    if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] &&
+        (previous_citation.dig(:hierarchy, :section)&.include?("(") || previous_citation.dig(:hierarchy, :paragraph)&.include?("("))
       slide_right(:section, :paragraph)
       @data[:section] = previous_citation.dig(:hierarchy, :section).partition("(").first
     end
@@ -134,8 +141,14 @@ class ReferenceParser::Hierarchy
 
   def starts_with_a_section?(paragraph, section: nil)
     return unless paragraph.present?
-    match = /^A[\d[a-z].\-]+/.match(@data[:paragraph])
+    match = /^A[\d[a-z].\-]+/ix.match(paragraph)
     match || (section && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
+  end
+
+  def ends_with_a_paragraph?(section, paragraph: nil)
+    return unless section.present?
+    match = /\([^T]\)\z/ix.match(section)
+    match || (paragraph && section.end_with?(paragraph))
   end
 
   def to_href_hierarchy(expected: {})
@@ -177,6 +190,10 @@ class ReferenceParser::Hierarchy
     puts "cleanup_for_href #{self}" if @debugging
 
     self
+  end
+
+  def finish!
+    @data[:appendix].gsub!(/appendix/i, "").strip! if @data[:appendix].present?
   end
 
   private

@@ -13,7 +13,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   CHAPTER_ID = /[IVXLCDM0-9]+/ix
   SUBCHAPTER_ID = /[A-Z]+[-_]?[A-Z]*/ix
   PART_ID = /\w+[\-–—]?\w*/ix
-  SUBPART_ID = /\w{1,4}[\w\.\-–—]{0,6}(?:suspended)?|ECFR[0-9A-Z]{15,16}/ix # constraint /\w+[\w.\-–—]*\w*/ix
+  SUBPART_ID = /\w{1,4}[\w.\-–—]{0,6}(?:suspended)?/ix # constraint /\w+[\w.\-–—]*\w*/ix generated/internal ECFR[0-9A-Z]{15,16}
+  SUBPART_ID_ADDITIONAL = /\w{1,4}([.\-–—][\w.\-–—]{0,5}|)(?:suspended)?\b/ix
   SECTION_ID = /[\w\-]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C\.?\s*F\.?\s*R\.?/ix
@@ -52,6 +53,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         F\.?R\.?|  # FR
         I\.?R\.?C| # IRC
         Comp\.|
+        ,?\s*subpart|
         \/         # dates
     ))/ix
 
@@ -71,9 +73,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBPARTS = /
     (?<subparts>
       #{SUBPART_ID}
-      (?:        
+      (?:
         (?:#{JOIN})
-        #{SUBPART_ID}
+        #{SUBPART_ID_ADDITIONAL}
       )*
     )
     /ixo
@@ -191,12 +193,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
+  APPENDIX = /(?<section>(?<appendix_label>,?\s*appendix\s*)[A-Z]+)/ixo
+
   # reference replacements
 
   replace(/
       #{TITLE_SOURCE}                                   # title
-      (?<part_label>part\s*)(?<part>\d+)                # labelled part
+      (?<part_label>part\s*)?(?<part>\d+)                # labelled part
       #{SUBPART_LABEL}#{SUBPARTS}
+      (?:#{APPENDIX})?
     /ixo)
 
   replace(/
@@ -240,7 +245,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:
       (?<subpart_label>\s*subparts?\s*)#{SUBPARTS}
       |
-      (?<section>(?<appendix_label>\s*appendix\s*)[A-Z]+) # appendix
+      #{APPENDIX}
     )
     (?<suffix>\s*of\s*this\s*part)                    # of this part
     /ixo, if: :context_present?, context_expected: %i[title part])
@@ -250,6 +255,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:the|those)
       (?:
           \s*EAR |
+          \s*Order |
         (?:
           (?:[\s,a-z]{0,128})
           (?:Act|Amendments|Code|regulations)
@@ -511,18 +517,20 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       text_from_captures << captures.repeated_capture
       text_from_captures.concat(last_loop_named_captures) if index == (captures.repeated.count - 1) # last loop/suffix
 
+      final_loop = index == (captures.repeated.count - 1)
       loop_prefix_unlinked = index == 0 ? captures[:prefix_unlinked] || "" : ""
       loop_prefix = index == 0 ? captures[:prefix] || "" : ""
-      loop_suffix = index == (captures.repeated.count - 1) ? captures[:suffix] || "" : ""
-      loop_suffix_unlinked = index == (captures.repeated.count - 1) ? captures[:suffix_unlinked] || "" : ""
+      loop_suffix = final_loop ? captures[:suffix] || "" : ""
+      loop_suffix_unlinked = final_loop ? captures[:suffix_unlinked] || "" : ""
 
       text = (loop_prefix || "") + loop_captures.slice(*text_from_captures).values.join + (loop_suffix || "")
 
       # cleanup hierarchy (link text is already assembled, original text can be safely normalized at this point)
       hierarchy.cleanup!(expected: captures.expected)
       hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list)
-      hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list) if previous_citation
+      hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list)
       href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected)
+      hierarchy.finish!
 
       # build citation
       citation = {hierarchy: hierarchy.to_h,
@@ -532,11 +540,22 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                   suffix: loop_suffix_unlinked}
 
       citation[:source] = source if source
-      previous_citation = citation
 
-      puts "adding citation #{citation}" if @debugging
+      unless qualify_citation(citation, processing_a_list: captures.processing_a_list, final_loop: final_loop)
+        if final_loop && previous_citation
+          previous_citation[:suffix] += citation.values_at(*%i[prefix text suffix]).join("")
+          citation = nil
+        else
+          citation[:hierarchy] = nil
+          citation[:href_hierarchy] = nil
+        end
+      end
 
-      results << citation
+      if citation
+        previous_citation = citation
+        puts "adding citation #{citation}" if @debugging
+        results << citation
+      end
     end
 
     return :skip unless qualify_match(captures, results: results)
@@ -580,6 +599,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
 
     puts "qualify_match #{issue}" if @debugging && issue
+    !issue
+  end
+
+  def qualify_citation(citation, processing_a_list: nil, final_loop: nil)
+    issue = nil
+    if final_loop && processing_a_list
+      issue = :unlikely_trailing_identifier if ReferenceParser::Guesses.unlikely_trailing_identifier?(citation[:text])
+    end
+    puts "qualify_citation #{issue}" if @debugging && issue
     !issue
   end
 
