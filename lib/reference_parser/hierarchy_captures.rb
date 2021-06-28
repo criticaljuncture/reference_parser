@@ -13,9 +13,13 @@ class ReferenceParser::HierarchyCaptures
     /ix
 
   include ReferenceParser::HierarchyContainer
-  attr_accessor :options, :repeated, :repeated_capture
+  attr_accessor :options, :repeated, :repeated_capture, :captured_characters
 
   def from_named_captures(named_captures)
+    # save initial capture order
+    @order = ReferenceParser::CaptureOrder.new(named_captures)
+    @captured_characters = named_captures.values.map { |value| value.to_s.length }.sum
+
     # normalize captures & discard empty groups
     @data = named_captures.select { |k, v| v }.symbolize_keys
 
@@ -54,7 +58,8 @@ class ReferenceParser::HierarchyCaptures
       subchapter: @data[:subchapter_label].present?,
       part: @data.values_at(*%i[part_label appendix_label]).detect(&:present?),
       subpart: @data.values_at(*%i[prefixed_subpart_label subpart_label]).detect(&:present?),
-      section: @data[:section_label].present?
+      section: @data[:section_label].present?,
+      appendix: @data[:appendix_label].present?
     }
   end
 
@@ -85,12 +90,14 @@ class ReferenceParser::HierarchyCaptures
     to_consider.each do |rank_keys|
       slide_left(*rank_keys.reverse) if repeated != rank_keys.last
     end
+
+    order.repeated_capture = @repeated_capture
   end
 
   def loop_captures_for(what)
     result = ReferenceParser::HierarchyCaptures.new({
       repeated_capture => what # start with the repeated element
-    }, options: @options, debugging: @debugging)
+    }, options: @options, order: @order, debugging: @debugging, parent: self)
 
     # add remainder
     result.reverse_merge!(@data.except(:prefix, :suffix))
@@ -101,6 +108,23 @@ class ReferenceParser::HierarchyCaptures
 
   def prepare_loop_captures(processing_a_list: false)
     restore_paragraph unless processing_a_list
+  end
+
+  def prefix_text_suffix(first_loop:, final_loop:)
+    # reassemble capture text into prefix (link text) suffix
+
+    loop_prefix_unlinked = first_loop ? parent[:prefix_unlinked] || "" : ""
+    loop_prefix = first_loop ? parent[:prefix] || "" : ""
+    loop_suffix = final_loop ? parent[:suffix] || "" : ""
+    loop_suffix_unlinked = final_loop ? parent[:suffix_unlinked] || "" : ""
+
+    text_from_captures = !parent.processing_a_list || first_loop ? order.first_loop_named_captures : [] # first loop/prefix
+    text_from_captures << parent.repeated_capture
+    text_from_captures.concat(order.last_loop_named_captures) if final_loop # last loop/suffix
+
+    text = (loop_prefix || "") + slice(*(text_from_captures - %i[prefix_unlinked prefix suffix suffix_unlinked])).values.join + (loop_suffix || "")
+
+    [loop_prefix_unlinked, text, loop_suffix_unlinked]
   end
 
   private
@@ -124,15 +148,27 @@ class ReferenceParser::HierarchyCaptures
       next unless original.present?
       clean = @data[key].dup
 
+      consumed_keys = []
+      if key == :sections && ((clean&.include?("(") && @data[:paragraphs]&.include?("(")) || (clean&.end_with?("-") || @data[:sections]&.start_with?("-")))
+        clean << @data[:paragraphs] if @data[:paragraphs].present?
+        consumed_keys << :paragraphs
+      end
+      if key == :paragraphs && (clean&.start_with?("-") || any_end_with?([:sections, :section], "-"))
+        clean = [@data[:section], @data[:sections], clean].compact.join
+        consumed_keys.concat([:section, :sections])
+      end
+
       # split on any list markers, then absorb lone makers back into neighbors prefering
       # trailing dividers to the right and the remainder (commas, etc) to the left
       split = clean&.split(ANY_DIVIDER)&.select { |s| s.length > 0 }
-      if @data[:source] && @data[:source] != :cfr
+      if @options[:source] && @options[:source] != :cfr
         split = split.map do |s|
-          resplit = s.split(/\s+/)
+          # resplit = s.split(/\s+/)
+          resplit = s.split(/(?<=\s)/)
           resplit.count(&:present?) == 2 ? resplit : s
         end.flatten
       end
+
       if split.present?
         all_dividers = key == :paragraphs ? ALL_DIVIDERS_IN_PARAGRAPH : ALL_DIVIDERS
         x = 1
@@ -149,8 +185,12 @@ class ReferenceParser::HierarchyCaptures
             x += 1
           end
         end
-        @data[key] = split if split.count > 1
+        if split.count > 1
+          @data[key] = split
+          consumed_keys.each { |consumed_key| @data.delete(consumed_key) }
+        end
       end
+
       if @debugging
         puts "split_lists_into_individual_items \"#{original}\" into \"#{@data[key]}\"" if @debugging && original != @data[key]
       end
@@ -172,4 +212,17 @@ class ReferenceParser::HierarchyCaptures
       repartition(:section, "(", paragraph_key)
     end
   end
+
+  private
+
+  def any_end_with?(names, what)
+    names.each do |name|
+      if @data[name]&.respond_to?(:end_with?)
+        return true if @data[name].end_with?(what)
+      elsif @data[name]&.respond_to?(:last)
+        return true if @data[name].last&.end_with?(what)
+      end
+    end
+    nil
+  end  
 end

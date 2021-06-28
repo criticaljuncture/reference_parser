@@ -87,7 +87,10 @@ SCENERIOS_USC = [
 
   # (#20)
   {ex: "I.R.C. § 6212", citation: {title: "26", part: "6212"}, context: {title: "48", section: "9.406-2"},
-   with_surrounding_text: "under I.R.C. § 6212, which entitles"}
+   with_surrounding_text: "under I.R.C. § 6212, which entitles"},
+   
+  {ex: "defined in 5 U.S.C. 2105 and -", 
+    citations: [{title: "5", part: "2105"}], context: {title: "5", section: "531.203"}},
 
 ]
 
@@ -115,6 +118,7 @@ RSpec.describe ReferenceParser::Usc do
               expect(
                 result_html
               ).to have_tag("a", text: citation[:expected_text], with: {href: citation[:expected_url] || usc_url(citation)})
+
             else
               expect(
                 result_html
@@ -125,6 +129,13 @@ RSpec.describe ReferenceParser::Usc do
           citations.delete(:expect_none)
           if citations.present?
             expect(result_html).to have_tag("a", count: citations.count)
+
+            result_html_text = Nokogiri::HTML.parse(result_html).text
+            example_text = Nokogiri::HTML.parse(example).text
+            expect(
+              result_html_text
+            ).to include(example_text)
+
           else
             expect(result_html).to_not have_tag("a")
           end

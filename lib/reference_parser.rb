@@ -125,11 +125,11 @@ class ReferenceParser
 
         # only captures used by this replacement
         named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
-        if replacement.will_consider_post_match
-          named_captures[:post_match] = searchable_text[match.end(0)..match.end(0) + 64]
-          named_captures[:pattern_slug] = replacement.pattern_slug
-        end
-        citations = replacement.clean_up_named_captures(named_captures, options: build_options(replacement.parser, @options, {}))
+        replacement_options = build_options(replacement.parser, @options, {})
+        replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
+        replacement_options[:post_match] = searchable_text[match.end(0)..match.end(0) + 64] if replacement.will_consider_post_match
+
+        citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
         citations = :skip if replacement.ignore?(citations, options: build_options(replacement.parser, @options, {}))
         break if citations == :skip
 
@@ -139,7 +139,8 @@ class ReferenceParser
 
         citations&.each do |citation|
           effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
-            effective_parser.clean_up_named_captures(citation, options: build_options(effective_parser, @options, {}))
+            replacement_options.merge!(build_options(effective_parser, @options, {}))
+            effective_parser.clean_up_named_captures(citation, options: replacement_options)
           end
 
           if effective_parser

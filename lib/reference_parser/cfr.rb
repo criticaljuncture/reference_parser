@@ -91,6 +91,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
+  SUFFIXED_PART = /(?<suffxied_part>#{PART_ID})/ixo
+
   PARENTHETICALS = /
   (?: \((?:<em>)?[a-z]{1,3}(?:<\/em>)?\)\s* | # a b c
       \((?:<em>)?\d{1,3}(?:<\/em>)?\)\s*    | # 1 2 3
@@ -193,7 +195,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
-  APPENDIX = /(?<section>(?<appendix_label>,?\s*appendix\s*)[A-Z]+)/ixo
+  APPENDIX = /(?<appendix_label>,?\s*appendix\s*)(?<section>[A-Z]+)/ixo
 
   # reference replacements
 
@@ -263,6 +265,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       )
     /ix
 
+  LIKELY_UNLINKABLE = /revised.{0,18}(?<revised_year>(?:19|20)\d{2})/ix
+
   # loose section
 
   replace(/
@@ -272,9 +276,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PREFIXED_PARAGRAPHS}
       (?<prefixed_paragraph_suffix>\s*(?:of|in)\s*)
     )?
-    (?<section_label>(§+|section)\s*)#{SECTIONS}
+    (?<section_label>(?:§+|section)\s*)#{SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}
-    (?<suffix>\s*(of\s*this\s*(title|chapter))?)
+    (?<suffix>\s*(?:of\s*this\s*(?:title|chapter))?)
+    (?:
+      (?<spacer>contained\sin\s)
+      #{TITLE_SOURCE}
+      #{PART_LABEL}#{PART}
+    )?
     #{TRAILING_BOUNDRY}
     /ixo, pattern_slug: :loose_section, if: :context_present?, will_consider_post_match: true, context_expected: %i[title in_suffix])
 
@@ -458,37 +467,17 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     result
   end
 
-  EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS = %i[
-    prefix
-    prefixed_subpart_label prefixed_subpart prefixed_subpart_connector
-    prefixed_paragraph_label prefixed_paragraph prefixed_paragraph_suffix
-    title_label title source_label
-    subtitle_label subtitle
-    chapter_label chapter
-    subchapter_label subchapter
-    part_label part
-    subpart_label subpart
-    section_label section none
-    paragraph_label paragraph paragraph_range_end
-    suffix
-  ]
-  # also: prefix_unlinked / suffix_unlinked
-
   def clean_up_named_captures(captures, options: {})
     results = []
 
     puts "ReferenceParser::Cfr clean_up_named_captures captures #{captures}" if @debugging
-    source = citation_source_for(captures)
+    source = citation_source_for(captures, options: options)
 
     # create captures (expected to preserve fidelity of original text for output)
     captures = ReferenceParser::HierarchyCaptures.new(options: options, debugging: @debugging).from_named_captures(captures)
     captures.determine_repeated_capture
 
-    # partition the available capture groups into a prefix set and suffix set based
-    # on the position of the repeated capture (if any)
-    index = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS.find_index(captures.repeated_capture)
-    first_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[0..index]
-    last_loop_named_captures = EXPECTED_ORDER_OF_APPEARANCE_FOR_CAPTURE_GROUPS[index..]
+    # puts "#{first_loop_named_captures} |#{captures.repeated_capture}| #{last_loop_named_captures}" if @debugging
 
     previous_citation = nil
     captures.repeated&.each_with_index do |what, index|
@@ -507,37 +496,30 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
       loop_captures = captures.loop_captures_for(what)
 
+      first_loop = !captures.processing_a_list || (index == 0)
+      final_loop = index == (captures.repeated.count - 1)
+
       # create hierarchy (normalized citation data)
       hierarchy = loop_captures.build_hierarchy
+
       hierarchy.take_missing_from_context(captures: captures) if options[:context_expected].present?
       next if hierarchy.appears_incomplete?(captures: captures)
 
-      # reassemble capture text for link
-      text_from_captures = !captures.processing_a_list || (index == 0) ? first_loop_named_captures : [] # first loop/prefix
-      text_from_captures << captures.repeated_capture
-      text_from_captures.concat(last_loop_named_captures) if index == (captures.repeated.count - 1) # last loop/suffix
-
-      final_loop = index == (captures.repeated.count - 1)
-      loop_prefix_unlinked = index == 0 ? captures[:prefix_unlinked] || "" : ""
-      loop_prefix = index == 0 ? captures[:prefix] || "" : ""
-      loop_suffix = final_loop ? captures[:suffix] || "" : ""
-      loop_suffix_unlinked = final_loop ? captures[:suffix_unlinked] || "" : ""
-
-      text = (loop_prefix || "") + loop_captures.slice(*text_from_captures).values.join + (loop_suffix || "")
+      prefix, text, suffix = loop_captures.prefix_text_suffix(first_loop: first_loop, final_loop: final_loop)
 
       # cleanup hierarchy (link text is already assembled, original text can be safely normalized at this point)
       hierarchy.cleanup!(expected: captures.expected)
       hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list)
       hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list)
-      href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected)
+      href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected, captures: captures)
       hierarchy.finish!
 
       # build citation
       citation = {hierarchy: hierarchy.to_h,
                   href_hierarchy: href_hierarchy.to_h,
-                  prefix: loop_prefix_unlinked,
+                  prefix: prefix,
                   text: text,
-                  suffix: loop_suffix_unlinked}
+                  suffix: suffix}
 
       citation[:source] = source if source
 
@@ -558,18 +540,18 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       end
     end
 
-    return :skip unless qualify_match(captures, results: results)
+    return :skip unless qualify_match(captures, results: results, options: options)
     validate_and_persist(context: options[:context], references: results) if @validation_and_persistence
 
     results
   end
 
-  def qualify_match(captures, results: nil)
+  def qualify_match(captures, results: nil, options: nil)
     issue = nil
-    # return false if /\A\s*\[Reserved\]/ix =~ captures[:post_match]
-    if captures[:pattern_slug] == :loose_section
-      puts "qualify_match captures[:post_match] #{captures[:post_match]}" if @debugging
-      match = LIKELY_EXTERNAL_SECTIONS.match(captures[:post_match])
+
+    if options[:pattern_slug] == :loose_section
+      puts "qualify_match options[:post_match] #{options[:post_match]}" if @debugging
+      match = LIKELY_EXTERNAL_SECTIONS.match(options[:post_match])
       if match
         issue = :direct_match
       end
@@ -590,16 +572,36 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         @accumulated_context.concat(captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)).uniq!
         puts "qualify_match @accumulated_context #{@accumulated_context}" if @debugging
       end
+
+      unless issue
+        match = LIKELY_UNLINKABLE.match(options[:post_match])
+        if match
+          revised_year = match[:revised_year].to_i
+          if revised_year > 0 && revised_year < 2017
+            issue = :likely_unlinkable_date
+          end
+        end
+      end
     end
 
-    if !captures[:source] || (captures[:source] == :cfr)
+    if !options[:source] || (options[:source] == :cfr)
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_CFR_TITLE)
-    elsif captures[:source] == :federal_register
+    elsif options[:source] == :federal_register
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)
     end
 
+    # byebug if false
+    issue = :failure_to_preserve_source_characters if !issue && !preserved_character_count?(captures, results: results)
+
     puts "qualify_match #{issue}" if @debugging && issue
     !issue
+  end
+
+  def preserved_character_count?(captures, results: nil)
+    result_characters = results.map do |result|
+      result.values_at(:prefix, :text, :suffix).compact.map(&:length).sum
+    end.sum
+    result_characters == captures.captured_characters
   end
 
   def qualify_citation(citation, processing_a_list: nil, final_loop: nil)
@@ -618,7 +620,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
 
-  def citation_source_for(captures = {})
+  def citation_source_for(captures = {}, options: nil)
     source = nil
     if captures[:source_label]&.present?
       if USC_LABEL.match?(captures[:source_label]) || IRC_LABEL.match?(captures[:source_label])
@@ -627,7 +629,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         source = :federal_register
       end
     end
-    captures[:source] = source if source
+    options[:source] = source if source && options
     source
   end
 

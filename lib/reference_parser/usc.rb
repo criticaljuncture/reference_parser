@@ -15,6 +15,7 @@ class ReferenceParser::Usc < ReferenceParser::Base
     captures[:part] = captures[:section] if !captures[:part] && captures[:section]
     captures[:part] = captures[:chapter] + "01" if !captures[:part] && captures[:chapter]
     captures[:part] = captures[:part].partition("(").first if captures[:part]&.include?("(")
+    captures[:part] = nil if captures[:part] == "-"
   end
 
   def depends_on_parser

@@ -72,7 +72,7 @@ SCENERIOS_CFR = [
 
     # (#5) /current/title-7/subtitle-A/part-1c/section-1c.111#p-1c.111(a)(8)(i)
     {ex: "§ 1c.116(a)(1)-(4), (a)(6), and (d)",
-     citations: [{title: "7", section: "1c.116", paragraph: "(a)(1)", paragraph_end: "(4)"},
+     citations: [{title: "7", section: "1c.116", paragraph: "(a)(1)", paragraph_end: "(a)(4)"},
        {title: "7", section: "1c.116", paragraph: "(a)(6)"},
        {title: "7", section: "1c.116", paragraph: "(d)"}],
      context: {title: "7", section: "1c.111", paragraph: "(a)(8)(i)"}},
@@ -259,10 +259,6 @@ SCENERIOS_CFR = [
 
     {ex: "part 17 of this chapter", citation: {title: "1", chapter: "I", part: "17"}, context: {title: "1", chapter: "I", subchapter: "A", part: "1", section: "1.1"}},
 
-    # # table of local references /current/title-26/section-1.704-1
-    # {ex: "1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>)", citation: {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>k</em>)(<em>3</em>)"}, context: {title: "26", section: "1.704-1"},
-    #  with_surrounding_text: '<td class="align-left">1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>) </td>'}
-
     # (badger 404) /current/title-49/subtitle-A/part-38/subpart-H/section-38.175
     {ex: "§§ 38.111(d), 38.113 (a) through (c) and (e), 38.115 (a) and (b), 38.117 (a) and (b), 38.121 through 38.123, 38.125(d), and 38.127", citations: [
       {title: "49", section: "38.111", paragraph: "(d)"},
@@ -323,7 +319,48 @@ SCENERIOS_CFR = [
       {title: "45", section: "75.385"},
       {title: "45", section: "75.316", section_end: "75.325"}
     ], context: {title: "42", section: "51c.112"},
-     with_surrounding_text: "Any other amounts due pursuant to 45 CFR 75.307, 75.371 through 75.385, and 75.316-75.325."}
+     with_surrounding_text: "Any other amounts due pursuant to 45 CFR 75.307, 75.371 through 75.385, and 75.316-75.325."},
+
+    # /current/title-32/section-117.15
+    {ex: "32 CFR 2001.45(a)(1) and 2001.43 (c)", citations: [
+      {title: "32", section: "2001.45", paragraph: "(a)(1)"},
+      {title: "32", section: "2001.43", paragraph: "(c)"}
+    ], context: {title: "42", section: "117.15"},
+     with_surrounding_text: "will follow the guidance in 32 CFR 2001.45(a)(1) and 2001.43 (c) to address"},
+
+    # /current/title-12/section-25.01
+    {ex: "§§ 25.07 - 25.13, 25.21, 25.25, and 25.26", citations: [
+      {title: "12", section: "25.07", section_end: "25.13"},
+      {title: "12", section: "25.21"},
+      {title: "12", section: "25.25"},
+      {title: "12", section: "25.26"}
+    ], context: {title: "12", section: "25.01"},
+     with_surrounding_text: "banks must comply with §§ 25.07 - 25.13, 25.21, 25.25, and 25.26 by January 1, 2023."},
+
+    # /current/title-19/section-351.301
+    {ex: "§ 351.102(b)(21)(i)-(iv)", citations: [
+      {title: "19", section: "351.102", paragraph: "(b)(21)(i)", paragraph_end: "(b)(21)(iv)"}
+    ], context: {title: "19", section: "351.301"},
+     with_surrounding_text: "does not satisfy the definitions described in § 351.102(b)(21)(i)-(iv)."},
+
+    # /current/title-20/section-725.209
+    {ex: "§§ 404.367-404.369 of this title", citations: [
+      {title: "20", section: "404.367", section_end: "404.369"}
+    ], context: {title: "20", section: "725.209"},
+     with_surrounding_text: "(see §§ 404.367-404.369 of this title), or an"},
+
+    # /current/title-24/section-206.107
+    {ex: "§ 206.123(a)(3)-(5)", citation: {title: "24", section: "206.123", paragraph: "(a)(3)", paragraph_end: "(a)(5)"}, context: {title: "24", section: "206.107"},
+     with_surrounding_text: "any of the circumstances described in § 206.123(a)(3)-(5); and"}
+
+    # {ex: "granted merit status under 35 CFR chapter I, subchapter E;", citation: {title: "35", chapter: "I", subchapter: "E"}, context: {title: "5", section: "831.201"}}
+
+    # # table of local references /current/title-26/section-1.704-1
+    # {ex: "1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>)", citation: {title: "26", section: "1.704-1", paragraph: "(b)(2)(iv)(<em>k</em>)(<em>3</em>)"}, context: {title: "26", section: "1.704-1"},
+    #  with_surrounding_text: '<td class="align-left">1.704-1(b)(2)(iv)(<em>k</em>)(<em>3</em>) </td>'}
+
+    # /current/title-10/section-55.46
+    # ensure that paragraphs (c)(2)(ii), as applicable, and (d)(3) of this section are met
 
   ],
 
@@ -363,7 +400,9 @@ SCENERIOS_CFR = [
     {ex: "1.704-1(b)(1)(ii)(b)(1)", context_specific: true, citation: {title: "26", section: "1.704-1", paragraph: "(b)(1)(ii)(b)(1)"}, context: {title: "26", section: "1.704-1"}},
 
     {ex: "26 CFR 1.704-1T(b)(4)(viii)(d)(3)", citation: {title: "26", section: "1.704-1T", paragraph: "(b)(4)(viii)(d)(3)"}, context: {title: "26", section: "1.704-1"},
-     with_surrounding_text: "2015. See 26 CFR 1.704-1T(b)(4)(viii)(d)(3) (revise", expected_url: "/current/title-26/section-1.704-1T#p-1.704-1T(b)(4)(viii)(d)(3)"}
+     with_surrounding_text: "2015. See 26 CFR 1.704-1T(b)(4)(viii)(d)(3) (revise", expected_url: "/current/title-26/section-1.704-1T#p-1.704-1T(b)(4)(viii)(d)(3)"},
+
+    {ex: "§ 301.6230(e)-1T contained in 26 CFR part 1", citation: {title: "26", part: "1", section: "301.6230(e)-1T"}, context: {title: "99", section: "1"}}
 
     # provisions of paragraphs (b)(4)(viii)(a)(1), (b)(4)(viii)(c)(1), (b)(4)(viii)(c)(2)(ii) and (iii), (b)(4)(viii)(c)(3) and (4), and (b)(4)(viii)(d)(1) (as in effect on July 24, 2019) and in paragraphs (b)(6)(i), (ii), and (iii) of this section
 
@@ -480,9 +519,14 @@ SCENERIOS_CFR = [
     # corrupted text
     {ex: "The regulati2 CFR 200.3332 CFR 200.3332 CFR 200.33356 FR 37004, Aug. 2, 1991", citation: :expect_none, html_appearance: :expect_none, context: {title: "23", section: "635.601"}},
 
-    # current/title-32/section-2001.43
-    {ex: "required under section 5.4(d)(2) of the Order", citation: :expect_none, html_appearance: :expect_none, context: {title: "32", section: "2001.43"}}
+    # /current/title-32/section-2001.43
+    {ex: "required under section 5.4(d)(2) of the Order", citation: :expect_none, html_appearance: :expect_none, context: {title: "32", section: "2001.43"}},
 
+    # /current/title-15/subtitle-B/chapter-VII/subchapter-C/part-744/appendix-Supplement%20No.%207%20to%20Part%20744
+    {ex: "entities listed in supplement no. 7 to part 744 applies to the", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", appendix: "Supplement%20No.%207%20to%20Part%20744"}},
+
+    # /current/title-26/section-301.6230(e)-1
+    {ex: "see § 301.6230(e)-1T contained in 26 CFR part 1, revised April 1, 2001", citation: :expect_none, html_appearance: :expect_none, context: {title: "26", section: "301.6230(e)-1"}}
   ],
 
   "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1

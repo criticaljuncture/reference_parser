@@ -54,6 +54,7 @@ class ReferenceParser::Hierarchy
     slide_right(:prefixed_paragraph, :paragraph)
 
     slide_right(:section, :appendix) if /\AAppendix/ix.match?(@data[:section])
+    slide_right(:section, :appendix) if expected[:appendix]
 
     # drop list duplicated labels
     @data[:part]&.gsub!(/\s*part\s*/ix, "")
@@ -69,14 +70,17 @@ class ReferenceParser::Hierarchy
   def cleanup_list_ranges_if_needed!(repeated_capture: :section, processing_a_list: nil)
     effective_capture = repeated_capture
     effective_capture = :part if effective_capture == :section && !@data[effective_capture]
-    value = @data[effective_capture]
-    puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
-    if %i[section part paragraph].include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !(1 == value&.count("."))))
-      items = value.split(/\bto\b|-|through/)
-      if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
-        puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
-        @data[effective_capture] = items.first.to_s.strip
-        @data["#{effective_capture}_end".to_sym] = items.last.to_s.strip
+    [effective_capture, :paragraph].uniq.each do |effective_capture|
+      value = @data[effective_capture]
+      next unless value.present?
+      puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
+      if %i[section part paragraph].include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1)))
+        items = value.split(/\bto\b|-|through/)
+        if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
+          puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
+          @data[effective_capture] = items.first.to_s.strip
+          @data["#{effective_capture}_end".to_sym] = items.last.to_s.strip
+        end
       end
     end
   end
@@ -104,7 +108,7 @@ class ReferenceParser::Hierarchy
       # section is section+paragraph?
       repartition(:section, "(", :paragraph)
       @data[:section] = previous_hierarchy[:section] || original_section unless @data[:section].present?
-      @data[:section] = @data[:section].strip
+      @data[:section] = @data[:section]&.strip
       puts "normalize_paragraph_ranges [section is section+paragraph] #{@data[:section]} #{@data[:paragraph]}" if @debugging
     end
 
@@ -114,28 +118,40 @@ class ReferenceParser::Hierarchy
       # this seems like the list has jumped back up to sections
       @data[:section] = @data[:paragraph]
       @data.delete(:paragraph)
+      if @data[:paragraph_end].present?
+        @data[:section_end] = @data[:paragraph_end]
+        @data.delete(:paragraph_end)
+      end
       puts "normalize_paragraph_ranges reverting paragraph to section #{@data[:section]} <= #{@data[:paragraph]}" if @debugging
     end
 
-    if ((@data[:paragraph]&.count("(") || 0) == 1) &&
-        ((previous_hierarchy[:paragraph]&.count("(") || 0) > 1) &&
-        ((/and|or|through/ =~ text) || (/and|or|through/ =~ captures[:paragraph]))
-      potential_prefix = previous_hierarchy[:paragraph].rpartition("(").first
-      potential_update = potential_prefix + @data[:paragraph]
-      if ReferenceParser::Paragraph.guess_level(@data[:paragraph]) != ReferenceParser::Paragraph.guess_level(potential_prefix.rpartition("(").last)
-        puts "normalize_paragraph_ranges #{potential_update} <= #{@data[:paragraph]}" if @debugging
-        @data[:paragraph] = potential_update
-      elsif @debugging
-        puts "normalize_paragraph_ranges ignored same levels #{potential_update} <=/= #{@data[:paragraph]}"
-      end
-    end
+    normalize_paragraph_ranges_incorporate_prior(update: :paragraph, prior_example: previous_hierarchy[:paragraph], text: text, captures: captures)
+    normalize_paragraph_ranges_incorporate_prior(update: :paragraph_end, prior_example: @data[:paragraph], text: text, captures: captures)
 
     # paragraphs rolled up into sections
-    allow_rollup = captures[:rolled_up_paragraphs] || (captures[:source] != :cfr)
+    allow_rollup = captures[:rolled_up_paragraphs] || (options[:source] != :cfr)
     if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] &&
         (previous_citation.dig(:hierarchy, :section)&.include?("(") || previous_citation.dig(:hierarchy, :paragraph)&.include?("("))
       slide_right(:section, :paragraph)
       @data[:section] = previous_citation.dig(:hierarchy, :section).partition("(").first
+    end
+  end
+
+  def normalize_paragraph_ranges_incorporate_prior(prior_example:, text:, captures:, update: nil)
+    if ((@data[update]&.count("(") || 0) == 1) &&
+        ((prior_example&.count("(") || 0) > 1) &&
+        (
+          ((/and|or|through/ =~ text) || (/and|or|through/ =~ captures[update])) ||
+          update.to_s.end_with?("_end")
+        )
+      potential_prefix = prior_example.rpartition("(").first
+      potential_update = potential_prefix + @data[update]
+      if ReferenceParser::Paragraph.guess_level(@data[update]) != ReferenceParser::Paragraph.guess_level(potential_prefix.rpartition("(").last)
+        puts "normalize_paragraph_ranges #{potential_update} <= #{@data[update]}" if @debugging
+        @data[update] = potential_update
+      elsif @debugging
+        puts "normalize_paragraph_ranges ignored same levels #{potential_update} <=/= #{@data[update]}"
+      end
     end
   end
 
@@ -151,11 +167,11 @@ class ReferenceParser::Hierarchy
     match || (paragraph && section.end_with?(paragraph))
   end
 
-  def to_href_hierarchy(expected: {})
-    ReferenceParser::Hierarchy.new(@data.dup, options: @options, debugging: @debugging).cleanup_for_href
+  def to_href_hierarchy(expected: {}, captures: {})
+    ReferenceParser::Hierarchy.new(@data.dup, options: @options, debugging: @debugging).cleanup_for_href(expected: expected, captures: captures)
   end
 
-  def cleanup_for_href(expected: {})
+  def cleanup_for_href(expected: {}, captures: {})
     if (@data[:section] && !@data[:part]) || (@data[:part] && !@data[:section])
       part_section = @data.values_at(:section, :part).join
       if part_section.include?(".")
@@ -179,7 +195,9 @@ class ReferenceParser::Hierarchy
     @data[:section].tr!(",", "") if @data[:section].present?
 
     if @data[:appendix].present?
-      @data[:appendix] = "#{@data[:appendix]} to Part #{@data[:part]}".gsub(" ", "%20").gsub("appendix", "Appendix")
+      appendix = @data[:appendix]
+      appendix = (captures[:appendix_label] + appendix).strip if captures[:appendix_label].present?
+      @data[:appendix] = "#{appendix} to Part #{@data[:part]}".gsub(" ", "%20").gsub("appendix", "Appendix")
     end
 
     # from match 12 CFR § 275.206(a)(3)-3 expecting "/on/2021-05-17/title-12/section-275.206(a)(3)-3"
@@ -193,7 +211,7 @@ class ReferenceParser::Hierarchy
   end
 
   def finish!
-    @data[:appendix].gsub!(/appendix/i, "").strip! if @data[:appendix].present?
+    @data[:appendix].gsub!(/appendix/i, "")&.strip! if @data[:appendix].present?
   end
 
   private
