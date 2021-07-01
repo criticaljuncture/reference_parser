@@ -224,5 +224,5 @@ class ReferenceParser::HierarchyCaptures
       end
     end
     nil
-  end  
+  end
 end

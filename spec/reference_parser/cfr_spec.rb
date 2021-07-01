@@ -351,7 +351,15 @@ SCENERIOS_CFR = [
 
     # /current/title-24/section-206.107
     {ex: "§ 206.123(a)(3)-(5)", citation: {title: "24", section: "206.123", paragraph: "(a)(3)", paragraph_end: "(a)(5)"}, context: {title: "24", section: "206.107"},
-     with_surrounding_text: "any of the circumstances described in § 206.123(a)(3)-(5); and"}
+     with_surrounding_text: "any of the circumstances described in § 206.123(a)(3)-(5); and"},
+
+    # #21 /current/title-46/section-160.132-7
+    {ex: "§ 160.132-5 of this subpart", citation: {title: "46", part: "160", section: "160.132-5"}, context: {title: "46", chapter: "I", subchapter: "Q", part: "160", subpart: "160.132", section: "160.132-7"},
+     with_surrounding_text: "VI/6.1 (incorporated by reference, see § 160.132-5 of this subpart) applicable", expected_url: "/current/title-46/part-160/section-160.132-5"},
+
+    # #21 /current/title-46/section-69.11
+    {ex: "subpart B of this part", citation: {title: "46", chapter: "I", part: "69", subpart: "B"}, context: {title: "46", chapter: "I", subchapter: "G", part: "69", subpart: "A", section: "69.11"},
+     with_surrounding_text: "(subpart B of this part)", expected_url: "/current/title-46/part-69/subpart-B"}
 
     # {ex: "granted merit status under 35 CFR chapter I, subchapter E;", citation: {title: "35", chapter: "I", subchapter: "E"}, context: {title: "5", section: "831.201"}}
 

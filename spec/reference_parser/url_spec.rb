@@ -30,11 +30,11 @@ RSpec.describe ReferenceParser::Url do
       text = "Lorem ipsum dolor sit amet, https://images.example.local consectetur adipiscing elit."
       expect(
         ReferenceParser.new(only: :url,
-                            options: {
-                              url: {
-                                ignore: ->(citation) { citation[:url]&.start_with?("https://images.example.local") }
-                              }
-                            }).hyperlink(text)
+          options: {
+            url: {
+              ignore: ->(citation) { citation[:url]&.start_with?("https://images.example.local") }
+            }
+          }).hyperlink(text)
       ).to eql(text)
     end
 

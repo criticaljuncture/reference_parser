@@ -9,19 +9,22 @@ class ReferenceParser::Hierarchy
       context_expected.include?(rank) && !@data[rank].present?
     end
 
-    # if the replace definiton lists "in_suffix" then ranks listed by name in the
+    # if the definition lists "in_suffix" then ranks listed by name in the
     # suffix capture are expected (ie: in this chapter, in this part)
     if context_expected.include?(:in_suffix)
       RANKS.each do |rank|
         if captures[:suffix]&.downcase&.include?(rank.to_s)
-          result ||= !@data[rank].present? && (!%i[chapter subchapter].include?(rank) || !@data[:section].present?)
+          if !@data[rank].present? && # missing the listed rank
+              !(%i[chapter subchapter subpart].include?(rank) && @data[:section].present?) # section makes several ranks disposable
+            result ||= rank
+          end
           break if result
         end
       end
     end
 
     # title is always required
-    result ||= !@data[:title].present?
+    result ||= :title unless @data[:title].present?
 
     puts "hierarchy_appears_incomplete? #{result} #{@data}" if @debugging && result
     result
@@ -131,7 +134,7 @@ class ReferenceParser::Hierarchy
     # paragraphs rolled up into sections
     allow_rollup = captures[:rolled_up_paragraphs] || (options[:source] != :cfr)
     if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] &&
-        (previous_citation&.dig(:hierarchy, :section)&.include?("(") || previous_citation&.dig(:hierarchy, :paragraph)&.include?("("))
+        (previous_citation.dig(:hierarchy, :section)&.include?("(") || previous_citation.dig(:hierarchy, :paragraph)&.include?("("))
       slide_right(:section, :paragraph)
       @data[:section] = previous_citation.dig(:hierarchy, :section).partition("(").first
     end
@@ -227,38 +230,33 @@ class ReferenceParser::Hierarchy
       (context_expected.include?(:section) ||
       context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
 
-    if context[:chapter] && !@data[:chapter].present? &&
-        (@data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?) &&
-        !@data[:section].present? && !results.include?(:section) &&
-        (!context_expected.include?(:section) ||
-        context_expected.include?(:in_suffix) && !captures[:suffix]&.downcase&.include?("subchapter") && captures[:suffix]&.downcase&.include?("chapter"))
-      results << :chapter
+    %i[chapter subchapter part].each do |rank|
+      results << rank if determine_rank_usability(rank: rank, captures: captures, existing: results, exclude_sub: (rank != :part))
     end
-
-    if context[:chapter] && !@data[:chapter].present? &&
-        context_expected.include?(:in_suffix) && !captures[:suffix]&.downcase&.include?("subchapter") && captures[:suffix]&.downcase&.include?("chapter")
-      results << :chapter
-    end
-
-    if context[:subchapter] && !@data[:subchapter].present? &&
-        (@data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?) &&
-        !@data[:section].present? && !results.include?(:section) &&
-        ((!context_expected.include?(:section) && (!context_expected.include?(:chapter) && !results.include?(:chapter))) ||
-        context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("subchapter"))
-      results << :subchapter
-    end
-
-    results << :part if context[:part] && !@data[:part].present? &&
-      (
-        @data[:paragraph].present? ||
-        @data[:subpart].present? ||
-        (@data[:section].present? && !@data[:section]&.include?("."))
-      ) &&
-      (context_expected.include?(:part) ||
-      context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("part"))
 
     puts "determine_available_from_context \"#{results}\" context_expected \"#{context_expected}\"" if @debugging
     results
+  end
+
+  def determine_rank_usability(rank:, captures:, existing:, exclude_sub: true)
+    reason = nil
+
+    if context[rank] && !@data[rank].present? # rank is available in the context, but not yet populated
+      if (rank == :part) && (@data[:paragraph].present? || @data[:subpart].present? || (@data[:section].present? && !@data[:section]&.include?("."))) && context_expected.include?(:part)
+        reason ||= :not_expecting_lower_rank
+      end
+
+      if @data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?
+        if ((rank == :chapter) && !@data[:section].present? && !existing.include?(:section) && !context_expected.include?(:section)) ||
+            ((rank == :subchapter) && !context_expected.include?(:section) && (!context_expected.include?(:chapter) && !existing.include?(:chapter)))
+          reason ||= :not_expecting_lower_rank
+        end
+      end
+      reason ||= :due_to_suffix if context_expected.include?(:in_suffix) && (!exclude_sub || !captures[:suffix]&.downcase&.include?("sub#{rank}")) && captures[:suffix]&.downcase&.include?(rank.to_s)
+    end
+
+    puts "adding #{rank} from context (#{reason})" if reason && @debugging
+    reason
   end
 
   def decide_section_vs_part(expected: {})

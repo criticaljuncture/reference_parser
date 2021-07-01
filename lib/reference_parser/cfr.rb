@@ -278,7 +278,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )?
     (?<section_label>(?:§+|section)\s*)#{SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}
-    (?<suffix>\s*(?:of\s*this\s*(?:title|chapter))?)
+    (?<suffix>\s*(?:of\s*this\s*(?:title|(?:sub)?chapter|(?:sub)?part))?)
     (?:
       (?<spacer>contained\sin\s)
       #{TITLE_SOURCE}
@@ -427,12 +427,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def url(citation, url_options = {})
     return unless citation
+    citation_options = citation[:options] || {}
     citation = citation[:href_hierarchy] || citation[:hierarchy] || (citation&.include?(:title) ? citation : {})
     result = ""
     result << "https://ecfr.federalregister.gov" if absolute?(url_options)
     result << url_current_compare_or_on(url_date_from_options(url_options || {}))
     result << "/title-#{citation[:title]}"
-    result << url_messy_part(citation)
+    result << url_messy_part(citation, options: citation_options)
     result
   end
 
@@ -459,8 +460,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
 
-  def url_messy_part(hierarchy)
-    result = part_or_section_string(hierarchy) <<
+  def url_messy_part(hierarchy, options: {})
+    result = part_or_section_string(hierarchy, options: options) <<
       sublocators_string(hierarchy)
     result << "/subtitle-#{hierarchy[:subtitle]}" if hierarchy[:subtitle].present? && !result.present?
     result << "/chapter-#{hierarchy[:chapter]}" if hierarchy[:chapter].present? && !result.present?
@@ -519,7 +520,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                   href_hierarchy: href_hierarchy.to_h,
                   prefix: prefix,
                   text: text,
-                  suffix: suffix}
+                  suffix: suffix,
+                  options: prepare_citation_options(captures: captures, hierarchy: hierarchy)}
 
       citation[:source] = source if source
 
@@ -590,7 +592,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)
     end
 
-    # byebug if false
     issue = :failure_to_preserve_source_characters if !issue && !preserved_character_count?(captures, results: results)
 
     puts "qualify_match #{issue}" if @debugging && issue
@@ -601,6 +602,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     result_characters = results.map do |result|
       result.values_at(:prefix, :text, :suffix).compact.map(&:length).sum
     end.sum
+    if @debugging
+      text = results.map { |result| result.values_at(:prefix, :text, :suffix).compact.join }.join
+      puts "preserved_character_count? #{result_characters} vs #{captures.captured_characters} \"#{text}\""
+    end
     result_characters == captures.captured_characters
   end
 
@@ -658,6 +663,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     result || {}
   end
 
+  def prepare_citation_options(captures: nil, hierarchy: nil)
+    results = {}
+    if [captures&.options&.[](:context_expected)].flatten&.include?(:in_suffix) && (captures[:suffix].include?("subpart") || captures[:suffix].include?("part"))
+      results[:explicitly_expected] = [:part]
+    end
+    results
+  end
+
   # url related
 
   def title_for(hierarchy)
@@ -666,20 +679,27 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     "#{hierarchy[:title]} CFR"
   end
 
-  def part_or_section_string(hierarchy)
+  def part_or_section_string(hierarchy, options: {})
     return "/section-#{hierarchy[:section]}" if hierarchy[:section] && !hierarchy[:part]
     return "" unless hierarchy[:part]
     return "/part-#{hierarchy[:part]}/subpart-#{hierarchy[:subpart]}" if !hierarchy[:section] && hierarchy[:subpart]
     return "/part-#{hierarchy[:part]}/appendix-#{hierarchy[:appendix]}" if !hierarchy[:section] && hierarchy[:appendix]
     return "/part-#{hierarchy[:part]}" unless hierarchy[:section]
-    "/section-#{hierarchy[:part]}.#{hierarchy[:section]}"
+    result = ""
+    result << "/part-#{hierarchy[:part]}" if hierarchy[:part].present? && options&.[](:explicitly_expected)&.include?(:part)
+    result << "/section-#{section_string(hierarchy)}"
+  end
+
+  def section_string(hierarchy)
+    if hierarchy[:section]&.start_with?(hierarchy[:part] + ".")
+      (hierarchy[:section]).to_s
+    else
+      "#{hierarchy[:part]}.#{hierarchy[:section]}"
+    end
   end
 
   def sublocators_string(hierarchy)
     return "" unless hierarchy[:sublocators]
-    result = "#p-#{hierarchy[:part]}"
-    result << "." if hierarchy[:part] && hierarchy[:section]
-    result << (hierarchy[:section]).to_s if hierarchy[:section]
-    result << (hierarchy[:sublocators]).to_s
+    "#p-" << section_string(hierarchy) << hierarchy[:sublocators]
   end
 end

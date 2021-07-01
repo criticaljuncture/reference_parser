@@ -73,13 +73,13 @@ module ReferenceParser::HierarchyContainer
     end
   end
 
+  def context_expected
+    @context_expected ||= [options&.[](:context_expected)].flatten
+  end
+
   private
 
   def context
     @context ||= options[:context] || {}
-  end
-
-  def context_expected
-    @context_expected ||= [options&.[](:context_expected)].flatten
   end
 end
