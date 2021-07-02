@@ -146,6 +146,7 @@ class ReferenceParser
           if effective_parser
             citation_result = nil
             if block
+              citation[:source] ||= effective_parser.slug
               citation[:text] = citation[:text] || match[0]
               prefix = citation[:prefix] || ""
               prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: true)
