@@ -62,6 +62,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|through)\s*/ixo
   JOIN_SECTION = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
 
+  SUBTITLE_LABEL = /(?<subtitle_label>subtitle\s*)/ix
+  SUBTITLE = /(?<subtitle>[A-Z])/ix
   CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?)?\s*)/ix
   CHAPTER = /(?<chapter>#{CHAPTER_ID})/ixo
   SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(?:ap(?:ter)?)?\s*)/ix
@@ -198,18 +200,22 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   APPENDIX = /(?<appendix_label>,?\s*appendix\s*)(?<section>[A-Z]+)/ixo
 
   # reference replacements
+  replace(/
+      #{TITLE_SOURCE}
+      #{SUBTITLE_LABEL}#{SUBTITLE}                    # labelled subtitle
+    /ixo)
 
   replace(/
-      #{TITLE_SOURCE}                                   # title
-      (?<part_label>part\s*)?(?<part>\d+)                # labelled part
+      #{TITLE_SOURCE}                                 # title
+      (?:#{PART_LABEL})?#{PART}                       # labelled part
       #{SUBPART_LABEL}#{SUBPARTS}
       (?:#{APPENDIX})?
     /ixo)
 
   replace(/
-      #{TITLE_SOURCE}                                   # title
-      (?<chapter_label>chapter\s*)                      # labelled chapter
-      (?<chapter>[A-Z]+\s*)
+      #{TITLE_SOURCE}
+      #{CHAPTER_LABEL}#{CHAPTER}                      # labelled chapter
+      (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
     /ixo)
 
   replace(/
@@ -229,9 +235,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ix, if: :context_present?, context_expected: :title)
 
   replace(/
-    (?<subtitle_label>subtitle\s*)(?<subtitle>[A-Z])  # subtitle - required
+    #{SUBTITLE_LABEL}#{SUBTITLE}                      # subtitle - required
     (?<suffix>\s*of\s*this\s*title)                   # of this title
-    /ix, if: :context_present?, context_expected: :title)
+    /ixo, if: :context_present?, context_expected: :title)
 
   replace(/
     (?:(?<prefixed_subpart_label>subpart\s*)(?<prefixed_subpart>[A-Z]+)
@@ -397,7 +403,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /
     #{TITLE_SOURCE_ALLOW_SLASH_SHORTHAND}
     /ixo
-  }, prepend_pattern: true)
+  })
+
+  replace(->(context, options) {
+    return unless options[:best_guess]
+    /
+    (?<title_label>Title\s*)(?<title>#{TITLE_ID})
+    (?<source_label>\s*of\s*the\s*#{CFR_LABEL}\s*)
+    /ixo
+  })
 
   replace(->(context, options) {
     return unless options[:best_guess]

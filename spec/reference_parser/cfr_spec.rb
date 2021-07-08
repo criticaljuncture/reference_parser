@@ -645,6 +645,16 @@ SCENERIOS_CFR = [
   ],
 
   "from cfr citation parser spec", [
+    # #22
+    {ex: "14 CFR Chapter I", options: {cfr: {best_guess: true}}, citation: {title: "14", chapter: "I"}},
+    {ex: "14 CFR Chapter II Subchapter A", options: {cfr: {best_guess: true}}, citation: {title: "14", chapter: "II", subchapter: "A"}},
+    {ex: "14 CFR Part 25", options: {cfr: {best_guess: true}}, citation: {title: "14", part: "25"}},
+    {ex: "Title 14 of the CFR", options: {cfr: {best_guess: true}}, citation: {title: "14"}},
+    {ex: "2 CFR subtitle A", options: {cfr: {best_guess: true}}, citation: {title: "2", subtitle: "A"}},
+    {ex: "14 CFR chapter IV", options: {cfr: {best_guess: true}}, citation: {title: "14", chapter: "IV"}},
+    {ex: "14 CFR chapter IV subchapter Z", options: {cfr: {best_guess: true}}, citation: {title: "14", chapter: "IV", subchapter: "Z"}},
+    {ex: "14 CFR part Y subpart Z", options: {cfr: {best_guess: true}}, citation: {title: "14", part: "Y", subpart: "Z"}},
+
     {ex: "5 CFR 500.5", options: {cfr: {best_guess: true}}, citation: {title: "5", section: "500.5"}},
     {ex: "1 cfr 100", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", part: "100"}},
     {ex: "1 cfr 100", options: {cfr: {best_guess: true}}, citation: {title: "1", section: "100"}},
