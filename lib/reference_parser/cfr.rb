@@ -705,7 +705,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def section_string(hierarchy)
-    if hierarchy[:section]&.start_with?(hierarchy[:part] + ".")
+    if hierarchy[:part] && hierarchy[:section]&.start_with?(hierarchy[:part] + ".")
       (hierarchy[:section]).to_s
     else
       "#{hierarchy[:part]}.#{hierarchy[:section]}"
