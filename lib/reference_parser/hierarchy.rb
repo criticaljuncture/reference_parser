@@ -134,9 +134,9 @@ class ReferenceParser::Hierarchy
     # paragraphs rolled up into sections
     allow_rollup = captures[:rolled_up_paragraphs] || (options[:source] != :cfr)
     if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] &&
-        (previous_citation.dig(:hierarchy, :section)&.include?("(") || previous_citation.dig(:hierarchy, :paragraph)&.include?("("))
+        (previous_hierarchy[:section]&.include?("(") || previous_hierarchy[:paragraph]&.include?("("))
       slide_right(:section, :paragraph)
-      @data[:section] = previous_citation.dig(:hierarchy, :section).partition("(").first
+      @data[:section] = previous_hierarchy[:section].partition("(").first
     end
   end
 

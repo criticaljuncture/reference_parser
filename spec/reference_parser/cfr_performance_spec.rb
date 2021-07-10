@@ -28,4 +28,27 @@ RSpec.describe ReferenceParser::Cfr do
       end
     end
   end
+
+  describe "diagnose perf triggering file" do
+    if File.exist?("spec/fixtures/files/performance/performance_issue.html")
+      let(:html) { File.read("spec/fixtures/files/performance/performance_issue.html") }
+      let(:options) { {cfr: {context: {composite_hierarchy: "1::1.1", title: "1", section: "1.1"}}} }
+
+      it "verify timeout" do
+        t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        unless times_out(html, 0, html.length, options, timeout: 5 * 60)
+          t2 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          delta = t2 - t1
+          fail("successfully processed in #{delta.round(2)}s")
+        end
+      end
+    end
+
+    def times_out(html, range_start, range_end, options, timeout: 3)
+      ReferenceParser.new(options: {timeout: timeout}.merge(options || {})).hyperlink(html[range_start..range_end])
+      false
+    rescue ReferenceParser::ParseTimeout
+      true
+    end
+  end
 end

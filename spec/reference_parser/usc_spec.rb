@@ -90,8 +90,9 @@ SCENERIOS_USC = [
    with_surrounding_text: "under I.R.C. § 6212, which entitles"},
 
   {ex: "defined in 5 U.S.C. 2105 and -",
-   citations: [{title: "5", part: "2105"}], context: {title: "5", section: "531.203"}}
+   citations: [{title: "5", part: "2105"}], context: {title: "5", section: "531.203"}},
 
+  {ex: "26 U.S.C. (IRC) 6621,", citations: {title: "26", part: "6621"}}
 ]
 
 RSpec.describe ReferenceParser::Usc do

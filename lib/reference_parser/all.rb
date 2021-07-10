@@ -1,6 +1,7 @@
 require_relative "version"
 require_relative "paragraph"
 require_relative "guesses"
+require_relative "known"
 require_relative "capture_order"
 require_relative "hierarchy_container"
 require_relative "hierarchy"
