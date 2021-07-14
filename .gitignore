@@ -8,4 +8,4 @@ log/*
 pkg/*
 .DS_Store
 .env
-spec/fixtures/files/performance/performance_issue.html
+spec/fixtures/files/performance/*.html

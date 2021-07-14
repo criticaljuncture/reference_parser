@@ -452,6 +452,12 @@ SCENERIOS_CFR = [
     {ex: '<div class="section" id="1.100">...</div>', context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.100"}},
     {ex: "<div class='section' id='1.100'>...</div>", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.100"}},
 
+    {ex: '<div class="appendix" id="Appendix-to-19-CFR-Part-0">', context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "19", section: "Appendix to 19 CFR Part 0"}},
+    {ex: ">Appendix to 19 CFR Part 0 - Treasury Department Order No. 100-16 <", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "19", section: "Appendix to 19 CFR Part 0"}},
+    {ex: "Appendix B to 5 CFR Chapter XIV - Memorandum", citation: :expect_none, html_appearance: :expect_none, context: {title: "5", section: "Appendix B to 5 CFR Chapter XIV"}},
+    {ex: ">Appendix B to 5 CFR Chapter XIV - Memorandum", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "5", section: "Appendix B to 5 CFR Chapter XIV"}},
+    {ex: "Appendix to Subpart B of 2 CFR Part 176 - U.S. States", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "2", section: "Appendix to Subpart B of 2 CFR Part 176"}},
+    
     {ex: "section 1506 of title 44, United States Code", options: {only: [:cfr]}, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.1"},
      with_surrounding_text: "established under section 1506 of title 44, United States Code"},
 

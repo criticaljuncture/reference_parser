@@ -3,6 +3,7 @@ class ReferenceParser::Replacement
     :pattern_slug,
     :if_clause,
     :prepend_pattern,
+    :will_consider_pre_match,
     :will_consider_post_match,
     :debug_pattern
 
@@ -14,11 +15,12 @@ class ReferenceParser::Replacement
     :ignore?,
     to: :parser
 
-  def initialize(regexp = nil, pattern_slug: nil, if: nil, context_expected: nil, will_consider_post_match: false, prepend_pattern: false, debug_pattern: false, &block)
+  def initialize(regexp = nil, pattern_slug: nil, if: nil, context_expected: nil, will_consider_pre_match: false, will_consider_post_match: false, prepend_pattern: false, debug_pattern: false, &block)
     @regexp = regexp
     @prepend_pattern = prepend_pattern
     @debug_pattern = debug_pattern
     @context_expected = context_expected
+    @will_consider_pre_match = will_consider_pre_match
     @will_consider_post_match = will_consider_post_match
     @pattern_slug = pattern_slug
     @if_clause = binding.local_variable_get(:if)

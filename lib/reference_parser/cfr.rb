@@ -203,20 +203,20 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(/
       #{TITLE_SOURCE}
       #{SUBTITLE_LABEL}#{SUBTITLE}                    # labelled subtitle
-    /ixo)
+    /ixo, will_consider_pre_match: true)
 
   replace(/
       #{TITLE_SOURCE}                                 # title
       (?:#{PART_LABEL})?#{PART}                       # labelled part
       #{SUBPART_LABEL}#{SUBPARTS}
       (?:#{APPENDIX})?
-    /ixo)
+    /ixo, will_consider_pre_match: true)
 
   replace(/
       #{TITLE_SOURCE}
       #{CHAPTER_LABEL}#{CHAPTER}                      # labelled chapter
       (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
-    /ixo)
+    /ixo, will_consider_pre_match: true)
 
   replace(/
       #{TITLE_SOURCE}
@@ -225,7 +225,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{SECTIONS}
       #{PARAGRAPH}
       #{TRAILING_BOUNDRY}
-    /ixo)
+    /ixo, will_consider_pre_match: true)
 
   # partial reference replacements (of this ...)
 
@@ -273,6 +273,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   LIKELY_UNLINKABLE = /revised.{0,18}(?<revised_year>(?:19|20)\d{2})/ix
 
+  UNLINKABLE_PRE_MATCH = /(?:Appendix\s*to\s*)|(?:Appendix\s*[A-Z0-9]{0,3}\s*to\s*\z)/ix
+
   # loose section
 
   replace(/
@@ -291,7 +293,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PART_LABEL}#{PART}
     )?
     #{TRAILING_BOUNDRY}
-    /ixo, pattern_slug: :loose_section, if: :context_present?, will_consider_post_match: true, context_expected: %i[title in_suffix])
+    /ixo, pattern_slug: :loose_section, if: :context_present?, will_consider_pre_match: true, will_consider_post_match: true, context_expected: %i[title in_suffix])
 
   # paragraphs
 
@@ -381,7 +383,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{TRAILING_BOUNDRY}
     #{NEXT_TITLE_STOP}
     /ix
-  }, prepend_pattern: true)
+  }, prepend_pattern: true, will_consider_pre_match: true)
 
   # context specific patterns
 
@@ -601,6 +603,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
 
     if !options[:source] || (options[:source] == :cfr)
+      issue ||= :pre_match_unlinkable if options[:pre_match].present? && (UNLINKABLE_PRE_MATCH =~ options[:pre_match])
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_CFR_TITLE)
     elsif options[:source] == :federal_register
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)

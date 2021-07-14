@@ -127,6 +127,7 @@ class ReferenceParser
         named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
         replacement_options = build_options(replacement.parser, @options, {})
         replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
+        replacement_options[:pre_match] = searchable_text[([0, (match.begin(0) - 32)].max)..([0, (match.begin(0) - 1)].max)] if replacement.will_consider_pre_match
         replacement_options[:post_match] = searchable_text[match.end(0)..match.end(0) + 64] if replacement.will_consider_post_match
 
         citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
