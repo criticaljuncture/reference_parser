@@ -2,10 +2,10 @@ require "spec_helper"
 
 SCENERIOS_CFR = [
   "DDH table 2-7 (p68/2-50)", [
-    {ex: "1 CFR chapter I", citation: {title: "1", chapter: "I"}},
-    {ex: "1 CFR part 2", citation: {title: "1", chapter: "I", part: "2"}, optional: [:chapter]},
-    {ex: "1 CFR 2.7", citation: {title: "1", chapter: "I", part: "2", section: "2.7"}, optional: [:chapter, :part]},
-    {ex: "1 CFR 2.7(a)(2)", citation: {title: "1", chapter: "I", part: "2", section: "2.7", paragraph: "(a)(2)"}, optional: [:chapter, :part]}
+    {ex: "1 CFR chapter I", citation: {title: "1", chapter: "I"}, expected_url: "/current/title-1/chapter-I"},
+    {ex: "1 CFR part 2", citation: {title: "1", chapter: "I", part: "2"}, optional: [:chapter], expected_url: "/current/title-1/part-2"},
+    {ex: "1 CFR 2.7", citation: {title: "1", chapter: "I", part: "2", section: "2.7"}, optional: [:chapter, :part], expected_url: "/current/title-1/section-2.7"},
+    {ex: "1 CFR 2.7(a)(2)", citation: {title: "1", chapter: "I", part: "2", section: "2.7", paragraph: "(a)(2)"}, optional: [:chapter, :part], expected_url: "/current/title-1/section-2.7#p-2.7(a)(2)"}
   ],
   "DDH table 2-8 (p68/2-50)", [
     {ex: "chapter II of this title", citation: {title: "1", chapter: "II"}, context: {title: "1", chapter: "I"}, context_specific: true},
@@ -235,7 +235,8 @@ SCENERIOS_CFR = [
      with_surrounding_text: "outlined in §§ 101.8 to 101.15, inclusive."},
 
     # (#20)
-    {ex: "31 CFR chapter IX § 901.1", text: "31 CFR chapter IX § 901.1", citation: {title: "31", chapter: "IX", section: "901.1"}, context: {title: "29", section: "100.609"}},
+    {ex: "31 CFR chapter IX § 901.1", text: "31 CFR chapter IX § 901.1", citation: {title: "31", chapter: "IX", section: "901.1"}, context: {title: "29", section: "100.609"},
+     expected_url: "/current/title-31/section-901.1"},
 
     # (#20)
     {ex: "1 CFR part 51", citations: [{title: "5", section: "552", paragraph: "(a)"}, {title: "1", part: "51"}], context: {title: "39", section: "20.1"},
@@ -297,7 +298,8 @@ SCENERIOS_CFR = [
 
     # /current/title-10/section-490.307
     {ex: "10 CFR part 1003, subpart C", citation: {title: "10", part: "1003", subpart: "C"}, context: {title: "10", section: "490.307"},
-     with_surrounding_text: "pursuant to 10 CFR part 1003, subpart C, with the"},
+     with_surrounding_text: "pursuant to 10 CFR part 1003, subpart C, with the",
+     expected_url: "/current/title-10/part-1003/subpart-C"},
 
     # /current/title-10/appendix-Appendix%20B%20to%20Part%20851
     {ex: "10 CFR part 1003, Subpart G", citation: {title: "10", part: "1003", subpart: "G"}, context: {title: "10", appendix: "Appendix%20B%20to%20Part%20851"},
@@ -305,7 +307,8 @@ SCENERIOS_CFR = [
 
     # /current/title-10/section-429.53
     {ex: "10 CFR part 431, subpart R, appendix C", citation: {title: "10", part: "431", subpart: "R", appendix: "C"}, context: {title: "10", appendix: "429.53"},
-     with_surrounding_text: "test procedure in 10 CFR part 431, subpart R, appendix C. Follow"},
+     with_surrounding_text: "test procedure in 10 CFR part 431, subpart R, appendix C. Follow",
+     expected_url: "/current/title-10/part-431/subpart-R/appendix-Appendix%20C%20to%20Part%20431"},
 
     # /current/title-12/section-238.153
     {ex: "12 CFR part 217, subparts D and E", citations: [{title: "12", part: "217", subpart: "D"},
@@ -359,7 +362,7 @@ SCENERIOS_CFR = [
 
     # #21 /current/title-46/section-69.11
     {ex: "subpart B of this part", citation: {title: "46", chapter: "I", part: "69", subpart: "B"}, context: {title: "46", chapter: "I", subchapter: "G", part: "69", subpart: "A", section: "69.11"},
-     with_surrounding_text: "(subpart B of this part)", expected_url: "/current/title-46/part-69/subpart-B"}
+     with_surrounding_text: "(subpart B of this part)", expected_url: "/current/title-46/part-69/subpart-B"},
 
     # {ex: "granted merit status under 35 CFR chapter I, subchapter E;", citation: {title: "35", chapter: "I", subchapter: "E"}, context: {title: "5", section: "831.201"}}
 
@@ -369,6 +372,38 @@ SCENERIOS_CFR = [
 
     # /current/title-10/section-55.46
     # ensure that paragraphs (c)(2)(ii), as applicable, and (d)(3) of this section are met
+
+    # #24 /current/title-31/subtitle-A/part-29/subpart-A/section-29.102
+    {ex: "Part 581 of Title 5, Code of Federal Regulations", citation: {title: "5", part: "581"}},
+
+    # # #24 /current/title-31/subtitle-A/part-29/subpart-A/section-29.102
+    # {ex: "Parts 835 and 845 and subparts M, N, and R of part 831 of title 5, Code of Federal Regulations",
+    #   citations: [
+    #     {title: "5", part: "835"},
+    #     {title: "5", part: "845"},
+    #     {title: "5", part: "831", subpart: "M"},
+    #     {title: "5", part: "831", subpart: "N"},
+    #     {title: "5", part: "831", subpart: "R"},
+    #   ]
+    # },
+
+    # #24 /current/title-33/chapter-I/subchapter-O/part-159/subpart-C/section-159.97
+    {ex: "subchapter F of Title 46, Code of Federal Regulations", citation: {title: "46", subchapter: "F"},
+     expected_url: "/current/title-46/subchapter-F"},
+
+    # #24 /current/title-48/chapter-2/subchapter-H/part-252/subpart-252.2/section-252.204-7018
+    {ex: "subchapter M of chapter I of title 22, Code of Federal Regulations", citation: {title: "22", chapter: "I", subchapter: "M"},
+     expected_url: "/current/title-22/chapter-I/subchapter-M"},
+
+    # #24 /current/title-34/subtitle-B/chapter-III/part-303/subpart-B/subject-group-ECFRcd7caaaa2680a00/section-303.104
+    {ex: "Appendix A of subpart 101-19.6 of title 41, Code of Federal Regulations", citation: {title: "41", appendix: "A", subpart: "101-19.6"}},
+
+    # #24
+    {ex: "Appendix A of part 36 of title 28, Code of Federal Regulations", citation: {title: "28", appendix: "A", part: "36"},
+     expected_url: "/current/title-28/part-36/appendix-Appendix%20A%20to%20Part%2036"},
+
+    # #24 https://ecfr.federalregister.gov/current/title-21/chapter-I/subchapter-D/part-314/subpart-A/section-314.1
+    {ex: "subchapter F of chapter I of title 21 of the Code of Federal Regulations", citation: {title: "21", chapter: "I", subchapter: "F"}}
 
   ],
 
@@ -457,7 +492,7 @@ SCENERIOS_CFR = [
     {ex: "Appendix B to 5 CFR Chapter XIV - Memorandum", citation: :expect_none, html_appearance: :expect_none, context: {title: "5", section: "Appendix B to 5 CFR Chapter XIV"}},
     {ex: ">Appendix B to 5 CFR Chapter XIV - Memorandum", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "5", section: "Appendix B to 5 CFR Chapter XIV"}},
     {ex: "Appendix to Subpart B of 2 CFR Part 176 - U.S. States", context_specific: true, citation: :expect_none, html_appearance: :expect_none, context: {title: "2", section: "Appendix to Subpart B of 2 CFR Part 176"}},
-    
+
     {ex: "section 1506 of title 44, United States Code", options: {only: [:cfr]}, citation: :expect_none, html_appearance: :expect_none, context: {title: "1", section: "1.1"},
      with_surrounding_text: "established under section 1506 of title 44, United States Code"},
 

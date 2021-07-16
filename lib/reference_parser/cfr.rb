@@ -17,7 +17,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBPART_ID_ADDITIONAL = /\w{1,4}([.\-–—][\w.\-–—]{0,5}|)(?:suspended)?\b/ix
   SECTION_ID = /[\w\-]+.?[\w\-–—()]*/ix
 
-  CFR_LABEL = /C\.?\s*F\.?\s*R\.?/ix
+  CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
   IRC_LABEL = /I(?:nternal)?\.?\s*R(?:evenue)?\.?\s*C(?:ode)?\.?/ix
   FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
@@ -258,6 +258,38 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix>\s*of\s*this\s*part)                    # of this part
     /ixo, if: :context_present?, context_expected: %i[title part])
 
+  replace(/
+    (?:
+      (?<section>appendix\s*[A-Z])
+      (?<appendix_of>\s*of\s*)
+      (?:
+        (?<prefixed_subpart_label>subpart\s*)
+        (?<prefixed_subpart>#{SUBPART_ID})
+        (?<prefixed_subpart_of>\s*of\s*)
+      )?
+      (?:
+        (?<prefixed_part_label>part\s*)
+        (?<prefixed_part>#{PART_ID})
+        (?<prefixed_part_of>\s*of\s*)
+      )?
+    )?
+    (?:
+      (?<subchapter_label>subchapter\s*)#{SUBCHAPTER}
+      (?<subchapter_of>\s*of\s*)
+    )?
+    (?:
+      (?<chapter_label>chapter\s*)#{CHAPTER}
+      (?<chapter_of>\s*of\s*)
+    )?
+    (?:
+      (?<part_label>Part\s*)#{PART}
+      (?<part_of>\s*of\s*)
+    )?
+    (?<title_label>Title\s*)(?<title>#{TITLE_ID})
+    (?<title_connector>\s*(?:,|of\s*the)?)
+    #{SOURCE_LABEL}
+    /ixo, will_consider_pre_match: true)
+
   LIKELY_EXTERNAL_SECTIONS = /
       of\s*
       (?:the|those)
@@ -480,7 +512,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     result = part_or_section_string(hierarchy, options: options) <<
       sublocators_string(hierarchy)
     result << "/subtitle-#{hierarchy[:subtitle]}" if hierarchy[:subtitle].present? && !result.present?
-    result << "/chapter-#{hierarchy[:chapter]}" if hierarchy[:chapter].present? && !result.present?
+    if !result.present?
+      result << "/chapter-#{hierarchy[:chapter]}" if hierarchy[:chapter].present?
+      result << "/subchapter-#{hierarchy[:subchapter]}" if hierarchy[:subchapter].present?
+    end
     result
   end
 
@@ -493,8 +528,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     # create captures (expected to preserve fidelity of original text for output)
     captures = ReferenceParser::HierarchyCaptures.new(options: options, debugging: @debugging).from_named_captures(captures)
     captures.determine_repeated_capture
-
-    # puts "#{first_loop_named_captures} |#{captures.repeated_capture}| #{last_loop_named_captures}" if @debugging
 
     previous_citation = nil
     captures.repeated&.each_with_index do |what, index|
@@ -697,12 +730,18 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def part_or_section_string(hierarchy, options: {})
-    return "/section-#{hierarchy[:section]}" if hierarchy[:section] && !hierarchy[:part]
-    return "" unless hierarchy[:part]
-    return "/part-#{hierarchy[:part]}/subpart-#{hierarchy[:subpart]}" if !hierarchy[:section] && hierarchy[:subpart]
-    return "/part-#{hierarchy[:part]}/appendix-#{hierarchy[:appendix]}" if !hierarchy[:section] && hierarchy[:appendix]
-    return "/part-#{hierarchy[:part]}" unless hierarchy[:section]
     result = ""
+    content = hierarchy[:appendix] || hierarchy[:section]
+    return "/section-#{hierarchy[:section]}" if hierarchy[:section] && !hierarchy[:part]
+    return "/part-#{hierarchy[:part]}/subpart-#{hierarchy[:subpart]}" if !content && hierarchy[:subpart]
+    if !hierarchy[:section] && hierarchy[:appendix]
+      result << "/part-#{hierarchy[:part]}" if hierarchy[:part]
+      result << "/subpart-#{hierarchy[:subpart]}" if hierarchy[:subpart]
+      result << "/appendix-#{hierarchy[:appendix]}" if hierarchy[:appendix]
+      return result
+    end
+    return "" unless hierarchy[:part]
+    return "/part-#{hierarchy[:part]}" unless hierarchy[:section]
     result << "/part-#{hierarchy[:part]}" if hierarchy[:part].present? && options&.[](:explicitly_expected)&.include?(:part)
     result << "/section-#{section_string(hierarchy)}"
   end

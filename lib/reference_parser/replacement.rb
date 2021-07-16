@@ -31,9 +31,7 @@ class ReferenceParser::Replacement
   end
 
   def regexp
-    result = @regexp.respond_to?(:call) ? @regexp.call(options&.[](:context) || {}, options || {}) : @regexp
-    puts "result #{result}" if @debug_pattern && parser&.debugging
-    result
+    @regexp.respond_to?(:call) ? @regexp.call(options&.[](:context) || {}, options || {}) : @regexp
   end
 
   def describe

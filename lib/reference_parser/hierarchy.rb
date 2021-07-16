@@ -53,6 +53,7 @@ class ReferenceParser::Hierarchy
 
     decide_section_vs_part(expected: expected)
 
+    slide_right(:prefixed_part, :part)
     slide_right(:prefixed_subpart, :subpart)
     slide_right(:prefixed_paragraph, :paragraph)
 
@@ -200,7 +201,9 @@ class ReferenceParser::Hierarchy
     if @data[:appendix].present?
       appendix = @data[:appendix]
       appendix = (captures[:appendix_label] + appendix).strip if captures[:appendix_label].present?
-      @data[:appendix] = "#{appendix} to Part #{@data[:part]}".gsub(" ", "%20").gsub("appendix", "Appendix")
+      appendix = appendix.strip.delete_prefix(",").strip
+      appendix << " to Part #{@data[:part]}" if @data[:part].present?
+      @data[:appendix] = appendix.to_s.gsub(" ", "%20").gsub("appendix", "Appendix")
     end
 
     # from match 12 CFR § 275.206(a)(3)-3 expecting "/on/2021-05-17/title-12/section-275.206(a)(3)-3"

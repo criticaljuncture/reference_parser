@@ -216,8 +216,11 @@ class ReferenceParser
     all = @parsers.flat_map(&:replacements)
 
     if @debugging
-      debug = all.detect { |r| r.debug_pattern }
-      return [debug] if debug.present?
+      debug = all.select { |r| r.debug_pattern }
+      if debug.present?
+        puts "merged pattern \n #{merge_patterns_from(debug)}"
+        return debug
+      end
     end
 
     # move prepend_pattern replacements to the front
