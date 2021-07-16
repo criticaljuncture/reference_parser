@@ -44,7 +44,8 @@ SCENERIOS_CFR = [
     {ex: "Title 1 Ch I Subch B", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B"}},
     {ex: "14 Chapter V Part 1266 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102"}},
     {ex: "1 Chapter I Subchapter B", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B"}},
-    {ex: "14/1266", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", part: "1266"}}
+    {ex: "14/1266", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", part: "1266"}},
+    {ex: "41 CFR subpart 101-19.6", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "41", subpart: "101-19.6"}}
   ],
 
   "extracts", [

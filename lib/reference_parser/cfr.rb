@@ -104,19 +104,19 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   OPTIONAL_PARENTHETICALS = /#{PARENTHETICALS}*/ixo
 
-  PARAGRAPH_UNLABELLED = /\s*#{PARENTHETICALS}*(-\d+)?/ixo
-  PARAGRAPH_UNLABELLED_REQUIRED = /\s*#{PARENTHETICALS}+(-\d+)?/ixo
+  PARAGRAPH_UNLABELED = /\s*#{PARENTHETICALS}*(-\d+)?/ixo
+  PARAGRAPH_UNLABELED_REQUIRED = /\s*#{PARENTHETICALS}+(-\d+)?/ixo
 
-  PARAGRAPH = /(?<paragraph>#{PARAGRAPH_UNLABELLED})/ixo
-  PARAGRAPH_REQUIRED = /(?<paragraph>#{PARAGRAPH_UNLABELLED_REQUIRED})/ixo
+  PARAGRAPH = /(?<paragraph>#{PARAGRAPH_UNLABELED})/ixo
+  PARAGRAPH_REQUIRED = /(?<paragraph>#{PARAGRAPH_UNLABELED_REQUIRED})/ixo
 
   PARAGRAPHS = /
     (?<paragraphs>                          # list of paragraphs
       (?:
-        #{PARAGRAPH_UNLABELLED_REQUIRED}
+        #{PARAGRAPH_UNLABELED_REQUIRED}
         (?:
           (?:\s|,|and|or|through)+
-          #{PARAGRAPH_UNLABELLED_REQUIRED}
+          #{PARAGRAPH_UNLABELED_REQUIRED}
         )*
       )
     )
@@ -126,7 +126,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   (?<prefixed_paragraphs>                          # list of paragraphs
     (?:
       (?:\s*and\s*)?
-      #{PARAGRAPH_UNLABELLED_REQUIRED}
+      #{PARAGRAPH_UNLABELED_REQUIRED}
     )*
   )
   /ixo
@@ -136,7 +136,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<paragraphs>                          # list of paragraphs
       (?:
         (?:\s|,|and|or|through||-)+
-        (?:#{PARAGRAPH_UNLABELLED_REQUIRED}|\d+\.\d+)
+        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|\d+\.\d+)
       )*
     )
     /ixo
@@ -145,7 +145,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<paragraphs>                          # list of paragraphs
       (?:
         (?:\s|,|and|or|through||-)+
-        (?:#{PARAGRAPH_UNLABELLED_REQUIRED}|\d+\.\d+)
+        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|\d+\.\d+)
         (?:
           [a-z]\d?-\d+[a-z]?
         )?
@@ -173,7 +173,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   # 240.15c3-1e(a)(1)(viii)(G)
 
-  SECTION_UNLABELLED = /
+  SECTION_UNLABELED = /
     \d+#{NEXT_TITLE_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
     #{OPTIONAL_PARENTHETICALS}
     (?:
@@ -186,13 +186,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     \s*#{NEXT_TITLE_STOP}
     /ixo
 
-  SECTION = /(?<section>#{SECTION_UNLABELLED})/ixo
+  SECTION = /(?<section>#{SECTION_UNLABELED})/ixo
 
   SECTIONS = /
     (?<sections>
       (?:
         (?:#{JOIN_SECTION})?
-        #{SECTION_UNLABELLED}                         # additional sections
+        #{SECTION_UNLABELED}                         # additional sections
       )+
     )
     /ixo
@@ -202,19 +202,25 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # reference replacements
   replace(/
       #{TITLE_SOURCE}
-      #{SUBTITLE_LABEL}#{SUBTITLE}                    # labelled subtitle
+      #{SUBTITLE_LABEL}#{SUBTITLE}                    # labeled subtitle
     /ixo, will_consider_pre_match: true)
 
   replace(/
       #{TITLE_SOURCE}                                 # title
-      (?:#{PART_LABEL})?#{PART}                       # labelled part
+      (?:#{PART_LABEL})?#{PART}                       # labeled part
       #{SUBPART_LABEL}#{SUBPARTS}
       (?:#{APPENDIX})?
     /ixo, will_consider_pre_match: true)
 
   replace(/
+      #{TITLE_SOURCE}                                 # title
+      #{SUBPART_LABEL}#{SUBPARTS}                     # labeled subpart
+      (?:#{APPENDIX})?
+    /ixo, will_consider_pre_match: true)
+
+  replace(/
       #{TITLE_SOURCE}
-      #{CHAPTER_LABEL}#{CHAPTER}                      # labelled chapter
+      #{CHAPTER_LABEL}#{CHAPTER}                      # labeled chapter
       (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
     /ixo, will_consider_pre_match: true)
 
@@ -339,7 +345,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:
         (?:#{ReferenceParser::HierarchyCaptures::LIST_EXAMPLES})?
         paragraph\s*
-        #{PARAGRAPH_UNLABELLED}
+        #{PARAGRAPH_UNLABELED}
         (?:,\s*(?:and\s*)?)?
       )+
     )
@@ -422,7 +428,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, _) {
     return unless context[:section].present? && context[:section].include?(".") && (context[:section].length > 3)
     /
-    (?<!=(?:'|"|\#)|=(?:'|"|\#)p-|>|§\s|\#)           # properly labelled can be matched by non-context pattern, avoid tags
+    (?<!=(?:'|"|\#)|=(?:'|"|\#)p-|>|§\s|\#)           # properly labeled can be matched by non-context pattern, avoid tags
     (?<section>#{Regexp.escape(context[:section])})   # current section anchor
     (?<paragraph>
       #{PARAGRAPH}
@@ -461,7 +467,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, options) {
     return unless options[:best_guess]
     /
-    (?<title>\d+)                                     # title unlabelled
+    (?<title>\d+)                                     # title unlabeled
     #{CHAPTER_LABEL}#{CHAPTER}                        # chapter pattern anchor
     (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
     (?:#{PART_LABEL}#{PART})?
