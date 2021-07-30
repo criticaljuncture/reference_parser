@@ -14,6 +14,9 @@ jobs:
           name: Bundle install, without requiring a Gemfile.lock
           command: bundle install --jobs=4 --retry=3 --path vendor/bundle
       - ruby/rspec-test
+      - run:
+          name: rubocop
+          command: bundle exec rubocop
       - slack/notify:
           channel: ofr
           event: fail

@@ -1,0 +1,19 @@
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  Exclude:
+    - bin/*
+  TargetRubyVersion: 2.6
+Style/GlobalVars:
+  Enabled: true
+  AllowedVariables: [$redis]
+
+require:
+  - rubocop-performance
+  - standard/cop/block_single_line_braces
+  - rubocop-rspec
+
+inherit_gem:
+  standard: config/base.yml
