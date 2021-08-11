@@ -404,7 +404,11 @@ SCENERIOS_CFR = [
      expected_url: "/current/title-28/part-36/appendix-Appendix%20A%20to%20Part%2036"},
 
     # #24 https://ecfr.federalregister.gov/current/title-21/chapter-I/subchapter-D/part-314/subpart-A/section-314.1
-    {ex: "subchapter F of chapter I of title 21 of the Code of Federal Regulations", citation: {title: "21", chapter: "I", subchapter: "F"}}
+    {ex: "subchapter F of chapter I of title 21 of the Code of Federal Regulations", citation: {title: "21", chapter: "I", subchapter: "F"}},
+
+    # IBR
+    {ex: "7 CFR Part 210, Appendix A", citation: {title: "7", part: "210", appendix: "A"},
+     expected_url: "/current/title-7/part-210/appendix-Appendix%20A%20to%20Part%20210"}
 
   ],
 

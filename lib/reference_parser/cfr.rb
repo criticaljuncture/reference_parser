@@ -198,6 +198,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo
 
   APPENDIX = /(?<appendix_label>,?\s*appendix\s*)(?<section>[A-Z]+)/ixo
+  APPENDIX_EXPLICT = /(?<appendix_label>,?\s*appendix\s*)(?<appendix>[A-Z]+)/ixo
 
   # reference replacements
   replace(/
@@ -230,6 +231,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?<section_label>(§+|sec\.?(tion)?)\s*)?
       #{SECTIONS}
       #{PARAGRAPH}
+      (?:#{APPENDIX_EXPLICT})?
       #{TRAILING_BOUNDRY}
     /ixo, will_consider_pre_match: true)
 

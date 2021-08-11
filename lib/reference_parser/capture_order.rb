@@ -55,7 +55,7 @@ class ReferenceParser::CaptureOrder
       names.insert(insert_at, right)
     elsif !left_index && right_index
       insert_at = right_index - 1
-      insert_at -= 1 while (insert_at > 0) && names[insert_at].to_s.start_with?(right)
+      insert_at -= 1 while (insert_at > 0) && names[insert_at].to_s.start_with?(right.to_s)
       names.insert(right_index - 1, left)
     end
   end

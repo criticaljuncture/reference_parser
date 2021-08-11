@@ -49,6 +49,7 @@ class ReferenceParser::HierarchyCaptures
     ranks.concat(%i[subpart prefixed_subpart]) if expected[:subpart]
     ranks << :part if expected[:part]
     ranks.concat(%i[paragraph prefixed_paragraph])
+    ranks << :appendix if expected[:appendix]
     ReferenceParser::Hierarchy.new(@data.slice(*ranks), options: @options, debugging: @debugging)
   end
 
