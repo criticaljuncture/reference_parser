@@ -24,7 +24,7 @@ class ReferenceParser::CaptureOrder
 
   def prepare(named_captures)
     return unless named_captures
-    results = named_captures.select { |k, v| v.present? }.keys
+    results = named_captures.select { |k, v| !v&.empty? }.keys
 
     to_add = {}
 
