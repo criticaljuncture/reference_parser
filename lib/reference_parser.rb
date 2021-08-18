@@ -48,9 +48,17 @@ class ReferenceParser
     result
   end
 
+  def self.cfr_best_guess_hierarchy_parser
+    ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, prefer_part: true}})
+  end
+
   def self.cfr_best_guess_hierarchy(text)
+    cfr_best_guess_hierarchy_parser.guess_hierarchy(text)
+  end
+
+  def guess_hierarchy(text)
     guess = nil
-    ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, prefer_part: true}}).each(text) do |citation|
+    each(text) do |citation|
       guess = citation[:hierarchy].compact
       break
     end
@@ -114,7 +122,7 @@ class ReferenceParser
       match = Regexp.last_match
       all_captures = match.captures
       result = nil
-      replacements.each do |replacement|
+      replacements.each.with_index do |replacement, index|
         next unless replacement.regexp
 
         # take captures associated with this replacement pattern
@@ -122,6 +130,8 @@ class ReferenceParser
 
         # skip ahead unless this pattern has captures present
         next unless captures.any? { |x| !x.nil? }
+
+        puts "[#{index}] matched #{replacement.pattern_slug} \"#{match[0]}\"" if @debugging
 
         # only captures used by this replacement
         named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys

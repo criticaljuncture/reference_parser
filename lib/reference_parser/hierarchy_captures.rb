@@ -37,6 +37,8 @@ class ReferenceParser::HierarchyCaptures
 
     split_lists_into_individual_items(%i[prefixed_paragraphs parts subparts sections paragraphs])
 
+    slide_left(:appendix_label, :appendix_label_middle)
+
     slide_left(:section, :part_string)
     self
   end

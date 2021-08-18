@@ -24,7 +24,7 @@ class ReferenceParser::CaptureOrder
 
   def prepare(named_captures)
     return unless named_captures
-    results = named_captures.select { |k, v| !v&.empty? }.keys
+    results = named_captures.select { |k, v| v && !v&.empty? }.keys
 
     to_add = {}
 
@@ -54,9 +54,9 @@ class ReferenceParser::CaptureOrder
       insert_at += 1 while (insert_at < names.count) && left.to_s.start_with?(names[insert_at].to_s)
       names.insert(insert_at, right)
     elsif !left_index && right_index
-      insert_at = right_index - 1
-      insert_at -= 1 while (insert_at > 0) && names[insert_at].to_s.start_with?(right.to_s)
-      names.insert(right_index - 1, left)
+      insert_at = right_index
+      insert_at -= 1 while (insert_at > 0) && names[insert_at - 1].to_s.start_with?(right.to_s)
+      names.insert(insert_at, left)
     end
   end
 end

@@ -36,7 +36,7 @@ class ReferenceParser::Hierarchy
     end
   end
 
-  def cleanup!(expected: {})
+  def cleanup!(expected: {}, captures: {})
     # drop any list or range related items that made it through
     if @data[:paragraph].present?
       @data[:paragraph].gsub!(ReferenceParser::HierarchyCaptures::LIST_EXAMPLES, "") if @data[:paragraph].include?("xample")
@@ -57,8 +57,9 @@ class ReferenceParser::Hierarchy
     slide_right(:prefixed_subpart, :subpart)
     slide_right(:prefixed_paragraph, :paragraph)
 
-    slide_right(:section, :appendix) if /\AAppendix/ix.match?(@data[:section])
+    slide_right(:section, :appendix) if /\A(Appendix|Table)/ix.match?(@data[:section])
     slide_right(:section, :appendix) if expected[:appendix]
+    slide_right(:appendix, :table) if /Table/ix.match?(captures[:appendix_label])
 
     # drop list duplicated labels
     @data[:part]&.gsub!(/\s*part\s*/ix, "")
@@ -198,11 +199,13 @@ class ReferenceParser::Hierarchy
     @data[:part].tr!(",", "") if @data[:part].present?
     @data[:section].tr!(",", "") if @data[:section].present?
 
-    if @data[:appendix].present?
-      appendix = @data[:appendix]
-      appendix = (captures[:appendix_label] + appendix).strip if captures[:appendix_label].present?
+    if @data[:appendix].present? || @data[:table].present?
+      appendix = @data[:appendix] || @data[:table]
+      appendix_label_values = captures.values_at(*%i[appendix_label]).join
+      appendix = (appendix_label_values + appendix).strip if appendix_label_values.present?
       appendix = appendix.strip.delete_prefix(",").strip
       appendix << " to Part #{@data[:part]}" if @data[:part].present?
+      appendix << ", Subpart #{@data[:subpart]}" if @data[:subpart].present? && @data[:table].present?
       @data[:appendix] = appendix.to_s.gsub(" ", "%20").gsub("appendix", "Appendix")
     end
 
@@ -265,7 +268,9 @@ class ReferenceParser::Hierarchy
   def decide_section_vs_part(expected: {})
     if !@data[:part] && @data[:section]
       if @options[:prefer_part] && !@data[:section]&.include?(".")
-        repartition(:part, ".", :section, drop_divider: true)
+        unless expected[:appendix] && !@data[:appendix]
+          repartition(:part, ".", :section, drop_divider: true)
+        end
       elsif expected[:part]
         # take section if missing part & expecting it
         slide_left(:part, :section)

@@ -45,7 +45,12 @@ SCENERIOS_CFR = [
     {ex: "14 Chapter V Part 1266 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102"}},
     {ex: "1 Chapter I Subchapter B", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B"}},
     {ex: "14/1266", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", part: "1266"}},
-    {ex: "41 CFR subpart 101-19.6", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "41", subpart: "101-19.6"}}
+    {ex: "41 CFR subpart 101-19.6", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "41", subpart: "101-19.6"}},
+    {ex: "21 558.128", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "21", section: "558.128"}},
+    {ex: "48 CFR Supbart 816.70", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "48", subpart: "816.70"}},
+    {ex: "48 CFR Ch. 7, Appendix D", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "48", chapter: "7", appendix: "D"}},
+    {ex: "50 CFR Table 1b to Part 660, Subpart C", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "50", part: "660", subpart: "C", table: "1b"},
+     expected_url: "/current/title-50/part-660/subpart-C/appendix-Table%201b%20to%20Part%20660,%20Subpart%20C"}
   ],
 
   "extracts", [

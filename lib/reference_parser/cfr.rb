@@ -64,12 +64,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   SUBTITLE_LABEL = /(?<subtitle_label>subtitle\s*)/ix
   SUBTITLE = /(?<subtitle>[A-Z])/ix
-  CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?)?\s*)/ix
+  CHAPTER_LABEL = /(?<chapter_label>\s*Ch(?:ap(?:ter)?|\.)?\s*)/ix
   CHAPTER = /(?<chapter>#{CHAPTER_ID})/ixo
   SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(?:ap(?:ter)?)?\s*)/ix
   SUBCHAPTER = /(?<subchapter>#{SUBCHAPTER_ID})/ixo
 
-  SUBPART_LABEL = /(?<subpart_label>,?\s*subparts?\s*)/ix
+  SUBPART_LABEL = /(?<subpart_label>,?\s*su[pb]{2}arts?\s*)/ix
   SUBPART = /(?<subpart>#{SUBPART_ID})/ixo
 
   SUBPARTS = /
@@ -197,33 +197,40 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
-  APPENDIX = /(?<appendix_label>,?\s*appendix\s*)(?<section>[A-Z]+)/ixo
-  APPENDIX_EXPLICT = /(?<appendix_label>,?\s*appendix\s*)(?<appendix>[A-Z]+)/ixo
+  APPENDIX = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<section>[A-Z]+)/ixo
+  APPENDIX_EXPLICT = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<appendix>[A-Z]+)/ixo
+  APPENDIX_EXPLICT_MID = /
+    (?<appendix_label_middle>,?\s*(?:appendix|table)\s*)
+    (?<appendix>\d?[A-Z]+)
+    (?<appendix_suffix>\s*to\s*)?
+  /ixo
 
   # reference replacements
   replace(/
       #{TITLE_SOURCE}
-      #{SUBTITLE_LABEL}#{SUBTITLE}                    # labeled subtitle
-    /ixo, will_consider_pre_match: true)
-
-  replace(/
-      #{TITLE_SOURCE}                                 # title
-      (?:#{PART_LABEL})?#{PART}                       # labeled part
-      #{SUBPART_LABEL}#{SUBPARTS}
-      (?:#{APPENDIX})?
-    /ixo, will_consider_pre_match: true)
-
-  replace(/
-      #{TITLE_SOURCE}                                 # title
-      #{SUBPART_LABEL}#{SUBPARTS}                     # labeled subpart
-      (?:#{APPENDIX})?
-    /ixo, will_consider_pre_match: true)
+      #{SUBTITLE_LABEL}#{SUBTITLE}
+    /ixo, pattern_slug: :labeled_subtitle, will_consider_pre_match: true)
 
   replace(/
       #{TITLE_SOURCE}
-      #{CHAPTER_LABEL}#{CHAPTER}                      # labeled chapter
+      (?:#{APPENDIX_EXPLICT_MID})?
+      (?:#{PART_LABEL})?#{PART}
+      #{SUBPART_LABEL}#{SUBPARTS}
+      (?:#{APPENDIX})?
+    /ixo, pattern_slug: :labeled_part, will_consider_pre_match: true)
+
+  replace(/
+      #{TITLE_SOURCE}
+      #{SUBPART_LABEL}#{SUBPARTS}
+      (?:#{APPENDIX})?
+    /ixo, pattern_slug: :labeled_subpart, will_consider_pre_match: true)
+
+  replace(/
+      #{TITLE_SOURCE}
+      #{CHAPTER_LABEL}#{CHAPTER}
       (?:#{SUBCHAPTER_LABEL}#{SUBCHAPTER})?
-    /ixo, will_consider_pre_match: true)
+      (#{APPENDIX})?
+    /ixo, pattern_slug: :labeled_chapter, will_consider_pre_match: true)
 
   replace(/
       #{TITLE_SOURCE}
@@ -477,6 +484,17 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo
   })
 
+  # no source / title label (guess only)
+  replace(->(context, options) {
+    return unless options[:best_guess]
+    /
+    (?<title>\d{1,2})
+    (?<source_label>\s*)
+    #{SECTION}
+    #{TRAILING_BOUNDRY}
+    /ixo
+  })
+
   def context_present?(options)
     options[:context].present?
   end
@@ -566,7 +584,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       prefix, text, suffix = loop_captures.prefix_text_suffix(first_loop: first_loop, final_loop: final_loop)
 
       # cleanup hierarchy (link text is already assembled, original text can be safely normalized at this point)
-      hierarchy.cleanup!(expected: captures.expected)
+      hierarchy.cleanup!(expected: captures.expected, captures: captures)
       hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list)
       hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list)
       href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected, captures: captures)
