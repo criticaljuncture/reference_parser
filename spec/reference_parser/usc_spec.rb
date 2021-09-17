@@ -92,7 +92,10 @@ SCENERIOS_USC = [
   {ex: "defined in 5 U.S.C. 2105 and -",
    citations: [{title: "5", part: "2105"}], context: {title: "5", section: "531.203"}},
 
-  {ex: "26 U.S.C. (IRC) 6621,", citations: {title: "26", part: "6621"}}
+  {ex: "26 U.S.C. (IRC) 6621,", citations: {title: "26", part: "6621"}},
+
+  {ex: "(7 U.S.C.</em>          §         <em>13 and 18 U.S.C.</em>         §         <em>1001)",
+   citations: [{title: "7", part: "13"}, {title: "18", part: "1001"}], context: {title: "17", appendix: "Appendix A to Part 49"}, expect_variance: true}
 ]
 
 RSpec.describe ReferenceParser::Usc do
@@ -131,12 +134,13 @@ RSpec.describe ReferenceParser::Usc do
           if citations.present?
             expect(result_html).to have_tag("a", count: citations.count)
 
-            result_html_text = Nokogiri::HTML.parse(result_html).text
-            example_text = Nokogiri::HTML.parse(example).text
-            expect(
-              result_html_text
-            ).to include(example_text)
-
+            unless scenerio[:expect_variance]
+              result_html_text = Nokogiri::HTML.parse(result_html).text
+              example_text = Nokogiri::HTML.parse(example).text
+              expect(
+                result_html_text
+              ).to include(example_text)
+            end
           else
             expect(result_html).to_not have_tag("a")
           end

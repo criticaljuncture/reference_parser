@@ -12,6 +12,8 @@ class ReferenceParser::HierarchyCaptures
     (?:\s*in\s*)?                                     # in
     /ix
 
+  UNITALICIZED_SECTION_SYMBOL = /(?<pre>\s*)<\/em>(?<symbol>\s*§\s*)<em>(?<post>\s*)/
+
   include ReferenceParser::HierarchyContainer
   attr_accessor :options, :repeated, :repeated_capture, :captured_characters
 
@@ -33,6 +35,12 @@ class ReferenceParser::HierarchyCaptures
     if list?(@data[:sections]) && list?(@data[:paragraphs])
       @data[:rolled_up_paragraphs] = true
       slide_left(:sections, :paragraphs)
+    end
+
+    if @data[:section_label]&.include?("§")
+      if (match = UNITALICIZED_SECTION_SYMBOL.match(@data[:section_label]))
+        @data[:section_label] = @data[:section_label].gsub(match[0], match[:pre] + "     " + match[:symbol] + "    " + match[:post])
+      end
     end
 
     split_lists_into_individual_items(%i[prefixed_paragraphs parts subparts sections paragraphs])

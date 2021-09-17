@@ -397,7 +397,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, options) {
             /
             #{TITLE_SOURCE_NON_CFR}
-            (?<section_label>\s*§\s*)?
+            (?<section_label>\s*§\s*|\s*<\/em>\s*§\s*<em>\s*)?
             (?<sections>
               (?:
                 (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|-|\s*through\s*|\s*and\s*|\s*or\s*)*
