@@ -14,6 +14,10 @@ class ReferenceParser::Base
     @accumulated_context = []
   end
 
+  def handles_lists
+    false
+  end
+
   def clean_up_named_captures(captures, options: {})
   end
 

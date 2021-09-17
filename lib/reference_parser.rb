@@ -167,7 +167,7 @@ class ReferenceParser
               citation[:source] ||= effective_parser.slug
               citation[:text] = citation[:text] || match[0]
               prefix = citation[:prefix] || ""
-              prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: true)
+              prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists)
               suffix = citation[:suffix] || ""
               citation_result = "".html_safe <<
                 prefix <<

@@ -499,6 +499,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     options[:context].present?
   end
 
+  def handles_lists
+    true
+  end
+
   def url(citation, url_options = {})
     return unless citation
     citation_options = citation[:options] || {}

@@ -25,4 +25,8 @@ class ReferenceParser::Usc < ReferenceParser::Base
   def slug
     :usc
   end
+
+  def handles_lists
+    true
+  end
 end

@@ -25,4 +25,8 @@ class ReferenceParser::FederalRegister < ReferenceParser::Base
   def slug
     :federal_register
   end
+
+  def handles_lists
+    true
+  end
 end
