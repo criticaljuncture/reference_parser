@@ -102,10 +102,9 @@ class ReferenceParser
   end
 
   def perform(text, options: {}, &block)
-    replacements = replacements_for(@options)
     return text || "" unless text && replacements.present?
     Timeout.timeout(@timeout) do
-      text = replace_patterns(text, replacements: replacements, options: options, &block)
+      text = replace_patterns(text, options: options, &block)
     end
 
     text
@@ -114,11 +113,19 @@ class ReferenceParser
     raise ParseTimeout
   end
 
-  def replace_patterns(text, replacements: [], options: {}, &block)
+  def replacements
+    @replacements ||= replacements_for(@options)
+  end
+
+  def merged_patterns
+    @merged_patterns ||= merge_patterns_from(replacements)
+  end
+
+  def replace_patterns(text, options: {}, &block)
     @references = []
     searchable_text = text.to_str
     return text unless searchable_text
-    searchable_text.gsub(merge_patterns_from(replacements)) do
+    searchable_text.gsub(merged_patterns) do
       match = Regexp.last_match
       all_captures = match.captures
       result = nil
