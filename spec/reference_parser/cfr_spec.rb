@@ -417,8 +417,11 @@ SCENERIOS_CFR = [
 
     # IBR
     {ex: "7 CFR Part 210, Appendix A", citation: {title: "7", part: "210", appendix: "A"},
-     expected_url: "/current/title-7/part-210/appendix-Appendix%20A%20to%20Part%20210"}
+     expected_url: "/current/title-7/part-210/appendix-Appendix%20A%20to%20Part%20210"},
 
+    {ex: "paragraph (a)(2)", context: {title: "14", chapter: "I", part: "61", subchapter: "D", appendix: "Special Federal Aviation Regulation No. 73"},
+     with_surrounding_text: "Except as provided in paragraph (a)(2) of this section, no person may manipulate",
+     expected_url: "/current/title-14/appendix-Special%20Federal%20Aviation%20Regulation%20No.%2073#p-Special-Federal-Aviation-Regulation-No.-73(a)(2)"}
   ],
 
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1

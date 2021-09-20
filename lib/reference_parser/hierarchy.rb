@@ -6,7 +6,9 @@ class ReferenceParser::Hierarchy
   def appears_incomplete?(captures: {})
     # ranks explictly listed by the replace definition are required
     result = RANKS.detect do |rank|
-      context_expected.include?(rank) && !@data[rank].present?
+      result = context_expected.include?(rank) && !@data[rank].present?
+      result = false if result && (rank == :section) && @data[:appendix].present?
+      result
     end
 
     # if the definition lists "in_suffix" then ranks listed by name in the
@@ -231,10 +233,17 @@ class ReferenceParser::Hierarchy
     results << :title if context[:title] && !@data[:title].present? &&
       context_expected.include?(:title)
 
-    results << :section if context[:section] && !@data[:section].present? &&
-      (@data[:paragraph].present? || @data[:subpart].present?) &&
-      (context_expected.include?(:section) ||
-      context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+    if context[:section] && !@data[:section].present? &&
+        (@data[:paragraph].present? || @data[:subpart].present?) &&
+        (context_expected.include?(:section) ||
+        context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+      results << :section
+    elsif context[:appendix] && !@data[:section].present? &&
+        (@data[:paragraph].present? || @data[:subpart].present?) &&
+        (context_expected.include?(:section) ||
+        context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
+      results << :appendix
+    end
 
     %i[chapter subchapter part].each do |rank|
       results << rank if determine_rank_usability(rank: rank, captures: captures, existing: results, exclude_sub: (rank != :part))

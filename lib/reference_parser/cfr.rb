@@ -779,6 +779,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def section_string(hierarchy)
     if hierarchy[:part] && hierarchy[:section]&.start_with?(hierarchy[:part] + ".")
       (hierarchy[:section]).to_s
+    elsif hierarchy[:appendix]
+      hierarchy[:appendix]
     else
       "#{hierarchy[:part]}.#{hierarchy[:section]}"
     end
@@ -786,6 +788,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def sublocators_string(hierarchy)
     return "" unless hierarchy[:sublocators]
-    "#p-" << section_string(hierarchy) << hierarchy[:sublocators]
+    "#p-" << section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
   end
 end
