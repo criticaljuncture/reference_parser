@@ -508,7 +508,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     citation_options = citation[:options] || {}
     citation = citation[:href_hierarchy] || citation[:hierarchy] || (citation&.include?(:title) ? citation : {})
     result = ""
-    result << "https://ecfr.federalregister.gov" if absolute?(url_options)
+    result << "https://www.ecfr.gov" if absolute?(url_options)
     result << url_current_compare_or_on(url_date_from_options(url_options || {}))
     result << "/title-#{citation[:title]}"
     result << url_messy_part(citation, options: citation_options)

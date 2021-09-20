@@ -47,7 +47,7 @@ RSpec.describe ReferenceParser do
         ReferenceParser.new(
           only: %i[cfr]
         ).hyperlink(text, options: {cfr: {compare: {from: "2020-01-01", to: "2021-01-01"}}})
-      ).to eql("please see <a href='https://ecfr.federalregister.gov/compare/2020-01-01/to/2021-01-01/title-1/part-2' class='cfr external'>1 CFR Part 2</a>.")
+      ).to eql("please see <a href='https://www.ecfr.gov/compare/2020-01-01/to/2021-01-01/title-1/part-2' class='cfr external'>1 CFR Part 2</a>.")
     end
   end
 
@@ -94,7 +94,7 @@ RSpec.describe ReferenceParser do
       expect(
         ReferenceParser.new.hyperlink("8 CFR 1208 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {federal_register: {relative: true}, cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}}})
       ).to eql(
-        "<a href='https://ecfr.federalregister.gov/compare/2020-05-30/to/2020-06-01/title-8/part-1208' class='cfr external'>8 CFR 1208</a> (<a href='/citation/85-FR-23904' class='fr-reference' data-reference='85 FR 23904'>85 FR 23904</a>, Apr. 30, 2020)"
+        "<a href='https://www.ecfr.gov/compare/2020-05-30/to/2020-06-01/title-8/part-1208' class='cfr external'>8 CFR 1208</a> (<a href='/citation/85-FR-23904' class='fr-reference' data-reference='85 FR 23904'>85 FR 23904</a>, Apr. 30, 2020)"
       )
     end
 
