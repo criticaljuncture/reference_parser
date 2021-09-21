@@ -736,7 +736,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         .zip(composite_hierarchy.split(":")).to_h
 
       hierarchy_from_composite.delete_if { |k, v| v.blank? }
-      hierarchy_from_composite[:section] = hierarchy_from_composite[:section_identifier] if hierarchy_from_composite[:section_identifier]
+      if hierarchy_from_composite[:section_identifier]
+        rank = /(appendix|\s)/i.match?(hierarchy_from_composite[:section_identifier]) ? :appendix : :section
+        hierarchy_from_composite[rank] = hierarchy_from_composite[:section_identifier]
+      end
 
       result.reverse_merge!(hierarchy_from_composite)
     end
