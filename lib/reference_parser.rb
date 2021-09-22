@@ -21,13 +21,13 @@ class ReferenceParser
   end
 
   def hyperlink(text, options: {}, default: {})
-    perform(text) do |parser, citation|
+    perform(text, timeout: options.delete(:timeout)) do |parser, citation|
       build_link(parser, citation, citation[:text], build_options(parser, options, default))
     end
   end
 
   def each(text, options: {}, default: {}, &block)
-    perform(text) do |parser, citation|
+    perform(text, timeout: options.delete(:timeout)) do |parser, citation|
       original_text = citation[:text]
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default))
       yield(citation) if block && (citation[:link] != citation[:text])
@@ -101,9 +101,9 @@ class ReferenceParser
     result
   end
 
-  def perform(text, options: {}, &block)
+  def perform(text, options: {}, timeout: nil, &block)
     return text || "" unless text && replacements.present?
-    Timeout.timeout(@timeout) do
+    Timeout.timeout(timeout || @timeout) do
       text = replace_patterns(text, options: options, &block)
     end
 
