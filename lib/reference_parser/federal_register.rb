@@ -7,7 +7,7 @@ class ReferenceParser::FederalRegister < ReferenceParser::Base
   end
 
   def link_options(citation)
-    {class: "fr-reference", "data-reference": citation[:text]}
+    {class: "fr-reference", "data-reference": "#{citation[:volume]} FR #{citation[:page]}"}
   end
 
   def clean_up_named_captures(captures, options: {})
