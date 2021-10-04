@@ -307,10 +307,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   LIKELY_EXTERNAL_SECTIONS = /
       of\s*
-      (?:the|those)
+      (?:the|those|)
       (?:
           \s*EAR |
           \s*Order |
+          \s*ANSI |
+          \s*APSP |
+          \s*ICC |
         (?:
           (?:[\s,a-z]{0,128})
           (?:Act|Amendments|Code|regulations)

@@ -596,7 +596,10 @@ SCENERIOS_CFR = [
     {ex: "entities listed in supplement no. 7 to part 744 applies to the", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", appendix: "Supplement%20No.%207%20to%20Part%20744"}},
 
     # /current/title-26/section-301.6230(e)-1
-    {ex: "see § 301.6230(e)-1T contained in 26 CFR part 1, revised April 1, 2001", citation: :expect_none, html_appearance: :expect_none, context: {title: "26", section: "301.6230(e)-1"}}
+    {ex: "see § 301.6230(e)-1T contained in 26 CFR part 1, revised April 1, 2001", citation: :expect_none, html_appearance: :expect_none, context: {title: "26", section: "301.6230(e)-1"}},
+
+    # /current/title-16/chapter-II/subchapter-B/part-1450/section-1450.3
+    {ex: "Section 3.2.4 of ANSI/APSP/ICC-16 2017", citation: :expect_none, html_appearance: :expect_none, context: {title: "16", section: "1450.3"}}
   ],
 
   "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
