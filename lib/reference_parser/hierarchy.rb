@@ -53,6 +53,8 @@ class ReferenceParser::Hierarchy
     # hierarchy shouldn't contain unknowns
     @data.reject! { |k, v| v.blank? }
 
+    @data[:title].gsub!(/\A0+/, "")
+
     decide_section_vs_part(expected: expected)
 
     slide_right(:prefixed_part, :part)
