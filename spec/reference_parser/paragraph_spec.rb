@@ -17,7 +17,7 @@ RSpec.describe ReferenceParser::Paragraph do
       describe level.to_s do
         examples.each do |example|
           it "#{example} is #{level}" do
-            expect(ReferenceParser::Paragraph.guess_level(example)).to eq(level)
+            expect(described_class.guess_level(example)).to eq(level)
           end
         end
       end

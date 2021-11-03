@@ -29,7 +29,7 @@ RSpec.describe ReferenceParser::PublicLaw do
           if scenerio[:citation] == :expect_none
             expect(
               ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})
-            ).to_not have_tag("a")
+            ).not_to have_tag("a")
           else
             expect(
               ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})

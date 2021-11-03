@@ -6,9 +6,15 @@ AllCops:
   Exclude:
     - bin/*
   TargetRubyVersion: 2.6
+  NewCops: enable
 Style/GlobalVars:
   Enabled: true
   AllowedVariables: [$redis]
+
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
 
 require:
   - rubocop-performance

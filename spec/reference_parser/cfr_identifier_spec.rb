@@ -27,12 +27,12 @@ RSpec.describe ReferenceParser::Cfr do
           it "(#{index}) #{example.truncate(24)}" do
             if expect_match
               expect(
-                /\A#{pattern}\z/ix.match?(example)
-              ).to be_truthy
+                /\A#{pattern}\z/ix
+              ).to be_match(example)
             else
               expect(
-                /\A#{pattern}\z/ix.match?(example)
-              ).not_to be_truthy
+                /\A#{pattern}\z/ix
+              ).not_to be_match(example)
             end
           end
         end

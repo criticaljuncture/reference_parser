@@ -142,7 +142,7 @@ RSpec.describe ReferenceParser::Usc do
               ).to include(example_text)
             end
           else
-            expect(result_html).to_not have_tag("a")
+            expect(result_html).not_to have_tag("a")
           end
         end
       end

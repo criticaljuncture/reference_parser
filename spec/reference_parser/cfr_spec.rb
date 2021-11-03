@@ -798,7 +798,7 @@ RSpec.describe ReferenceParser::Cfr do
             if expected_citation == [:expect_none]
               expect(
                 references_only_result_html
-              ).to_not have_tag("a")
+              ).not_to have_tag("a")
             end
 
             # confirm specific url
