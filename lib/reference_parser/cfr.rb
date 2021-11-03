@@ -493,6 +493,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /
     (?<title>\d{1,2})
     (?<source_label>\s*)
+    (?:#{PART_LABEL})?
     #{SECTION}
     #{TRAILING_BOUNDRY}
     /ixo
