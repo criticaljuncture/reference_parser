@@ -15,6 +15,7 @@ class ReferenceParser
     @options = options || {}
     parser_types = [(only || @options[:only] || default_parser_types)].flatten - except
     @timeout = @options.delete(:timeout) || 20
+    @html_aware = @options[:html_awareness] == :careful
     @debugging = false
     @parsers, @dependencies = parsers_for(parser_types)
     @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }
@@ -125,69 +126,76 @@ class ReferenceParser
     @references = []
     searchable_text = text.to_str
     return text unless searchable_text
+
+    tag_context = ReferenceParser::TagContext.new(searchable_text, @html_aware)
+
     searchable_text.gsub(merged_patterns) do
       match = Regexp.last_match
       all_captures = match.captures
       result = nil
-      replacements.each.with_index do |replacement, index|
-        next unless replacement.regexp
 
-        # take captures associated with this replacement pattern
-        captures = all_captures.shift(replacement.regexp.names.size)
+      tag_context.consider(match)
 
-        # skip ahead unless this pattern has captures present
-        next unless captures.any? { |x| !x.nil? }
+      if !@html_aware || tag_context.linkable?
+        replacements.each.with_index do |replacement, index|
+          next unless replacement.regexp
 
-        puts "[#{index}] matched #{replacement.pattern_slug} \"#{match[0]}\"" if @debugging
+          # take captures associated with this replacement pattern
+          captures = all_captures.shift(replacement.regexp.names.size)
 
-        # only captures used by this replacement
-        named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
-        replacement_options = build_options(replacement.parser, @options, {})
-        replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
-        replacement_options[:pre_match] = searchable_text[([0, (match.begin(0) - 32)].max)..([0, (match.begin(0) - 1)].max)] if replacement.will_consider_pre_match
-        replacement_options[:post_match] = searchable_text[match.end(0)..match.end(0) + 64] if replacement.will_consider_post_match
+          # skip ahead unless this pattern has captures present
+          next unless captures.any? { |x| !x.nil? }
 
-        citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
-        citations = :skip if replacement.ignore?(citations, options: build_options(replacement.parser, @options, {}))
-        break if citations == :skip
+          puts "[#{index}] matched #{replacement.pattern_slug} \"#{match[0]}\"" if @debugging
 
-        # simple implementations just update the captures in place
-        citations = named_captures unless citations.is_a?(Array) || citations.is_a?(Hash)
-        citations = [citations] unless citations.is_a?(Array)
+          # only captures used by this replacement
+          named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
+          replacement_options = build_options(replacement.parser, @options, {})
+          replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
+          replacement_options[:pre_match] = tag_context.pre_match if replacement.will_consider_pre_match
+          replacement_options[:post_match] = tag_context.post_match if replacement.will_consider_post_match
 
-        citations&.each do |citation|
-          effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
-            replacement_options.merge!(build_options(effective_parser, @options, {}))
-            effective_parser.clean_up_named_captures(citation, options: replacement_options)
-          end
+          citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
+          citations = :skip if replacement.ignore?(citations, options: build_options(replacement.parser, @options, {}))
+          break if citations == :skip
 
-          if effective_parser
-            citation_result = nil
-            if block
-              citation[:source] ||= effective_parser.slug
-              citation[:text] = citation[:text] || match[0]
-              prefix = citation[:prefix] || ""
-              prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists)
-              suffix = citation[:suffix] || ""
-              citation_result = "".html_safe <<
-                prefix <<
-                prefix_spacers <<
-                (yield(effective_parser, citation) || "") <<
-                suffix_spacers <<
-                suffix
+          # simple implementations just update the captures in place
+          citations = named_captures unless citations.is_a?(Array) || citations.is_a?(Hash)
+          citations = [citations] unless citations.is_a?(Array)
+
+          citations&.each do |citation|
+            effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
+              replacement_options.merge!(build_options(effective_parser, @options, {}))
+              effective_parser.clean_up_named_captures(citation, options: replacement_options)
             end
-            if citation_result
-              result ||= "".html_safe
-              result << citation_result
-              citation[:result] = citation_result
+
+            if effective_parser
+              citation_result = nil
+              if block
+                citation[:source] ||= effective_parser.slug
+                citation[:text] = citation[:text] || match[0]
+                prefix = citation[:prefix] || ""
+                prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists)
+                suffix = citation[:suffix] || ""
+                citation_result = "".html_safe <<
+                  prefix <<
+                  prefix_spacers <<
+                  (yield(effective_parser, citation) || "") <<
+                  suffix_spacers <<
+                  suffix
+              end
+              if citation_result
+                result ||= "".html_safe
+                result << citation_result
+                citation[:result] = citation_result
+              end
+            else
+              citation = {text: match[0], result: match[0]}
             end
-          else
-            citation = {text: match[0], result: match[0]}
           end
+          break
         end
-        break
       end
-      result.tr!('"', "'") if result.respond_to?(:gsub!) # match fixture html quoting
       result || match[0]
     end.html_safe # !?
   end

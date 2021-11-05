@@ -1,0 +1,90 @@
+require "htmlentities"
+
+class ReferenceParser::UrlPrtpage < ReferenceParser::Base
+  extend ActionView::Helpers::TagHelper
+
+  BRACKETS = "[](){}".chars.each_slice(2).map(&:reverse).to_h
+  WORD_PATTERN = '\p{Word}'
+  AUTO_LINK_RE = %r{
+    (?<initial_href>(?: (?<scheme>(?:http|https):)// | www\d?\. )
+    [^\s<\u00A0"]*)
+    (?:
+      (?<page_break>\s*<PRTPAGE\s+P="\d+"/>\s*)
+      (?<final_fragment>[^\s<\u00A0"]+)
+    )?
+  }ix
+
+  replace(AUTO_LINK_RE)
+
+  def default_link_classes
+    "external"
+  end
+
+  def url(citation, url_options = {})
+    citation[:url] || (citation[:url_without_scheme] ? "#{url_options[:default_scheme] || "http"}://#{citation[:url_without_scheme]}" : nil)
+  end
+
+  def clean_up_named_captures(captures, options: {})
+    # link_attributes = {"target" => "_blank", "rel" => "noopener noreferrer"}
+    coder = HTMLEntities.new(:expanded)
+
+    initial_href = captures[:initial_href]
+    scheme = captures[:scheme]
+    page_break = captures[:page_break]
+    final_fragment = captures[:final_fragment]
+    punctuation = []
+
+    initial_href = coder.decode(initial_href)
+    final_fragment = coder.decode(final_fragment)
+
+    href = if final_fragment.present?
+      initial_href + final_fragment
+    else
+      initial_href
+    end
+
+    results = []
+
+    html = [initial_href, page_break, final_fragment].compact.join
+    if %w[http:// https://].include?(initial_href) && final_fragment.blank?
+      results << {result: html}
+    else
+      # don't include trailing punctuation character as part of the URL
+      while href.sub!(/[^#{WORD_PATTERN}\/\-=&;]$/o, "")
+        punctuation.push $&
+        if (opening = BRACKETS[punctuation.last]) && (href.scan(opening).size > href.scan(punctuation.last).size)
+          href << punctuation.pop
+          break
+        end
+      end
+
+      href = "http://" + href unless scheme
+      trailing_punctuation = punctuation.reverse.join
+
+      if final_fragment.present?
+        final_fragment.sub!(/#{Regexp.escape(trailing_punctuation)}\z/, "")
+
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href)}
+        results << {result: page_break.html_safe}
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(final_fragment)}
+      else
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href)}
+      end
+      results << {result: trailing_punctuation}
+    end
+
+    results
+  end
+
+  def link_to(text, citation, options = {})
+    return citation[:result] if citation[:result]
+    super
+  end
+
+  def self.add_line_break_indicators(url_fragment)
+    # ?! moved along with specs expecting from FR Hyperlinker::Url
+    fragment = url_fragment.gsub(/(?<!:)(?<!\/)([_;&\/?=+])/, "\\1\u200B")
+
+    HTMLEntities.new.encode(fragment, :named, :decimal).html_safe
+  end
+end

@@ -10,6 +10,6 @@ class ReferenceParser::RegulatoryPlan < ReferenceParser::Base
   end
 
   def slug
-    :rin
+    :regulatory_plan
   end
 end

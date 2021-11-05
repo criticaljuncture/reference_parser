@@ -12,7 +12,7 @@ RSpec.describe ReferenceParser::RegulatoryPlan do
           "Lorem ipsum dolor sit amet, RIN 8888-AB88 consectetur adipiscing elit.",
           default: {target: "_blank", class: "external_fr_link"}
         )
-      ).to eql "Lorem ipsum dolor sit amet, <a href='https://www.federalregister.gov/r/8888-AB88' class='external_fr_link' target='_blank' rel='noopener noreferrer'>RIN 8888-AB88</a> consectetur adipiscing elit."
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/r/8888-AB88" class="external_fr_link" target="_blank" rel="noopener noreferrer">RIN 8888-AB88</a> consectetur adipiscing elit.'
     end
 
     SCENERIOS_RIN.each do |scenerio|

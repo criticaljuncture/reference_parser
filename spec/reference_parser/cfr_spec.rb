@@ -907,7 +907,7 @@ RSpec.describe ReferenceParser::Cfr do
           "49/147, 150",
           default: {target: nil, class: nil, relative: true}
         )
-      ).to eql "<a href='/current/title-49/part-147'>49/147</a>, <a href='/current/title-49/part-150'>150</a>"
+      ).to eql '<a href="/current/title-49/part-147">49/147</a>, <a href="/current/title-49/part-150">150</a>'
     end
   end
 end

@@ -21,7 +21,7 @@ RSpec.describe ReferenceParser::FederalRegisterDocNumber do
           "Lorem ipsum dolor sit amet, FR Doc. 2021-88888 consectetur adipiscing elit.",
           default: {target: nil, class: nil}
         )
-      ).to eql "Lorem ipsum dolor sit amet, <a href='https://www.federalregister.gov/d/2021-88888'>FR Doc. 2021-88888</a> consectetur adipiscing elit."
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/d/2021-88888">FR Doc. 2021-88888</a> consectetur adipiscing elit.'
     end
 
     it "relative urls" do
@@ -30,7 +30,7 @@ RSpec.describe ReferenceParser::FederalRegisterDocNumber do
           "Lorem ipsum dolor sit amet, FR Document Number 2021-99999 consectetur adipiscing elit.",
           default: {target: nil, class: nil, relative: true}
         )
-      ).to eql "Lorem ipsum dolor sit amet, <a href='/d/2021-99999'>FR Document Number 2021-99999</a> consectetur adipiscing elit."
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="/d/2021-99999">FR Document Number 2021-99999</a> consectetur adipiscing elit.'
     end
 
     SCENERIOS_FR_DOC_NUMBER.each do |scenerio|

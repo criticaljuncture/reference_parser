@@ -106,7 +106,7 @@ RSpec.describe ReferenceParser::Usc do
           "Lorem ipsum dolor sit amet, 12 USC 345 consectetur adipiscing elit.",
           default: {target: nil, class: nil}
         )
-      ).to eql "Lorem ipsum dolor sit amet, <a href='https://www.govinfo.gov/link/uscode/12/345'>12 USC 345</a> consectetur adipiscing elit."
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.govinfo.gov/link/uscode/12/345">12 USC 345</a> consectetur adipiscing elit.'
     end
 
     SCENERIOS_USC.each do |scenerio|
@@ -158,7 +158,7 @@ RSpec.describe ReferenceParser::Usc do
           "is defined in section 802 of title 21 U.S.C.",
           default: {target: nil, class: nil}
         )
-      ).to eql "is defined in <a href='https://www.govinfo.gov/link/uscode/21/802'>section 802 of title 21 U.S.C.</a>"
+      ).to eql 'is defined in <a href="https://www.govinfo.gov/link/uscode/21/802">section 802 of title 21 U.S.C.</a>'
     end
   end
 end

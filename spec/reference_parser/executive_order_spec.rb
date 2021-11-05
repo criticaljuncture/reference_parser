@@ -18,7 +18,7 @@ RSpec.describe ReferenceParser::ExecutiveOrder do
           "Lorem ipsum dolor sit amet, Executive Order 14028 consectetur adipiscing elit.",
           default: {target: "_blank", class: "external_fr_link"}
         )
-      ).to eql "Lorem ipsum dolor sit amet, <a href='https://www.federalregister.gov/executive-order/14028' class='external_fr_link' target='_blank' rel='noopener noreferrer'>Executive Order 14028</a> consectetur adipiscing elit."
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/executive-order/14028" class="external_fr_link" target="_blank" rel="noopener noreferrer">Executive Order 14028</a> consectetur adipiscing elit.'
     end
 
     SCENERIOS_EO.each do |scenerio|

@@ -20,7 +20,7 @@ RSpec.describe ReferenceParser::PublicLaw do
           "Lorem ipsum dolor sit amet, Public Law 117-9 consectetur adipiscing elit.",
           default: {target: nil, class: nil}
         )
-      ).to eql "Lorem ipsum dolor sit amet, <a href='https://www.govinfo.gov/link/plaw/117/public/9'>Public Law 117-9</a> consectetur adipiscing elit."
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.govinfo.gov/link/plaw/117/public/9">Public Law 117-9</a> consectetur adipiscing elit.'
     end
 
     SCENERIOS_PL.each do |scenerio|

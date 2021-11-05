@@ -18,7 +18,7 @@ RSpec.describe ReferenceParser do
             cfr: {context: {title: "1", part: "100"}}
           }
         ).hyperlink(text, default: {relative: true, class: nil, target: nil}, options: {cfr: {on: "2020-01-01"}})
-      ).to eql("please see <a href='/on/2020-01-01/title-1/part-300'>part 300 of this title</a>.")
+      ).to eql('please see <a href="/on/2020-01-01/title-1/part-300">part 300 of this title</a>.')
     end
 
     it "links to comparison pages" do
@@ -27,7 +27,7 @@ RSpec.describe ReferenceParser do
         described_class.new(
           only: %i[cfr]
         ).hyperlink(text, default: {relative: true, target: "_blank"}, options: {cfr: {compare: {from: "2020-01-01", to: "2021-01-01"}}})
-      ).to eql("please see <a href='/compare/2020-01-01/to/2021-01-01/title-1/part-2' class='cfr external' target='_blank' rel='noopener noreferrer'>1 CFR Part 2</a>.")
+      ).to eql('please see <a href="/compare/2020-01-01/to/2021-01-01/title-1/part-2" class="cfr external" target="_blank" rel="noopener noreferrer">1 CFR Part 2</a>.')
     end
 
     it "allows customization of text" do
@@ -38,7 +38,7 @@ RSpec.describe ReferenceParser do
         ).each(text, default: {relative: true, class: nil, target: nil}) do |citation|
           citation[:text] = "((((#{citation[:text].strip}))))"
         end
-      ).to eql("<a href='/current/title-40/section-273.13'>((((40 CFR 273.13))))</a>, and <a href='/current/title-40/section-273.52'>((((273.52))))</a>")
+      ).to eql('<a href="/current/title-40/section-273.13">((((40 CFR 273.13))))</a>, and <a href="/current/title-40/section-273.52">((((273.52))))</a>')
     end
 
     it "provides absolute urls" do
@@ -47,7 +47,7 @@ RSpec.describe ReferenceParser do
         described_class.new(
           only: %i[cfr]
         ).hyperlink(text, options: {cfr: {compare: {from: "2020-01-01", to: "2021-01-01"}}})
-      ).to eql("please see <a href='https://www.ecfr.gov/compare/2020-01-01/to/2021-01-01/title-1/part-2' class='cfr external'>1 CFR Part 2</a>.")
+      ).to eql('please see <a href="https://www.ecfr.gov/compare/2020-01-01/to/2021-01-01/title-1/part-2" class="cfr external">1 CFR Part 2</a>.')
     end
   end
 
@@ -60,7 +60,7 @@ RSpec.describe ReferenceParser do
   it "will only link requested items" do
     expect(
       described_class.new(only: %i[email]).hyperlink("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by test@nil.local")
-    ).to eql("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by <a href='mailto:test@nil.local' class='email'>test@nil.local</a>")
+    ).to eql('1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by <a href="mailto:test@nil.local" class="email">test@nil.local</a>')
   end
 
   describe "usable" do
@@ -70,7 +70,7 @@ RSpec.describe ReferenceParser do
           options: {cfr: {context: {title: "7"}}}
         ).hyperlink("please refer to 1 CFR 2.7(a)(2) and chapter II of this title", default: {relative: true, class: nil, target: nil}, options: {cfr: {current: true}})
       ).to eql(
-        "please refer to <a href='/current/title-1/section-2.7#p-2.7(a)(2)'>1 CFR 2.7(a)(2)</a> and <a href='/current/title-7/chapter-II'>chapter II of this title</a>"
+        'please refer to <a href="/current/title-1/section-2.7#p-2.7(a)(2)">1 CFR 2.7(a)(2)</a> and <a href="/current/title-7/chapter-II">chapter II of this title</a>'
       )
     end
 
@@ -78,7 +78,7 @@ RSpec.describe ReferenceParser do
       expect(
         described_class.new.hyperlink("please refer to 1 CFR 2.7(a)(2) and chapter II of this title", default: {relative: true, class: nil, target: nil}, options: {cfr: {current: true}})
       ).to eql(
-        "please refer to <a href='/current/title-1/section-2.7#p-2.7(a)(2)'>1 CFR 2.7(a)(2)</a> and chapter II of this title"
+        'please refer to <a href="/current/title-1/section-2.7#p-2.7(a)(2)">1 CFR 2.7(a)(2)</a> and chapter II of this title'
       )
     end
 
@@ -86,7 +86,7 @@ RSpec.describe ReferenceParser do
       expect(
         described_class.new.hyperlink("8 CFR 1208, 1209-1212, 1235 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}, relative: true}})
       ).to eql(
-        "<a href='/compare/2020-05-30/to/2020-06-01/title-8/part-1208' class='cfr external'>8 CFR 1208</a>, <a href='/compare/2020-05-30/to/2020-06-01/title-8/part-1209' class='cfr external'>1209-1212</a>, <a href='/compare/2020-05-30/to/2020-06-01/title-8/part-1235' class='cfr external'>1235</a> (<a href='https://www.federalregister.gov/citation/85-FR-23904' class='fr-reference' data-reference='85 FR 23904'>85 FR 23904</a>, Apr. 30, 2020)"
+        '<a href="/compare/2020-05-30/to/2020-06-01/title-8/part-1208" class="cfr external">8 CFR 1208</a>, <a href="/compare/2020-05-30/to/2020-06-01/title-8/part-1209" class="cfr external">1209-1212</a>, <a href="/compare/2020-05-30/to/2020-06-01/title-8/part-1235" class="cfr external">1235</a> (<a href="https://www.federalregister.gov/citation/85-FR-23904" class="fr-reference" data-reference="85 FR 23904">85 FR 23904</a>, Apr. 30, 2020)'
       )
     end
 
@@ -94,7 +94,7 @@ RSpec.describe ReferenceParser do
       expect(
         described_class.new.hyperlink("8 CFR 1208 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {federal_register: {relative: true}, cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}}})
       ).to eql(
-        "<a href='https://www.ecfr.gov/compare/2020-05-30/to/2020-06-01/title-8/part-1208' class='cfr external'>8 CFR 1208</a> (<a href='/citation/85-FR-23904' class='fr-reference' data-reference='85 FR 23904'>85 FR 23904</a>, Apr. 30, 2020)"
+        '<a href="https://www.ecfr.gov/compare/2020-05-30/to/2020-06-01/title-8/part-1208" class="cfr external">8 CFR 1208</a> (<a href="/citation/85-FR-23904" class="fr-reference" data-reference="85 FR 23904">85 FR 23904</a>, Apr. 30, 2020)'
       )
     end
 
