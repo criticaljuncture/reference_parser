@@ -545,11 +545,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def url_messy_part(hierarchy, options: {})
     result = part_or_section_string(hierarchy, options: options) <<
       sublocators_string(hierarchy)
-    result << "/subtitle-#{hierarchy[:subtitle]}" if hierarchy[:subtitle].present? && !result.present?
     if !result.present?
       result << "/chapter-#{hierarchy[:chapter]}" if hierarchy[:chapter].present?
       result << "/subchapter-#{hierarchy[:subchapter]}" if hierarchy[:subchapter].present?
     end
+    result << "/subtitle-#{hierarchy[:subtitle]}" if hierarchy[:subtitle].present? && !result.present?
     result
   end
 
