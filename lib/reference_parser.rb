@@ -15,7 +15,7 @@ class ReferenceParser
     @options = options || {}
     parser_types = [(only || @options[:only] || default_parser_types)].flatten - except
     @timeout = @options.delete(:timeout) || 20
-    @html_aware = @options[:html_awareness] == :careful
+    @html_aware = @options[:html_awareness] != :none
     @debugging = false
     @parsers, @dependencies = parsers_for(parser_types)
     @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }

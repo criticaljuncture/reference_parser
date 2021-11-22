@@ -600,7 +600,20 @@ SCENERIOS_CFR = [
     {ex: "see § 301.6230(e)-1T contained in 26 CFR part 1, revised April 1, 2001", citation: :expect_none, html_appearance: :expect_none, context: {title: "26", section: "301.6230(e)-1"}},
 
     # /current/title-16/chapter-II/subchapter-B/part-1450/section-1450.3
-    {ex: "Section 3.2.4 of ANSI/APSP/ICC-16 2017", citation: :expect_none, html_appearance: :expect_none, context: {title: "16", section: "1450.3"}}
+    {ex: "Section 3.2.4 of ANSI/APSP/ICC-16 2017", citation: :expect_none, html_appearance: :expect_none, context: {title: "16", section: "1450.3"}},
+
+    # definition title /current/title-7/subtitle-B/chapter-II/subchapter-A/part-215/section-215.2
+    {ex: '<p class="indent-1" data-title="215.2 “Applicable credits shall have the meaning established in 2 CFR part 200 and USDA implementing regulations 2 CFR part 400 and part 415”" data-definition="true">', options: {html_awareness: :careful}, citation: :expect_none, html_appearance: :expect_none},
+
+    {ex: '<tag ex="a" attribute="Lorem 1 CFR 1.1 ipsum"></tag><tag><tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum"></tag><tag></tag></tag><tag></tag>', options: {html_awareness: :careful}, citation: :expect_none, html_appearance: :expect_none},
+    {ex: '<tag ex="b" ></tag><tag><tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum"></tag><tag></tag></tag><tag></tag>', options: {html_awareness: :careful}, citation: :expect_none, html_appearance: :expect_none},
+    {ex: '<tag ex="c" ></tag><tag><tag></tag><tag></tag><tag></tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum"></tag>', options: {html_awareness: :careful}, citation: :expect_none, html_appearance: :expect_none},
+    {ex: '<tag ex="d"  attribute="Lorem 1 CFR 1.1 ipsum"></tag><tag><tag>2 CFR 2</tag><tag attribute="Lorem 1 CFR 1.1 ipsum"></tag><tag></tag></tag><tag>3 CFR 3</tag>', options: {html_awareness: :careful},
+     citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
+    {ex: '<tag ex="e" ></tag><tag><tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum">2 CFR 2</tag><tag></tag></tag><tag>3 CFR 3</tag>', options: {html_awareness: :careful},
+     citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
+    {ex: '<tag ex="f" ></tag><tag><tag></tag><tag></tag><tag>2 CFR 2</tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum">3 CFR 3</tag>', options: {html_awareness: :careful},
+     citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none}
   ],
 
   "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
