@@ -16,6 +16,7 @@ class ReferenceParser::FederalRegister < ReferenceParser::Base
     captures[:page] = captures[:section] if !captures[:part] && captures[:section]
     captures[:page] = captures[:chapter] if !captures[:part] && captures[:chapter]
     captures[:page] = captures[:part].partition("(").first if captures[:part]&.include?("(")
+    captures[:page] = captures[:page].split("-")[0] if captures[:page]&.include?("-")
   end
 
   def depends_on_parser

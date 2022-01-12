@@ -6,7 +6,10 @@ SCENERIOS_FR = [
    expected_html: ['data-reference="53 FR 15991"', 'data-reference="53 FR 15999"']},
 
   {ex: "as amended at 43 FR 5786, Feb. 9, 1978. Redesignated and amended at 53 FR 15991, 15999, May 4, 1988; 57 FR 38146, Aug. 21, 1992;",
-   citations: [{volume: "43", page: "5786"}, {volume: "53", page: "15991"}, {volume: "53", page: "15999"}, {volume: "57", page: "38146"}]}
+   citations: [{volume: "43", page: "5786"}, {volume: "53", page: "15991"}, {volume: "53", page: "15999"}, {volume: "57", page: "38146"}]},
+
+  {ex: "51 FR 6537-42", citations: [{volume: "51", page: "6537"}]},
+  {ex: "59 FR 62896-62953", citations: [{volume: "59", page: "62896"}]}
 ]
 
 RSpec.describe ReferenceParser::FederalRegister do
