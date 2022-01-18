@@ -413,7 +413,7 @@ SCENERIOS_CFR = [
     {ex: "Appendix A of part 36 of title 28, Code of Federal Regulations", citation: {title: "28", appendix: "A", part: "36"},
      expected_url: "/current/title-28/part-36/appendix-Appendix%20A%20to%20Part%2036"},
 
-    # #24 https://ecfr.federalregister.gov/current/title-21/chapter-I/subchapter-D/part-314/subpart-A/section-314.1
+    # #24 /current/title-21/chapter-I/subchapter-D/part-314/subpart-A/section-314.1
     {ex: "subchapter F of chapter I of title 21 of the Code of Federal Regulations", citation: {title: "21", chapter: "I", subchapter: "F"}},
 
     # IBR
@@ -426,7 +426,18 @@ SCENERIOS_CFR = [
 
     {ex: "paragraph (a)(2)", context: {composite_hierarchy: "14::I:D:61::Special Federal Aviation Regulation No. 73"},
      with_surrounding_text: "Except as provided in paragraph (a)(2) of this section, no person may manipulate",
-     expected_url: "/current/title-14/appendix-Special%20Federal%20Aviation%20Regulation%20No.%2073#p-Special-Federal-Aviation-Regulation-No.-73(a)(2)"}
+     expected_url: "/current/title-14/appendix-Special%20Federal%20Aviation%20Regulation%20No.%2073#p-Special-Federal-Aviation-Regulation-No.-73(a)(2)"},
+
+    # 27 /on/2020-09-11/title-21/chapter-I/subchapter-C/part-201/subpart-C/section-201.66#p-201.66(c)(5)(ii)(C)
+    {ex: "§§ 341.74(c)(5)(iii)", context: {composite_hierarchy: "21::I:C:201:C:201.66"},
+     with_surrounding_text: "(e.g., §§ 341.74(c)(5)(iii), 344.52(c), 358.150(c), and 358.550(c) of this chapter).",
+     citations: [
+       {title: "21", chapter: "I", section: "341.74", paragraph: "(c)(5)(iii)"},
+       {title: "21", chapter: "I", section: "344.52", paragraph: "(c)"},
+       {title: "21", chapter: "I", section: "358.150", paragraph: "(c)"},
+       {title: "21", chapter: "I", section: "358.550", paragraph: "(c)"}
+     ],
+     expected_url: "/on/2020-09-11/title-21/section-341.74#p-341.74(c)(5)(iii)"}
   ],
 
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1
@@ -791,6 +802,8 @@ RSpec.describe ReferenceParser::Cfr do
                 end
 
               end
+            elsif example[:expected_url].present?
+              expect(result_html).to have_tag("a", with: {href: example[:expected_url]})
             end
 
             # verify expected_prior_urls (if present)

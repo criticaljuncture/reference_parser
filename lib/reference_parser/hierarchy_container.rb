@@ -36,6 +36,30 @@ module ReferenceParser::HierarchyContainer
     end
   end
 
+  def slide_likely_paragraph_right(left, right)
+    # sections w/ multiple parentheticals currently (1/18/2022) only exist prior to a dash
+    # ex: "275.202(a)(11)(G)-1", "1.431(c)(6)-1", "36.3121(l)(10)-1"
+    section = @data[left]
+    paragraph = @data[right]
+
+    if section.present? && section.count("(") > 1
+      slide_after_index = if (last_dash = section.rindex("-"))
+        # dash, slide everything after the first paren after the dash
+        section.chars.each_with_index.map { |char, i| char == "(" && i > last_dash ? i : nil }.compact.first
+      else
+        # no dash, slide everything after the first paren
+        section.index("(")
+      end
+
+      if slide_after_index
+        section, paragraph_in_section = [section.slice!(0, slide_after_index), section]
+        @data[left] = section
+        @data[right] = paragraph_in_section + (paragraph || "")
+        order.track(left, right) unless paragraph
+      end
+    end
+  end
+
   def repartition(left, pivot, right, drop_divider: false)
     left_value, pivot_value, right_value = @data.values_at(left, right).compact.join.partition(pivot)
     right_value = [pivot_value, right_value].compact.join unless drop_divider

@@ -73,6 +73,8 @@ class ReferenceParser::Hierarchy
       @data[:paragraph] = @data[:paragraph].partition("through").first.strip if @data[:paragraph].include?("through")
     end
 
+    slide_likely_paragraph_right(:section, :paragraph)
+
     self
   end
 
