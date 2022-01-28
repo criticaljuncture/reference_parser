@@ -31,7 +31,7 @@ RSpec.describe ReferenceParser::Email do
             expect(
               ReferenceParser.new.hyperlink(example, default: {target: nil})
             ).to have_tag("a", text: scenerio[:text] || example,
-                               with: {href: scenerio[:href]})
+              with: {href: scenerio[:href]})
 
           end
         end

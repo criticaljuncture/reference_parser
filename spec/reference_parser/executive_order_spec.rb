@@ -27,7 +27,7 @@ RSpec.describe ReferenceParser::ExecutiveOrder do
           expect(
             ReferenceParser.new(only: :executive_order).hyperlink(example, default: {target: nil, class: nil})
           ).to have_tag("a", text: scenerio[:text] || example,
-                             with: {href: executive_order_url(scenerio[:citation])})
+            with: {href: executive_order_url(scenerio[:citation])})
         end
       end
     end

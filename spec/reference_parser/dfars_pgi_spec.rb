@@ -18,7 +18,7 @@ RSpec.describe ReferenceParser::DfarsPgi do
             expect(
               ReferenceParser.new(only: :dfars_pgi).hyperlink(example, default: {target: nil, class: nil})
             ).to have_tag("a", text: scenerio[:text] || example,
-                               with: {href: described_class.new({}).url(scenerio[:citation])})
+              with: {href: described_class.new({}).url(scenerio[:citation])})
           end
         end
       end

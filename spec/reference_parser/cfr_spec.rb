@@ -835,7 +835,7 @@ RSpec.describe ReferenceParser::Cfr do
                 expect(
                   references_only_result_html
                 ).to have_tag("a", text: example[:text] || example[:ex],
-                                   with: {href: example[:expected_url]}.tap { |h| h.delete(:href) unless h[:href].present? })
+                  with: {href: example[:expected_url]}.tap { |h| h.delete(:href) unless h[:href].present? })
               end
             end
 

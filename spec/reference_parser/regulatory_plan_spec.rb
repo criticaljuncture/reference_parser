@@ -23,7 +23,7 @@ RSpec.describe ReferenceParser::RegulatoryPlan do
             expect(
               result
             ).to have_tag("a", text: "RIN #{citation[:rin]}" || example,
-                               with: {href: regulatory_plan_url(citation)})
+              with: {href: regulatory_plan_url(citation)})
           end
         end
       end

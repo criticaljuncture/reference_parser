@@ -44,7 +44,7 @@ RSpec.describe ReferenceParser::FederalRegister do
             expect(
               result_html
             ).to have_tag("a", text: scenerio[:text] || example,
-                               with: {href: fr_url(citation)})
+              with: {href: fr_url(citation)})
 
           else
 

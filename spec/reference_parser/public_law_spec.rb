@@ -34,7 +34,7 @@ RSpec.describe ReferenceParser::PublicLaw do
             expect(
               ReferenceParser.new(only: :public_law).hyperlink(example, default: {target: nil, class: nil})
             ).to have_tag("a", text: scenerio[:text] || example,
-                               with: {href: public_law_url(scenerio[:citation])})
+              with: {href: public_law_url(scenerio[:citation])})
           end
         end
       end
