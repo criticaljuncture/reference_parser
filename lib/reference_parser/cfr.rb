@@ -736,16 +736,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def prepare_context(options)
     result = options&.[](:context) || {}
     if (composite_hierarchy = options&.[](:composite_hierarchy) || result[:composite_hierarchy])
-      hierarchy_from_composite = %i[title subtitle chapter subchapter part subpart section_identifier]
-        .zip(composite_hierarchy.split(":")).to_h
-
-      hierarchy_from_composite.delete_if { |k, v| v.blank? }
-      if hierarchy_from_composite[:section_identifier]
-        rank = /(appendix|\s)/i.match?(hierarchy_from_composite[:section_identifier]) ? :appendix : :section
-        hierarchy_from_composite[rank] = hierarchy_from_composite[:section_identifier]
-      end
-
-      result.reverse_merge!(hierarchy_from_composite)
+      result.reverse_merge!(ReferenceParser::Hierarchy.hash_from_composite(composite_hierarchy))
     end
     result || {}
   end

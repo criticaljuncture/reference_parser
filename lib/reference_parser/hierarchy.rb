@@ -3,6 +3,19 @@ class ReferenceParser::Hierarchy
 
   include ReferenceParser::HierarchyContainer
 
+  def self.hash_from_composite(composite)
+    hierarchy_from_composite = %i[title subtitle chapter subchapter part subpart section_identifier]
+      .zip(composite.split(":")).to_h
+
+    hierarchy_from_composite.delete_if { |k, v| v.blank? }
+    if hierarchy_from_composite[:section_identifier]
+      rank = /(appendix|\s)/i.match?(hierarchy_from_composite[:section_identifier]) ? :appendix : :section
+      hierarchy_from_composite[rank] = hierarchy_from_composite[:section_identifier]
+    end
+
+    hierarchy_from_composite
+  end
+
   def appears_incomplete?(captures: {})
     # ranks explictly listed by the replace definition are required
     result = RANKS.detect do |rank|
