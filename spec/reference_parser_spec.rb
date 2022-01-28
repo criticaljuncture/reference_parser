@@ -90,6 +90,14 @@ RSpec.describe ReferenceParser do
       )
     end
 
+    it "for Issues (dotted sections)" do
+      expect(
+        described_class.new.hyperlink("50 CFR 17.11, 17.47 (86 FR 72427 Dec. 21, 2021)", default: {target: nil}, options: {cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}, relative: true}})
+      ).to eql(
+        '<a href="/compare/2020-05-30/to/2020-06-01/title-50/section-17.11" class="cfr external">50 CFR 17.11</a>, <a href="/compare/2020-05-30/to/2020-06-01/title-50/section-17.47" class="cfr external">17.47</a> (<a href="https://www.federalregister.gov/citation/86-FR-72427" class="fr-reference" data-reference="86 FR 72427">86 FR 72427</a> Dec. 21, 2021)'
+      )
+    end
+
     it "for Issues (reverse ecfr/fr absolute/relative)" do
       expect(
         described_class.new.hyperlink("8 CFR 1208 (85 FR 23904, Apr. 30, 2020)", default: {target: nil}, options: {federal_register: {relative: true}, cfr: {compare: {from: "2020-05-30", to: "2020-06-01"}}})
