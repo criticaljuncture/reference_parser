@@ -140,12 +140,10 @@ class ReferenceParser::HierarchyCaptures
 
   private
 
-  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|and|or|through/ixo
-  # LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|and|or/ixo
+  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|and|or|through|note/ixo
 
   # dividers that should be kept with the subsequent item
   TRAILING_DIVIDERS = /and|or|to|through/ix
-  # TRAILING_DIVIDERS = /and|or|to/ix
 
   ANY_DIVIDER = /(?<split>(?:\s*(?:#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS})\s*))/ix
 

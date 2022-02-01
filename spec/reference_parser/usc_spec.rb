@@ -34,6 +34,9 @@ SCENERIOS_USC = [
   {ex: "pursuant to section 6(a) of the Act (15 U.S.C. 78f(a)) or a national", text: "15 U.S.C. 78f(a)", citation: {title: "15", part: "78f"}},
   {ex: "(15 U.S.C. 78<em>o</em>-3(a))", text: "15 U.S.C. 78<em>o</em>-3(a)", citation: {title: "15", part: "78o-3"}},
 
+  {ex: "15 U.S.C. 77b, 77b note, 78<em>l,</em> 78m, 78<em>ll</em>(d), 78mm",
+   citations: ["77b", "77b", "78l", "78m", "78ll", "78mm"].map { |part| {title: "15", part: part} }},
+
   {ex: "15 U.S.C. 77c, 77o, 77s, 77z-3, 77sss, 78d, 78d-1, 78d-2, 78o-4, 78w, 78<em>ll</em>(d), 78mm, 80a-37, 80b-11, 7202, and 7211 <em>et seq.,</em> unless otherwise noted. ",
    citations: %w[77c 77o 77s 77z-3 77sss 78d 78d-1 78d-2 78o-4 78w 78ll 78mm 80a-37 80b-11 7202 7211].map { |part| {title: "15", part: part} }},
 
@@ -149,6 +152,7 @@ RSpec.describe ReferenceParser::Usc do
     end
 
     def usc_url(options)
+      options[:part].gsub!(" ", "%20") if options[:part]&.to_s&.include?(" ")
       ReferenceParser::Usc.new({}).url(options)
     end
 

@@ -210,6 +210,7 @@ class ReferenceParser::Hierarchy
     end
 
     @data[:paragraph].gsub!(/\s*\(last\s*sentence\)\s*/ix, "") if @data[:paragraph].present?
+    @data[:part].gsub!(" note", "") if @data[:part]&.end_with?(" note")
 
     drop_whitespace_and_italics(:part)
     drop_whitespace_and_italics(:paragraph)

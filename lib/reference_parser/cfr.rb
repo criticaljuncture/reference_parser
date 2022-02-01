@@ -410,6 +410,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                   \(\s*[a-z]{1,5}\s*\) |
                 )
                 ([a-z]{1,5}-\d+)?
+                (?:\s*note)?
                 #{NEXT_TITLE_STOP}
               )+
             )
