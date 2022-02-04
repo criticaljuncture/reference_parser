@@ -93,8 +93,6 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
-  SUFFIXED_PART = /(?<suffxied_part>#{PART_ID})/ixo
-
   PARENTHETICALS = /
   (?: \((?:<em>)?[a-z]{1,3}(?:<\/em>)?\)\s* | # a b c
       \((?:<em>)?\d{1,3}(?:<\/em>)?\)\s*    | # 1 2 3
@@ -417,6 +415,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
             #{TRAILING_BOUNDRY}
             /ixo
           }, prepend_pattern: true)
+
+  # catch "3 CFR," style in Authority sections
+  replace(->(context, options) {
+    /
+    #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
+    (?<suffix>,)
+    #{TRAILING_BOUNDRY}
+    #{NEXT_TITLE_STOP}
+    /ix
+  }, prepend_pattern: true, will_consider_pre_match: true)
 
   # primarly list replacements
   # strict / CFR

@@ -582,7 +582,10 @@ SCENERIOS_CFR = [
     {ex: "<sup>[<a class='footnote-reference' href='#406.2-footref-1' data-turbolinks='false'>1</a>]</sup>", citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "406.2"}},
 
     # (#20)
-    {ex: "(3 CFR, 1980 Comp., pp. 409-412)", citation: :expect_none, html_appearance: :expect_none, context: {title: "29", section: "100.603"}},
+    {ex: "3 CFR", citations: [{title: "3"}], html_appearance: :expect_none, context: {title: "29", section: "100.603"},
+     with_surrounding_text: "(3 CFR, 1980 Comp., pp. 409-412)"},
+    {ex: "3 CFR", citations: [{title: "3"}], html_appearance: :expect_none, context: {title: "1", part: "2"},
+     with_surrounding_text: "3 CFR, 1954-1958 Comp."},
 
     # (#20)
     {ex: ">9.400 Scope of subpart.<", citation: :expect_none, html_appearance: :expect_none, context: {title: "48", section: "9.400"}},
@@ -635,6 +638,16 @@ SCENERIOS_CFR = [
       {title: "26", section: "301.7701-2"},
       {title: "26", section: "301.7701-3"}], context: {title: "26", section: "1.761-1"}}
 
+  ],
+
+  "Authority", [
+    {ex: "44 U.S.C. 1506; sec. 6, E.O. 10530, 19 FR 2709; 3 CFR, 1954-1958 Comp., p. 189; 1 U.S.C. 112; 1 U.S.C. 113.",
+     citations: [{section: "1506", title: "44"},
+       {title: "19", section: "2709"},
+       {title: "3"},
+       {title: "1", section: "112"},
+       {title: "1", section: "113"}],
+     expected_html: '<a href="https://www.govinfo.gov/link/uscode/44/1506" class="usc external" target="_blank" rel="noopener noreferrer">44 U.S.C. 1506</a>; sec. 6, E.O. 10530, <a href="/citation/19-FR-2709" class="fr-reference" data-reference="19 FR 2709">19 FR 2709</a>; <a href="/current/title-3" class="cfr external">3 CFR</a>, 1954-1958 Comp., p. 189; <a href="https://www.govinfo.gov/link/uscode/1/112" class="usc external" target="_blank" rel="noopener noreferrer">1 U.S.C. 112</a>; <a href="https://www.govinfo.gov/link/uscode/1/113" class="usc external" target="_blank" rel="noopener noreferrer">1 U.S.C. 113</a>'}
   ],
 
   "issues/recent changes", [
@@ -817,7 +830,9 @@ RSpec.describe ReferenceParser::Cfr do
             references_only_result_html_text = Nokogiri::HTML.parse(references_only_result_html).text
             result_html_text = Nokogiri::HTML.parse(result_html).text
 
-            expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:text] || example[:ex]).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none])
+            expect(result_html).to include(example[:expected_html]) if example[:expected_html].present?
+
+            expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:text] || example[:ex]).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none]) || example[:expected_html].present?
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearance] == :expect_none
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 
