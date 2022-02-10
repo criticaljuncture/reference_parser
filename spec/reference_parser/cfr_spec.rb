@@ -428,7 +428,7 @@ SCENERIOS_CFR = [
      with_surrounding_text: "Except as provided in paragraph (a)(2) of this section, no person may manipulate",
      expected_url: "/current/title-14/appendix-Special%20Federal%20Aviation%20Regulation%20No.%2073#p-Special-Federal-Aviation-Regulation-No.-73(a)(2)"},
 
-    # 27 /on/2020-09-11/title-21/chapter-I/subchapter-C/part-201/subpart-C/section-201.66#p-201.66(c)(5)(ii)(C)
+    # #27 /on/2020-09-11/title-21/chapter-I/subchapter-C/part-201/subpart-C/section-201.66#p-201.66(c)(5)(ii)(C)
     {ex: "§§ 341.74(c)(5)(iii)", context: {composite_hierarchy: "21::I:C:201:C:201.66"},
      with_surrounding_text: "(e.g., §§ 341.74(c)(5)(iii), 344.52(c), 358.150(c), and 358.550(c) of this chapter).",
      citations: [
@@ -437,7 +437,10 @@ SCENERIOS_CFR = [
        {title: "21", chapter: "I", section: "358.150", paragraph: "(c)"},
        {title: "21", chapter: "I", section: "358.550", paragraph: "(c)"}
      ],
-     expected_url: "/on/2020-09-11/title-21/section-341.74#p-341.74(c)(5)(iii)"}
+     expected_url: "/on/2020-09-11/title-21/section-341.74#p-341.74(c)(5)(iii)"},
+
+    # #31 /current/title-49/subtitle-B/chapter-I/subchapter-D/part-192/subpart-A/section-192.7#p-192.7(j)(1)
+    {ex: "192.712(b)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"}, citation: :expect_none},
   ],
 
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1

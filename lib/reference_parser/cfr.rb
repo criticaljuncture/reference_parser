@@ -454,6 +454,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<paragraph>
       #{PARAGRAPH}
     )
+    #{TRAILING_BOUNDRY}
+    #{NEXT_TITLE_STOP}
     /ix
   }, if: :context_present?, context_expected: :title)
 
