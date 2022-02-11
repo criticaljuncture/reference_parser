@@ -441,6 +441,25 @@ SCENERIOS_CFR = [
 
     # #31 /current/title-49/subtitle-B/chapter-I/subchapter-D/part-192/subpart-A/section-192.7#p-192.7(j)(1)
     {ex: "192.712(b)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"}, citation: :expect_none},
+
+    # #32 /current/title-49/subtitle-B/chapter-I/subchapter-D/part-192/subpart-A/section-192.7#p-192.7(j)(1)
+    {ex: "§§ 192.485(c); 192.632(a); 192.712(b); 192.933(a) and (d)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+     with_surrounding_text: "approved for §§ 192.485(c); 192.632(a); 192.712(b); 192.933(a) and (d).",
+     citations: [
+       {title: "49", section: "192.485", paragraph: "(c)"},
+       {title: "49", section: "192.632", paragraph: "(a)"},
+       {title: "49", section: "192.712", paragraph: "(b)"},
+       {title: "49", section: "192.933", paragraph: "(a)"},
+       {title: "49", section: "192.933", paragraph: "(d)"}
+     ]},
+
+    {ex: "§§ 192.153(a), (b), (d); and 192.165(b)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+     citations: [
+       {title: "49", subchapter: "D", section: "192.153", paragraph: "(a)"},
+       {title: "49", subchapter: "D", section: "192.153", paragraph: "(b)"},
+       {title: "49", subchapter: "D", section: "192.153", paragraph: "(d)"},
+       {title: "49", subchapter: "D", section: "192.165", paragraph: "(b)"}
+     ]}
   ],
 
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1

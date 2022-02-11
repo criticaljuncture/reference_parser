@@ -1,5 +1,5 @@
 class ReferenceParser::HierarchyCaptures
-  LIST_DESIGNATORS = /,|or|and|through|to/ix
+  LIST_DESIGNATORS = /,|;|or|and|through|to/ix
 
   LIST_EXAMPLES = /
     (<em>)?\s*Examples?\s*.                           # required example text
@@ -140,7 +140,7 @@ class ReferenceParser::HierarchyCaptures
 
   private
 
-  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|and|or|through|note/ixo
+  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|;|and|or|through|note/ixo
 
   # dividers that should be kept with the subsequent item
   TRAILING_DIVIDERS = /and|or|to|through/ix

@@ -60,7 +60,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   TRAILING_BOUNDRY = /(?!\.?\d|\/)/ix # don't stop mid-number or date
 
   JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|through)\s*/ixo
-  JOIN_SECTION = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
+  JOIN_SECTION = /\s*(?!CFR)(?:,|;|(?:[,;]\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
 
   SUBTITLE_LABEL = /(?<subtitle_label>subtitle\s*)/ix
   SUBTITLE = /(?<subtitle>[A-Z])/ix
@@ -142,7 +142,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   PARAGRAPHS_OPTIONAL_LIST = /
     (?<paragraphs>                          # list of paragraphs
       (?:
-        (?:\s|,|and|or|through||-)+
+        (?:\s|,|;|and|or|through||-)+
         (?:#{PARAGRAPH_UNLABELED_REQUIRED}|\d+\.\d+)
         (?:
           [a-z]\d?-\d+[a-z]?
@@ -323,7 +323,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   UNLINKABLE_PRE_MATCH = /(?:Appendix\s*to\s*)|(?:Appendix\s*[A-Z0-9]{0,3}\s*to\s*\z)/ix
 
-  # loose section
+  # loose section | §§
 
   replace(/
     (?<![>"'§])                                       # avoid matching start of tag for section header

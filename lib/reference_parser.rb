@@ -201,13 +201,21 @@ class ReferenceParser
     end.html_safe # !?
   end
 
-  ALL_DIVIDER_PATTERN = /(?<split>(?:,|\s+|and|or|through)+)/ix
-  COMMA_WHITESPACE_PATTERN = /[\s,]+/ix
+  ALL_DIVIDER_PATTERN = /(?<split>(?:,|;|\s+|and|or|through)+)/ix
+  TRAILING_PATTERN = /[\s,;]+/ix
+  TRAILING_HTML_ENTITY_OR_ATTRIBUTE = /
+    (?:
+      &\#?[0-9a-zA-Z]+;
+      |
+      [0-9a-zA-Z]+=[0-9a-zA-Z]+;
+    )
+    \z
+  /x
 
   def eject_spacers_from_tag(text, aggressive: false)
     prefix = suffix = ""
 
-    pattern = aggressive ? ALL_DIVIDER_PATTERN : COMMA_WHITESPACE_PATTERN
+    pattern = aggressive ? ALL_DIVIDER_PATTERN : TRAILING_PATTERN
 
     prefix_match = /\A#{pattern}/.match(text)
     if prefix_match
@@ -216,7 +224,7 @@ class ReferenceParser
     end
 
     suffix_match = /#{pattern}\z/.match(text)
-    if suffix_match
+    if suffix_match && !TRAILING_HTML_ENTITY_OR_ATTRIBUTE.match?(text)
       text.delete_suffix!(suffix_match[0])
       suffix = suffix_match[0]
     end

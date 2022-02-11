@@ -58,7 +58,7 @@ class ReferenceParser::Hierarchy
       @data[:paragraph].gsub!(/paragraph/i, "")
     end
     @data.transform_values! do |value|
-      list_items = /(\s+|,|or|and|through)+/i
+      list_items = /(\s+|,|;|or|and|through)+/i
       value.gsub(/\A#{list_items}/, "") # prefixed whitespace / list items
         .gsub(/#{list_items}\z/, "") # suffixed whitespace / list items
     end
