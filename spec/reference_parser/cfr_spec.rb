@@ -455,10 +455,42 @@ SCENERIOS_CFR = [
 
     {ex: "§§ 192.153(a), (b), (d); and 192.165(b)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
      citations: [
-       {title: "49", subchapter: "D", section: "192.153", paragraph: "(a)"},
-       {title: "49", subchapter: "D", section: "192.153", paragraph: "(b)"},
-       {title: "49", subchapter: "D", section: "192.153", paragraph: "(d)"},
-       {title: "49", subchapter: "D", section: "192.165", paragraph: "(b)"}
+       {title: "49", section: "192.153", paragraph: "(a)", expected_url: "/current/title-49/section-192.153#p-192.153(a)"},
+       {title: "49", section: "192.153", paragraph: "(b)", expected_url: "/current/title-49/section-192.153#p-192.153(b)"},
+       {title: "49", section: "192.153", paragraph: "(d)", expected_url: "/current/title-49/section-192.153#p-192.153(d)"},
+       {title: "49", section: "192.165", paragraph: "(b)", expected_url: "/current/title-49/section-192.165#p-192.165(b)"}
+     ]},
+
+    {ex: "§§ 192.153(a), (b), (d); and 192.165(b)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+     citations: [
+       {title: "49", section: "192.153", paragraph: "(a)", expected_url: "/current/title-49/section-192.153#p-192.153(a)"},
+       {title: "49", section: "192.153", paragraph: "(b)", expected_url: "/current/title-49/section-192.153#p-192.153(b)"},
+       {title: "49", section: "192.153", paragraph: "(d)", expected_url: "/current/title-49/section-192.153#p-192.153(d)"},
+       {title: "49", section: "192.165", paragraph: "(b)", expected_url: "/current/title-49/section-192.165#p-192.165(b)"}
+     ],
+     repeat_reference: 3},
+
+    {ex: "§§ 192.111(a), (b); and 192.333(c)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+     citations: [
+       {title: "49", section: "192.111", paragraph: "(a)", expected_url: "/current/title-49/section-192.111#p-192.111(a)"},
+       {title: "49", section: "192.111", paragraph: "(b)", expected_url: "/current/title-49/section-192.111#p-192.111(b)"},
+       {title: "49", section: "192.333", paragraph: "(c)", expected_url: "/current/title-49/section-192.333#p-192.333(c)"}
+     ]},
+
+    {ex: "§§ 192.444(d); 192.555(e)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+     citations: [
+       {title: "49", section: "192.444", paragraph: "(d)", expected_url: "/current/title-49/section-192.444#p-192.444(d)"},
+       {title: "49", section: "192.555", paragraph: "(e)", expected_url: "/current/title-49/section-192.555#p-192.555(e)"}
+     ]},
+
+    {ex: ["§§ 192.111(a), (b); and 192.333(c)", "§§ 192.444(d); 192.555(e);"], context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+     with_surrounding_text: "...lorem ipsum dolor §§ 192.111(a), (b); and 192.333(c). consectetuer adipiscing elit. Vivamus §§ 192.444(d); 192.555(e); vitae risus vitae...",
+     citations: [
+       {title: "49", section: "192.111", paragraph: "(a)", expected_url: "/current/title-49/section-192.111#p-192.111(a)"},
+       {title: "49", section: "192.111", paragraph: "(b)", expected_url: "/current/title-49/section-192.111#p-192.111(b)"},
+       {title: "49", section: "192.333", paragraph: "(c)", expected_url: "/current/title-49/section-192.333#p-192.333(c)"},
+       {title: "49", section: "192.444", paragraph: "(d)", expected_url: "/current/title-49/section-192.444#p-192.444(d)"},
+       {title: "49", section: "192.555", paragraph: "(e)", expected_url: "/current/title-49/section-192.555#p-192.555(e)"}
      ]}
   ],
 
@@ -815,9 +847,11 @@ RSpec.describe ReferenceParser::Cfr do
       describe description do
         examples.each_with_index do |example, index|
           example[:index] = index
-          it "(#{index}) #{example[:ex].truncate(24)}" do
+          it "(#{index}) #{example[:ex].to_s.truncate(24)}" do
             # embed example in text
             text = lorem[0..16] << " " << (example[:with_surrounding_text] || example[:ex]) << " " << lorem[18..] << "."
+            text *= example[:repeat_reference] if example[:repeat_reference]
+
             expected_citation = [example[:citation], example[:citations]].flatten.compact.map do |target|
               target.respond_to?(:except) ? target.except(*example[:optional]) : target
             end
@@ -829,6 +863,8 @@ RSpec.describe ReferenceParser::Cfr do
               if expected_citation == [:expect_none]
                 expect(references.map { |r| r[:hierarchy] }.compact).to be_empty
               else
+                expected_citation *= example[:repeat_reference] if example[:repeat_reference]
+
                 # verify extracted references (if present)
                 expect(references.map { |r| r[:hierarchy].to_h }.compact).to eq(expected_citation.map { |c| c.except(:expected_url) })
 
@@ -854,8 +890,9 @@ RSpec.describe ReferenceParser::Cfr do
 
             expect(result_html).to include(example[:expected_html]) if example[:expected_html].present?
 
-            expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example[:text] || example[:ex]).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none]) || example[:expected_html].present?
-            expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearance] == :expect_none
+            example_text = example[:text] || example[:ex]
+            expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example_text).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none]) || example[:expected_html].present? || example_text.is_a?(Array)
+            expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearance] == :expect_none || example[:ex].is_a?(Array)
             expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 
             if expected_citation == [:expect_none]

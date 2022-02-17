@@ -113,8 +113,8 @@ class ReferenceParser::Hierarchy
     previous_hierarchy = previous_citation&.[](:hierarchy) || {}
 
     # paragraph is section+paragraph?
-    if context[:mixed_paragraph_and_section_list] || (processing_a_list && starts_with_a_section?(@data[:paragraph], section: @data[:section]))
-      context[:mixed_paragraph_and_section_list] = true
+    if options[:mixed_paragraph_and_section_list] || (processing_a_list && starts_with_a_section?(@data[:paragraph], section: @data[:section]))
+      options[:mixed_paragraph_and_section_list] = true
       puts "normalize_paragraph_ranges removing section #{captures[:section]}" if @debugging
       captures.delete(:section)
 
@@ -276,12 +276,12 @@ class ReferenceParser::Hierarchy
 
     if context[rank] && !@data[rank].present? # rank is available in the context, but not yet populated
       if (rank == :part) && (@data[:paragraph].present? || @data[:subpart].present? || (@data[:section].present? && !@data[:section]&.include?("."))) && context_expected.include?(:part)
-        reason ||= :not_expecting_lower_rank
+        reason ||= :not_expecting_lower_rank_below_part
       end
 
       if @data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?
         if ((rank == :chapter) && !@data[:section].present? && !existing.include?(:section) && !context_expected.include?(:section)) ||
-            ((rank == :subchapter) && !context_expected.include?(:section) && (!context_expected.include?(:chapter) && !existing.include?(:chapter)))
+            ((rank == :subchapter) && !data[:section].present? && !context_expected.include?(:section) && (!context_expected.include?(:chapter) && !existing.include?(:chapter)))
           reason ||= :not_expecting_lower_rank
         end
       end

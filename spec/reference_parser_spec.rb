@@ -144,4 +144,15 @@ RSpec.describe ReferenceParser do
       )
     end
   end
+
+  it "doesn't mutate context" do
+    text = "please see part 300 of this title. §§ 111.111(a), (b); and 111.333(c)"
+
+    original = {title: "1", part: "100"}
+    context = original.dup
+
+    described_class.new(options: {cfr: {context: context}}).hyperlink(text, default: {relative: true, class: nil, target: nil}, options: {cfr: {on: "2020-01-01"}})
+
+    expect(context).to eq original
+  end
 end
