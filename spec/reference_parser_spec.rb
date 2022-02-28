@@ -6,7 +6,7 @@ RSpec.describe ReferenceParser do
   let(:lorem) { "Lorem ipsum dolor sit amet, consectetur adipiscing elit." }
 
   it "has a version number" do
-    expect(ReferenceParser::VERSION).not_to be nil
+    expect(ReferenceParser::VERSION).not_to be_nil
   end
 
   describe "example usage" do

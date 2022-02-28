@@ -6,6 +6,7 @@ require "reference_parser"
 require "rspec-html-matchers"
 require "spec_helper"
 require "byebug"
+require "rainbow"
 
 # Dir[('./lib/**/*.rb')].each { |f| require f }
 # require "reference_parser"

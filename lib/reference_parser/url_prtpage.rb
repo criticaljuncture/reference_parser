@@ -12,6 +12,12 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
       (?<page_break>\s*<PRTPAGE\s+P="\d+"/>\s*)
       (?<final_fragment>[^\s<\u00A0"]+)
     )?
+    (?<href_ending_with_spaces>
+      \s                           # space at the end of the url proper
+      (?:\w{1,32}[\s\-]?){1,8}     # up to 8 additional fragments seperated by a single space
+      \s?                          # optional space
+      (?:.(?:pdf|html?|aspx?|txt)) # required suffix to allow spaces
+    )?                             # optionally link url-ish text with spaces
   }ix
 
   replace(AUTO_LINK_RE)
@@ -32,6 +38,7 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
     scheme = captures[:scheme]
     page_break = captures[:page_break]
     final_fragment = captures[:final_fragment]
+    href_ending_with_spaces = captures[:href_ending_with_spaces]
     punctuation = []
 
     initial_href = coder.decode(initial_href)
@@ -59,6 +66,8 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
       end
 
       href = "http://" + href unless scheme
+      href = (href + href_ending_with_spaces).gsub(" ", "%20") if href_ending_with_spaces.present?
+      trailing_link_content = href_ending_with_spaces || ""
       trailing_punctuation = punctuation.reverse.join
 
       if final_fragment.present?
@@ -66,9 +75,9 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
 
         results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href)}
         results << {result: page_break.html_safe}
-        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(final_fragment)}
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(final_fragment + trailing_link_content)}
       else
-        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href)}
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href + trailing_link_content)}
       end
       results << {result: trailing_punctuation}
     end
