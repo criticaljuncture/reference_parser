@@ -91,6 +91,19 @@ RSpec.describe ReferenceParser::UrlPrtpage do
         hyperlink(%(Written comments and recommendations for the proposed information collection should be sent within 30 days of publication of this notice to www.reginfo.gov/public/do/PRAMain. Find this particular information collection by selecting ``Currently under 30-day Review-- Open for Public Comments'' or by using the search function. Refer to ``Clearance for A-11 Section 280 Improving Customer Experience Information Collection'' in any correspondence.))
       }.not_to raise_error
     end
+
+    it "doesn't duplicate commas" do
+      result = hyperlink(<<~XML)
+        <P>
+          Persons with access to the internet may obtain the draft guidance at either
+          <E T="03">https://www.fda.gov/drugs/guidance-compliance-regulatory-information/guidances-drugs, https://www.fda.gov/regulatory-information/search-fda-guidance-documents,</E>
+          or
+          <E T="03">https://www.regulations.gov.</E>
+        </P>
+      XML
+
+      expect(result).not_to include(",,")
+    end
   end
 
   def drop_zero_width_spaces_if_unexpected(html)

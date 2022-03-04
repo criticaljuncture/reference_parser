@@ -75,11 +75,10 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
 
         results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href)}
         results << {result: page_break.html_safe}
-        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(final_fragment + trailing_link_content)}
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(final_fragment + trailing_link_content), suffix: trailing_punctuation}
       else
-        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href + trailing_link_content)}
+        results << {url: href, text: ReferenceParser::UrlPrtpage.add_line_break_indicators(initial_href + trailing_link_content), suffix: trailing_punctuation}
       end
-      results << {result: trailing_punctuation}
     end
 
     results
