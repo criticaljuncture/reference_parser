@@ -103,6 +103,14 @@ RSpec.describe ReferenceParser::UrlPrtpage do
       XML
 
       expect(result).not_to include(",,")
+      expect(result).to eq(<<~LINKED)
+        <P>
+          Persons with access to the internet may obtain the draft guidance at either
+          <E T="03"><a href="https://www.fda.gov/drugs/guidance-compliance-regulatory-information/guidances-drugs">https://www.fda.gov/&#8203;drugs/&#8203;guidance-compliance-regulatory-information/&#8203;guidances-drugs</a>, <a href="https://www.fda.gov/regulatory-information/search-fda-guidance-documents">https://www.fda.gov/&#8203;regulatory-information/&#8203;search-fda-guidance-documents</a>,</E>
+          or
+          <E T="03"><a href="https://www.regulations.gov">https://www.regulations.gov</a>.</E>
+        </P>
+      LINKED
     end
   end
 
