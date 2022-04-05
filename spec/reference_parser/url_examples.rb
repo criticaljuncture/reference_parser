@@ -84,6 +84,12 @@ RSpec.shared_examples "url examples" do
     expect(hyperlink(url.to_s)).to eql url_result.to_s
   end
 
+  it "handles trailing semicolons (domain)" do
+    url = "http://example.com;"
+    url_result = generate_result(url.delete_suffix(";")) + ";"
+    expect(hyperlink(url.to_s)).to eql url_result.to_s
+  end
+
   it "handles EOL" do
     url1 = "http://api.rubyonrails.com/Foo.html"
     url2 = "http://www.ruby-doc.org/core/Bar.html"
