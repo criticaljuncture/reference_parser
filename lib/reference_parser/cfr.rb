@@ -312,6 +312,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           \s*ANSI |
           \s*APSP |
           \s*ICC |
+          \s*NFPA |
         (?:
           (?:[\s,a-z]{0,128})
           (?:Act|Amendments|Code|regulations)

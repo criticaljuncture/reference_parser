@@ -681,7 +681,10 @@ SCENERIOS_CFR = [
     {ex: '<tag ex="e" ></tag><tag><tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum">2 CFR 2</tag><tag></tag></tag><tag>3 CFR 3</tag>', options: {html_awareness: :careful},
      citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
     {ex: '<tag ex="f" ></tag><tag><tag></tag><tag></tag><tag>2 CFR 2</tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum">3 CFR 3</tag>', options: {html_awareness: :careful},
-     citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none}
+     citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
+
+    # #33 /current/title-49/subtitle-B/chapter-I/subchapter-D/part-193/subpart-I
+    {ex: "Each operator must provide and maintain fire protection at LNG plants according to sections 9.1 through 9.7 and section 9.9 of NFPA-59A-2001", citation: :expect_none, html_appearance: :expect_none, context: {title: "49", section: "193.2801"}}
   ],
 
   "26 CFR 1.761-1", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFRe603023ccb74ecf/section-1.761-1
