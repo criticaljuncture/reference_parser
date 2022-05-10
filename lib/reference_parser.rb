@@ -197,6 +197,9 @@ class ReferenceParser
           break
         end
       end
+
+      Thread.pass
+
       result || match[0]
     end.html_safe # !?
   end
