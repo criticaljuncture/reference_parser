@@ -491,6 +491,24 @@ SCENERIOS_CFR = [
        {title: "49", section: "192.333", paragraph: "(c)", expected_url: "/current/title-49/section-192.333#p-192.333(c)"},
        {title: "49", section: "192.444", paragraph: "(d)", expected_url: "/current/title-49/section-192.444#p-192.444(d)"},
        {title: "49", section: "192.555", paragraph: "(e)", expected_url: "/current/title-49/section-192.555#p-192.555(e)"}
+     ]},
+
+    # #34 /current/title-21/chapter-I/subchapter-B/part-101/subpart-A/section-101.2#p-101.2(b)
+    {ex: "§§ 101.4, 101.5, 101.8, 101.9, 101.13, 101.17, 101.36", context: {composite_hierarchy: "21::I:B:101:A:101.2"},
+     citations: [
+       {title: "21", section: "101.4", expected_url: "/current/title-21/section-101.4"},
+       {title: "21", section: "101.5", expected_url: "/current/title-21/section-101.5"},
+       {title: "21", section: "101.8", expected_url: "/current/title-21/section-101.8"},
+       {title: "21", section: "101.9", expected_url: "/current/title-21/section-101.9"},
+       {title: "21", section: "101.13", expected_url: "/current/title-21/section-101.13"},
+       {title: "21", section: "101.17", expected_url: "/current/title-21/section-101.17"},
+       {title: "21", section: "101.36", expected_url: "/current/title-21/section-101.36"}
+     ]},
+
+    {ex: "subpart D of part 101, and part 105 of this chapter", context: {composite_hierarchy: "21::I:B:101:A:101.2"},
+     citations: [
+       {title: "21", chapter: "I", part: "101", subpart: "D", expected_url: "/current/title-21/part-101/subpart-D"},
+       {title: "21", chapter: "I", part: "105", expected_url: "/current/title-21/part-105"}
      ]}
   ],
 

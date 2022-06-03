@@ -51,12 +51,12 @@ class ReferenceParser::HierarchyCaptures
     self
   end
 
-  def build_hierarchy
+  def build_hierarchy(index)
     ranks = %i[title chapter]
     ranks << :subchapter if expected[:subchapter]
     ranks.concat(%i[section prefixed_part part])
     ranks << :subtitle if expected[:subtitle]
-    ranks.concat(%i[subpart prefixed_subpart]) if expected[:subpart]
+    ranks.concat(!index || index == 0 ? %i[subpart prefixed_subpart] : %i[subpart]) if expected[:subpart]
     ranks << :part if expected[:part]
     ranks.concat(%i[paragraph prefixed_paragraph])
     ranks << :appendix if expected[:appendix]

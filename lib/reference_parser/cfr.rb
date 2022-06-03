@@ -47,7 +47,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # "1 CFR 11 and 2 CFR 22" vs "1 CFR 11 and 12" needed after
   # simple digits patterns that could match the next title
   NEXT_TITLE_STOP = /
-    (?!\s*(?:
+    (?!\d|\s*(?:
         C\.?F\.?R| # CFR
         U\.?S\.?C| # USC
         F\.?R\.?|  # FR
@@ -596,7 +596,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       final_loop = index == (captures.repeated.count - 1)
 
       # create hierarchy (normalized citation data)
-      hierarchy = loop_captures.build_hierarchy
+      hierarchy = loop_captures.build_hierarchy(index)
 
       hierarchy.take_missing_from_context(captures: captures) if options[:context_expected].present?
       next if hierarchy.appears_incomplete?(captures: captures)
