@@ -7,7 +7,7 @@ require "rspec-html-matchers"
 require "spec_helper"
 require "byebug"
 require "rainbow"
-
+require_relative "helpers/cfr_helper"
 # Dir[('./lib/**/*.rb')].each { |f| require f }
 # require "reference_parser"
 

@@ -8,9 +8,9 @@ module ReferenceParser::Registration
       @replacements
     end
 
-    def replace(*args, **kwargs, &block)
+    def replace(...)
       @replacements ||= []
-      @replacements << ReferenceParser::Replacement.new(*args, **kwargs, &block)
+      @replacements << ReferenceParser::Replacement.new(...)
     end
   end
 

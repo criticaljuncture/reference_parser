@@ -5,7 +5,10 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in reference_parser.gemspec
 gemspec
 
-gem "rake", "~> 13.0"
+gem "rake"
 
-gem "rspec", "~> 3.0"
+gem "rspec"
 gem "rspec_junit_formatter"
+gem "rubocop", ">= 1.29.1"
+gem "rubocop-performance"
+gem "standard", ">= 1.12.1"

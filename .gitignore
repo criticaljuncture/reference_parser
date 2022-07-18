@@ -9,3 +9,4 @@ pkg/*
 .DS_Store
 .env
 spec/fixtures/files/performance/*.html
+tmp/*

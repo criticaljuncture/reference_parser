@@ -5,8 +5,9 @@ inherit_mode:
 AllCops:
   Exclude:
     - bin/*
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 2.7
   NewCops: enable
+  SuggestExtensions: false  
 Style/GlobalVars:
   Enabled: true
   AllowedVariables: [$redis]
@@ -18,8 +19,8 @@ RSpec/MultipleExpectations:
 
 require:
   - rubocop-performance
-  - standard/cop/block_single_line_braces
   - rubocop-rspec
+  - standard
 
 inherit_gem:
   standard: config/base.yml

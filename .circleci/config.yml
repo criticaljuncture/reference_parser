@@ -7,16 +7,16 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:3.1
     steps:
       - checkout
       - run:
           name: Bundle install, without requiring a Gemfile.lock
           command: bundle install --jobs=4 --retry=3 --path vendor/bundle
-      - ruby/rspec-test
       - run:
           name: rubocop
           command: bundle exec rubocop
+      - ruby/rspec-test
       - slack/notify:
           channel: ofr
           event: fail

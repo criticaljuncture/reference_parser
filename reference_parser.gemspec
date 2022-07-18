@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary = "Common public reference extraction & linking."
   spec.description = "Common public reference extraction & linking."
   spec.homepage = "https://github.com/criticaljuncture/reference_parser"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.4.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
 
   spec.metadata["allowed_push_host"] = ""
 
@@ -36,9 +36,12 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec-html-matchers"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "rainbow"
-  spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "rubocop", "1.29.1"
   spec.add_development_dependency "rubocop-rspec"
-  spec.add_development_dependency "standard"
+  spec.add_development_dependency "rubocop-performance"
+  spec.add_development_dependency "standard", ">= 1.12.1"
+  spec.add_development_dependency "parallel_tests"
+  spec.add_development_dependency "turbo_tests"
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
