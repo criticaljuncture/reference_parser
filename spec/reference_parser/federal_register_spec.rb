@@ -8,6 +8,9 @@ SCENERIOS_FR = [
   {ex: "as amended at 43 FR 5786, Feb. 9, 1978. Redesignated and amended at 53 FR 15991, 15999, May 4, 1988; 57 FR 38146, Aug. 21, 1992;",
    citations: [{volume: "43", page: "5786"}, {volume: "53", page: "15991"}, {volume: "53", page: "15999"}, {volume: "57", page: "38146"}]},
 
+  {ex: "website: https://www.nationalrtap.org/Technology-Tools/GTFS-Builder; and",
+   citations: [{expected_href: "https://www.nationalrtap.org/Technology-Tools/GTFS-Builder"}]},
+
   {ex: "51 FR 6537-42", citations: [{volume: "51", page: "6537"}]},
   {ex: "59 FR 62896-62953", citations: [{volume: "59", page: "62896"}]}
 ]
@@ -35,7 +38,7 @@ RSpec.describe ReferenceParser::FederalRegister do
     SCENERIOS_FR.each do |scenerio|
       [scenerio[:ex]].flatten.each do |example|
         it example.to_s do
-          result_html = ReferenceParser.new(only: :federal_register).hyperlink(example, default: {target: nil, class: nil})
+          result_html = ReferenceParser.new(only: [:federal_register, :url_prtpage]).hyperlink(example, default: {target: nil, class: nil})
 
           citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
 
@@ -44,14 +47,14 @@ RSpec.describe ReferenceParser::FederalRegister do
             expect(
               result_html
             ).to have_tag("a", text: scenerio[:text] || example,
-              with: {href: fr_url(citation)})
+              with: {href: scenerio[:expected_href] || fr_url(citation)})
 
           else
 
             citations.each do |citation|
               expect(
                 result_html
-              ).to have_tag("a", with: {href: fr_url(citation)})
+              ).to have_tag("a", with: {href: citation[:expected_href] || fr_url(citation)})
             end
 
             expect(result_html).to have_tag("a", count: citations.count)

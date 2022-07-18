@@ -70,7 +70,7 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
       trailing_link_content = href_ending_with_spaces || ""
       trailing_punctuation = punctuation.reverse.join
 
-      if href.end_with?(";") && href.count("/") < 3
+      if href.end_with?(";") && (href.count("?") == 0)
         initial_href.delete_suffix!(";")
         href.delete_suffix!(";")
         trailing_punctuation = ";" + (trailing_punctuation || "")
