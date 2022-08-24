@@ -504,10 +504,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     return unless options[:best_guess]
     /
     (?<title>\d{1,2})
+    #{TRAILING_BOUNDRY}
     (?<source_label>\s*)
     (?:#{PART_LABEL})?
-    #{SECTION}
-    #{TRAILING_BOUNDRY}
+    (?:
+      #{SECTION}
+      #{TRAILING_BOUNDRY}
+    )?
     /ixo
   })
 
