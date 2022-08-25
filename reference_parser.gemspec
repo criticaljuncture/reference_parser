@@ -42,6 +42,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "standard", ">= 1.12.1"
   spec.add_development_dependency "parallel_tests"
   spec.add_development_dependency "turbo_tests"
+  spec.add_development_dependency "rspec_junit_formatter"
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
