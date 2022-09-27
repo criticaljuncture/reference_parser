@@ -26,7 +26,8 @@ RSpec.describe "ReferenceParser::Cfr" do
         # {ex: "Appendix J to Part 50, Title 10", citation: {title: "10", part: "50", appendix: "J"},
         #  expected_url: "/current/title-10/chapter-I/part-50/appendix-Appendix%20J%20to%20Part%2050"}
         {ex: "4", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "4"}},
-        {ex: "40", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "40"}}
+        {ex: "40", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "40"}},
+        {ex: "1.5", options: {cfr: {best_guess: true, prefer_part: true}}, citation: :expect_none}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
