@@ -39,6 +39,7 @@ RSpec.describe ReferenceParser::Cfr do
         unless times_out(html, 0, html.length, options, timeout: 5 * 60)
           t2 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           delta = t2 - t1
+          expect(delta).to be < 60
           fail("successfully processed in #{delta.round(2)}s")
         end
       end

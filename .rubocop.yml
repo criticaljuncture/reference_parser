@@ -17,6 +17,11 @@ RSpec/ExampleLength:
 RSpec/MultipleExpectations:
   Enabled: false
 
+RSpec:
+   Language:
+     Expectations:
+       - expect_passing_cfr_scenerio
+
 require:
   - rubocop-performance
   - rubocop-rspec

@@ -1,7 +1,7 @@
 module CfrHelper
   LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 
-  def test_cfr_scenerio(example)
+  def expect_passing_cfr_scenerio(example)
     # embed example in text
     text = LOREM[0..16] << " " << (example[:with_surrounding_text] || example[:ex]) << " " << LOREM[18..] << "."
     text *= example[:repeat_reference] if example[:repeat_reference]

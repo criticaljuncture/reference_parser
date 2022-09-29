@@ -223,7 +223,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         examples.each_with_index do |example, index|
           example[:index] = index
           it "(#{index}) #{example[:ex].to_s.truncate(24)}" do
-            test_cfr_scenerio(example)
+            expect_passing_cfr_scenerio(example)
           end
         end
       end
