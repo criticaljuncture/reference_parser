@@ -35,6 +35,15 @@ RSpec.describe ReferenceParser::FederalRegister do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="/citation/60-FR-1000" data-reference="60 FR 1000">60 FR 1000</a> consectetur adipiscing elit.'
     end
 
+    it "does not include CFR if only FR is requested" do
+      expect(
+        ReferenceParser.new(only: :federal_register).hyperlink(
+          "Lorem ipsum dolor sit amet, 60 FR 1000 consectetur 1 CFR 1.1 adipiscing elit.",
+          default: {target: nil, class: nil}
+        )
+      ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/citation/60-FR-1000" data-reference="60 FR 1000">60 FR 1000</a> consectetur 1 CFR 1.1 adipiscing elit.'
+    end
+
     SCENERIOS_FR.each do |scenerio|
       [scenerio[:ex]].flatten.each do |example|
         it example.to_s do

@@ -14,11 +14,11 @@ class ReferenceParser
 
   def initialize(only: nil, except: [], options: {})
     @options = options || {}
-    parser_types = [(only || @options[:only] || default_parser_types)].flatten - except
+    @requested_parser_types = [(only || @options[:only] || default_parser_types)].flatten - except
     @timeout = @options.delete(:timeout) || 20
     @html_aware = @options[:html_awareness] != :none
     @debugging = false
-    @parsers, @dependencies = parsers_for(parser_types)
+    @parsers, @dependencies = parsers_for(@requested_parser_types)
     @parsers.each { |parser| parser.normalize_options(build_options(parser, @options, {})) }
   end
 
@@ -170,7 +170,7 @@ class ReferenceParser
               effective_parser.clean_up_named_captures(citation, options: replacement_options)
             end
 
-            if effective_parser
+            if effective_parser && @requested_parser_types.include?(effective_parser.type_slug)
               citation_result = nil
               if block
                 citation[:source] ||= effective_parser.slug

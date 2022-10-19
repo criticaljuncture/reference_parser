@@ -38,6 +38,10 @@ class ReferenceParser::Base
   end
 
   def slug
+    type_slug
+  end
+
+  def type_slug
     self.class.name.to_s.split("::").last.underscore.to_sym
   end
 
