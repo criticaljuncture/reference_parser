@@ -80,7 +80,20 @@ RSpec.describe "ReferenceParser::Cfr" do
          citations: [
            {title: "21", chapter: "I", part: "101", subpart: "D", expected_url: "/current/title-21/part-101/subpart-D"},
            {title: "21", chapter: "I", part: "105", expected_url: "/current/title-21/part-105"}
-         ]}
+         ]},
+
+        # 10:430:Appendix M1 to Subpart B of Part 430 /current/title-10/chapter-II/subchapter-D/part-430/subpart-B/appendix-Appendix%20M1%20to%20Subpart%20B%20of%20Part%20430
+        {ex: "refer to section 6.2 of AHRI 1230-2010", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
+         citation: :expect_none},
+
+        {ex: "requirements of section 2.5.7 of this appendix", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
+         citation: :expect_none}, # p-Appendix-M1-to-Subpart-B-of-Part-430(2.5.7)
+
+        {ex: "from this appendix, the section 3.3 and 3.5.1 default values", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
+         citation: :expect_none}, # p-Appendix-M1-to-Subpart-B-of-Part-430(3.3) p-Appendix-M1-to-Subpart-B-of-Part-430(3.5.1)
+
+        {ex: "When performing section 3.5 and/or 3.8 cyclic tests", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
+         citation: :expect_none} # p-Appendix-M1-to-Subpart-B-of-Part-430(3.5) p-Appendix-M1-to-Subpart-B-of-Part-430(3.8)
       ]
     ].each_slice(2) do |description, examples|
       describe description do

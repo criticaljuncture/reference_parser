@@ -304,15 +304,18 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo, will_consider_pre_match: true)
 
   LIKELY_EXTERNAL_SECTIONS = /
-      of\s*
+      \A\s*of\s*
       (?:the|those|)
       (?:
           \s*EAR |
           \s*Order |
+          \s*AHRI |
           \s*ANSI |
           \s*APSP |
+          \s*ASHRAE |
           \s*ICC |
           \s*NFPA |
+          \s*this\sappendix |
         (?:
           (?:[\s,a-z]{0,128})
           (?:Act|Amendments|Code|regulations)
@@ -322,7 +325,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   LIKELY_UNLINKABLE = /revised.{0,18}(?<revised_year>(?:19|20)\d{2})/ix
 
-  UNLINKABLE_PRE_MATCH = /(?:Appendix\s*to\s*)|(?:Appendix\s*[A-Z0-9]{0,3}\s*to\s*\z)/ix
+  UNLINKABLE_PRE_MATCH = /
+      (?:Appendix\s*to\s*)|(?:Appendix\s*[A-Z0-9]{0,3}\s*to\s*\z) |
+      from\sthis\sappendix,\sthe |
+      When\sperforming |
+      exceeds\sthe\sapplicable
+    /ix
 
   # loose section | §§
 
