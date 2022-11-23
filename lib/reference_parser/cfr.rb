@@ -12,10 +12,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBTITLE_ID = /(?:[A-Z]{1,7})/ix
   CHAPTER_ID = /[IVXLCDM0-9]+/ix
   SUBCHAPTER_ID = /[A-Z]+[-_]?[A-Z]*/ix
-  PART_ID = /\w+[\-–—]?\w*/ix
+  PART_ID = /\w+[-–—]?\w*/ix
   SUBPART_ID = /\w{1,4}[\w.\-–—]{0,6}(?:suspended)?/ix # constraint /\w+[\w.\-–—]*\w*/ix generated/internal ECFR[0-9A-Z]{15,16}
   SUBPART_ID_ADDITIONAL = /\w{1,4}([.\-–—][\w.\-–—]{0,5}|)(?:suspended)?\b/ix
-  SECTION_ID = /[\w\-]+.?[\w\-–—()]*/ix
+  SECTION_ID = /[\w-]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
@@ -428,7 +428,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # catch "3 CFR," style in Authority sections
   replace(->(context, options) {
     /
-    #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
+    #{(options[:slash_shorthand_allowed] || options[:best_guess]) ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
     (?<suffix>,)
     #{TRAILING_BOUNDRY}
     #{NEXT_TITLE_STOP}
@@ -444,7 +444,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PREFIXED_PARAGRAPHS}
       (?<prefixed_paragraph_suffix>\s*(?:of|in)\s*)
     )?
-    #{options[:slash_shorthand_allowed] || options[:best_guess] ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
+    #{(options[:slash_shorthand_allowed] || options[:best_guess]) ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
     (?:(?<chapter_label>chapter\s*)(?<chapter>[A-Z]+\s*)(?<section_label>§?\s*))?
     #{SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}

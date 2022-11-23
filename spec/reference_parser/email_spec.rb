@@ -25,7 +25,7 @@ RSpec.describe ReferenceParser::Email do
           if scenerio[:result]
             expect(
               ReferenceParser.new.hyperlink(example, default: {target: nil})
-            ).to eq(scenerio[:result] == :no_change ? example : scenerio[:result])
+            ).to eq((scenerio[:result] == :no_change) ? example : scenerio[:result])
           end
           if scenerio[:href]
             expect(

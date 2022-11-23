@@ -45,7 +45,7 @@ module ReferenceParser::HierarchyContainer
     if section.present? && section.count("(") > 1
       slide_after_index = if (last_dash = section.rindex("-"))
         # dash, slide everything after the first paren after the dash
-        section.chars.each_with_index.map { |char, i| char == "(" && i > last_dash ? i : nil }.compact.first
+        section.chars.each_with_index.map { |char, i| (char == "(" && i > last_dash) ? i : nil }.compact.first
       else
         # no dash, slide everything after the first paren
         section.index("(")

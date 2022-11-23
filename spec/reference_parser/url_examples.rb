@@ -44,7 +44,7 @@ RSpec.shared_examples "url examples" do
         it example.to_s do
           expect(
             ReferenceParser.new(options: {html_awareness: :careful}).hyperlink(example, default: {target: nil})
-          ).to eq(scenerio[:result] == :no_change ? example : scenerio[:result])
+          ).to eq((scenerio[:result] == :no_change) ? example : scenerio[:result])
         end
       end
     end

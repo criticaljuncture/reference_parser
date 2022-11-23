@@ -3,7 +3,7 @@ class ReferenceParser::Url < ReferenceParser::Base
   WORD_PATTERN = '\p{Word}'
 
   replace %r{
-    (?<!("|'|//))
+    (?<!(?:"|'|//))
       (?<url>
         (?: (?<scheme>(?:http|https):)// | www.?\. )
         [^\s<\u00A0"]+

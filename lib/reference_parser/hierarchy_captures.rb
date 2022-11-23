@@ -56,7 +56,7 @@ class ReferenceParser::HierarchyCaptures
     ranks << :subchapter if expected[:subchapter]
     ranks.concat(%i[section prefixed_part part])
     ranks << :subtitle if expected[:subtitle]
-    ranks.concat(!index || index == 0 ? %i[subpart prefixed_subpart] : %i[subpart]) if expected[:subpart]
+    ranks.concat((!index || index == 0) ? %i[subpart prefixed_subpart] : %i[subpart]) if expected[:subpart]
     ranks << :part if expected[:part]
     ranks.concat(%i[paragraph prefixed_paragraph])
     ranks << :appendix if expected[:appendix]
@@ -129,7 +129,7 @@ class ReferenceParser::HierarchyCaptures
     loop_suffix = final_loop ? parent[:suffix] || "" : ""
     loop_suffix_unlinked = final_loop ? parent[:suffix_unlinked] || "" : ""
 
-    text_from_captures = !parent.processing_a_list || first_loop ? order.first_loop_named_captures : [] # first loop/prefix
+    text_from_captures = (!parent.processing_a_list || first_loop) ? order.first_loop_named_captures : [] # first loop/prefix
     text_from_captures << parent.repeated_capture
     text_from_captures.concat(order.last_loop_named_captures) if final_loop # last loop/suffix
 
@@ -174,12 +174,12 @@ class ReferenceParser::HierarchyCaptures
         split = split.map do |s|
           # resplit = s.split(/\s+/)
           resplit = s.split(/(?<=\s)/)
-          resplit.count(&:present?) == 2 ? resplit : s
+          (resplit.count(&:present?) == 2) ? resplit : s
         end.flatten
       end
 
       if split.present?
-        all_dividers = key == :paragraphs ? ALL_DIVIDERS_IN_PARAGRAPH : ALL_DIVIDERS
+        all_dividers = (key == :paragraphs) ? ALL_DIVIDERS_IN_PARAGRAPH : ALL_DIVIDERS
         x = 1
         while x < split.length
           puts "split x #{x} split #{split}" if @debugging

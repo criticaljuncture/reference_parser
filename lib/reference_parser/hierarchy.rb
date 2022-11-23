@@ -181,7 +181,7 @@ class ReferenceParser::Hierarchy
 
   def starts_with_a_section?(paragraph, section: nil)
     return unless paragraph.present?
-    match = /^A[\d[a-z].\-]+/ix.match(paragraph)
+    match = /^A[\d[a-z].-]+/ix.match(paragraph)
     match || (section && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
   end
 

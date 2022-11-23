@@ -14,7 +14,7 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
     )?
     (?<href_ending_with_spaces>
       \s                           # space at the end of the url proper
-      (?:\w{1,32}[\s\-]?){1,8}     # up to 8 additional fragments seperated by a single space
+      (?:\w{1,32}[\s-]?){1,8}     # up to 8 additional fragments seperated by a single space
       \s?                          # optional space
       (?:.(?:pdf|html?|aspx?|txt)) # required suffix to allow spaces
     )?                             # optionally link url-ish text with spaces
