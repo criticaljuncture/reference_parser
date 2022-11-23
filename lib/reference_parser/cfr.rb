@@ -203,6 +203,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<appendix_suffix>\s*to\s*)?
   /ixo
 
+  APPENDIX_EXPLICT_MID_EXPANDED = /
+    (?<appendix_label_middle>,?\s*(?:appendix|table|supplement\s+no\.?)\s*)
+    (?<appendix>\d?(?:[A-Z]+|\d+))
+    (?<appendix_suffix>\s*to\s*)?
+  /ixo
+
   # reference replacements
   replace(/
       #{TITLE_SOURCE}
@@ -469,6 +475,19 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   }, if: :context_present?, context_expected: :title)
 
   # best guess fallback patterns
+
+  # appendix citation
+  replace(->(context, options) {
+    return unless options[:best_guess]
+    /
+    #{TITLE_SOURCE}
+    #{APPENDIX_EXPLICT_MID_EXPANDED}
+    #{PART_LABEL}#{PART}
+    (?:#{SUBPART_LABEL}#{SUBPARTS})?
+    (?:#{APPENDIX})?
+    #{TRAILING_BOUNDRY}
+    /ixo
+  })
 
   replace(->(context, options) {
     return unless options[:best_guess]

@@ -62,6 +62,7 @@ class ReferenceParser
     guess = nil
     each(text) do |citation|
       guess = citation[:hierarchy].compact
+      guess[:appendix] = citation[:href_hierarchy][:appendix].gsub("%20", " ") if guess[:appendix].present?
       break
     end
     raise ParseError unless guess
