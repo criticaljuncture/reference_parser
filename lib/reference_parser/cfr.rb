@@ -232,7 +232,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   replace(/
       #{TITLE_SOURCE}
-      (?<part_label>parts?\s*)?
+      (?<part_label>(?:parts?|pts?\.?)\s*)?
       (?<section_label>(§+|sec\.?(tion)?)\s*)?
       #{SECTIONS}
       #{PARAGRAPH}
