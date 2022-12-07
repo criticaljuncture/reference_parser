@@ -93,7 +93,11 @@ RSpec.describe "ReferenceParser::Cfr" do
          citation: :expect_none}, # p-Appendix-M1-to-Subpart-B-of-Part-430(3.3) p-Appendix-M1-to-Subpart-B-of-Part-430(3.5.1)
 
         {ex: "When performing section 3.5 and/or 3.8 cyclic tests", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
-         citation: :expect_none} # p-Appendix-M1-to-Subpart-B-of-Part-430(3.5) p-Appendix-M1-to-Subpart-B-of-Part-430(3.8)
+         citation: :expect_none}, # p-Appendix-M1-to-Subpart-B-of-Part-430(3.5) p-Appendix-M1-to-Subpart-B-of-Part-430(3.8)
+
+        # /current/title-32/subtitle-B/chapter-XX/part-2001/subpart-B/section-2001.10
+        {ex: "Section 1.1(a) of the Order specifies the conditions that must be met when making classification decisions. Section 1.4 specifies that information shall not be considered for", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
+         citation: :expect_none}
       ]
     ].each_slice(2) do |description, examples|
       describe description do

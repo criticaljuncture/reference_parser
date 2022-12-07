@@ -685,10 +685,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       end
       unless issue
         potential_danger = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
+        puts "potential_danger #{potential_danger}" if @debugging
 
         # previously identified as unrelated
-        if (@accumulated_context & potential_danger).present?
+        if potential_danger.detect { |section| @accumulated_context[:sections].include?(section) }
           issue = :context_match
+        else
+          prefixes = potential_danger.map { |s| s.include?(".") ? s.split(".")[0] : nil }.compact
+          if prefixes.detect { |prefix| @accumulated_context[:section_prefixes].include?(prefix) }
+            issue = :context_prefix_match
+          end
         end
 
         # fails to match common formatting
@@ -697,7 +703,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         end
       end
       if issue
-        @accumulated_context.concat(captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)).uniq!
+        sections = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
+        @accumulated_context[:sections].merge(sections)
+        @accumulated_context[:section_prefixes].merge(sections.map { |s| s.include?(".") ? s.split(".")[0] : nil }.compact)
+
         puts "qualify_match @accumulated_context #{@accumulated_context}" if @debugging
       end
 

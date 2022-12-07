@@ -11,7 +11,7 @@ class ReferenceParser::Base
     @dependency = false
     @options = options&.[](slug) || {}
     @validation_and_persistence = @options.delete(:validation_and_persistence)
-    @accumulated_context = []
+    @accumulated_context = {sections: Set.new, section_prefixes: Set.new}
   end
 
   def handles_lists
