@@ -2,6 +2,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   MAX_EXPECTED_CFR_TITLE = 50
   MAX_EXPECTED_FR_TITLE = 999
 
+  include ReferenceParser::CfrAliases
+
   def link_options(citation)
     {class: "cfr external"}
   end
@@ -515,6 +517,17 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo
   })
 
+  # aliases
+  replace(->(context, options) {
+    return unless options[:allow_aliases]
+    alias_patterns = HIERARCHY_ALIASES.map { |_hierarchy_alias, config| config[:pattern] }.join("|")
+    /
+      (?<hierarchy_alias>#{alias_patterns})
+      (?:#{SUBPART_LABEL}#{SUBPARTS})?
+      (?:(?<section_label>(\/|§|Section|Parts?)\s*)?#{SECTIONS})?
+    /ixo
+  })
+
   replace(->(context, options) {
     return unless options[:best_guess]
     /
@@ -661,9 +674,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         end
       end
 
-      if citation
+      if (citation = resolve_aliases(citation, captures))
         previous_citation = citation
-        puts "adding citation #{citation}" if @debugging
+        puts Rainbow("adding citation #{citation}").blue if @debugging
         results << citation
       end
     end
@@ -672,6 +685,25 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     validate_and_persist(context: options[:context], references: results) if @validation_and_persistence
 
     results
+  end
+
+  def resolve_aliases(citation, captures)
+    if captures[:alias_hierarchies].present?
+      if captures[:alias_hierarchies].count > 1
+        hierarchy = citation.delete(:hierarchy)
+        href_hierarchy = citation.delete(:href_hierarchy)
+        captures[:alias_hierarchies].each do |alias_hierarchy|
+          citation[:ambiguous] ||= []
+          citation[:ambiguous] << alias_hierarchy.merge(hierarchy)
+          citation[:ambiguous_href] ||= []
+          citation[:ambiguous_href] << alias_hierarchy.merge(href_hierarchy)
+        end
+      else
+        citation[:hierarchy].merge!(captures[:alias_hierarchies].first)
+        citation[:href_hierarchy].merge!(captures[:alias_hierarchies].first)
+      end
+    end
+    citation
   end
 
   def qualify_match(captures, results: nil, options: nil)

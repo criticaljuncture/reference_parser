@@ -2,8 +2,12 @@ module CfrHelper
   LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 
   def expect_passing_cfr_scenerio(example)
-    # embed example in text
-    text = LOREM[0..16] << " " << (example[:with_surrounding_text] || example[:ex]) << " " << LOREM[18..] << "."
+    embed_example_in_text = true
+    embed_example_in_text = false if example.dig(:options, :cfr, :allow_aliases) && example.dig(:options, :cfr, :best_guess)
+    text = ""
+    text << LOREM[0..16] << " " if embed_example_in_text
+    text << (example[:with_surrounding_text] || example[:ex])
+    text << " " << LOREM[18..] << "." if embed_example_in_text
     text *= example[:repeat_reference] if example[:repeat_reference]
 
     expected_citation = [example[:citation], example[:citations]].flatten.compact.map do |target|
@@ -20,7 +24,13 @@ module CfrHelper
         expected_citation *= example[:repeat_reference] if example[:repeat_reference]
 
         # verify extracted references (if present)
-        expect(references.map { |r| r[:hierarchy].to_h }.compact).to eq(expected_citation.map { |c| c.except(:expected_url) })
+        citations = references.map { |r| r[:hierarchy] }.compact
+        references.each do |r|
+          if r[:ambiguous].present?
+            citations << {ambiguous: r[:ambiguous]}
+          end
+        end
+        expect(citations).to eq(expected_citation.map { |c| c.except(:expected_url) })
 
         expected_citation.map { |expected_citation| expected_citation[:expected_url] }.compact.each do |expected_url|
           expect(result_html).to have_tag("a", with: {href: expected_url})

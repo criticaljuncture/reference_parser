@@ -1,7 +1,68 @@
 class ReferenceParser::Hierarchy
-  RANKS = %i[subtitle chapter subchapter part subpart section paragraph]
+  RANKS = %i[title subtitle chapter subchapter part subpart subject_group section appendix]
+
+  PARSED_RANKS = RANKS - %i[title subject_group appendix] + %i[paragraph]
+
+  GENERATED_LEVEL_PATTERN = /ECFR[\da-z]+/
 
   include ReferenceParser::HierarchyContainer
+
+  def self.citation(hierarchy, alias_hierarchy: nil, alias_text: nil, build_id: nil, current: true, date_format: nil, short: false, title_date: nil)
+    citation = []
+
+    prefix = (alias_text || "Title #{hierarchy[:title]}")
+    hierarchy = hierarchy.except(*alias_hierarchy.keys) if alias_hierarchy.present?
+    citation << prefix
+
+    case ReferenceParser::Hierarchy.deepest_level_in(hierarchy, ignore_generated: true)
+    when :title
+      citation = [alias_hierarchy || "Title #{hierarchy[:title]} of the CFR"]
+    when :subtitle
+      citation << "Subtitle #{hierarchy[:subtitle]}"
+    when :chapter, :subchapter
+      if hierarchy[:chapter]
+        citation << "Chapter #{hierarchy[:chapter]}"
+      elsif hierarchy[:subtitle]
+        citation << "Subtitle #{hierarchy[:subtitle]}"
+      end
+      citation << "Subchapter #{hierarchy[:subchapter]}" if hierarchy[:subchapter].present?
+    when :part, :subpart, :subject_group
+      citation << "Part #{hierarchy[:part]}" unless hierarchy[:subpart].present? && hierarchy[:subpart].start_with?(hierarchy[:part])
+      citation << "Subpart #{hierarchy[:subpart]}" if hierarchy[:subpart].present?
+      citation << " - #{hierarchy[:subject_group]}" if hierarchy[:subject_group].present? && !short
+    when :section
+      citation << hierarchy[:section]
+    when :appendix
+      citation = ["#{hierarchy[:appendix]},", prefix]
+    end
+
+    case date_format
+    when :proper
+      if build_id.present?
+        citation << " (for build #{build_id})"
+      else
+        reference_date = hierarchy.date.to_date
+        citation << if reference_date < title_date
+          " (in effect on #{reference_date.to_formatted_s(:us_standard)})"
+        else
+          " (up to date as of #{title_date.to_formatted_s(:us_standard)})"
+        end
+      end
+    else
+      citation << " (#{hierarchy.date})" unless current
+    end
+
+    citation.join(" ")
+  end
+
+  def self.deepest_level_in(hierarchy, ignore_generated: false)
+    return if hierarchy.blank?
+    return :paragraph if hierarchy[:paragraph].present?
+
+    RANKS.reverse.detect do |level|
+      hierarchy[level].present? && (!ignore_generated || !GENERATED_LEVEL_PATTERN.match?(hierarchy[level]))
+    end
+  end
 
   def self.hash_from_composite(composite)
     hierarchy_from_composite = %i[title subtitle chapter subchapter part subpart section_identifier]
@@ -16,9 +77,13 @@ class ReferenceParser::Hierarchy
     hierarchy_from_composite
   end
 
+  def self.levels_at_or_above(rank)
+    RANKS[0..RANKS.index(rank)]
+  end
+
   def appears_incomplete?(captures: {})
     # ranks explictly listed by the replace definition are required
-    result = RANKS.detect do |rank|
+    result = PARSED_RANKS.detect do |rank|
       result = context_expected.include?(rank) && !@data[rank].present?
       result = false if result && (rank == :section) && @data[:appendix].present?
       result
@@ -27,7 +92,7 @@ class ReferenceParser::Hierarchy
     # if the definition lists "in_suffix" then ranks listed by name in the
     # suffix capture are expected (ie: in this chapter, in this part)
     if context_expected.include?(:in_suffix)
-      RANKS.each do |rank|
+      PARSED_RANKS.each do |rank|
         if captures[:suffix]&.downcase&.include?(rank.to_s)
           if !@data[rank].present? && # missing the listed rank
               !(%i[chapter subchapter subpart].include?(rank) && @data[:section].present?) # section makes several ranks disposable
@@ -39,7 +104,7 @@ class ReferenceParser::Hierarchy
     end
 
     # title is always required
-    result ||= :title unless @data[:title].present?
+    result ||= :title unless @data[:title].present? || captures[:alias_hierarchies]&.detect { |hierarchy| hierarchy[:title].present? }
 
     puts "hierarchy_appears_incomplete? #{result} #{@data}" if @debugging && result
     result
@@ -66,7 +131,7 @@ class ReferenceParser::Hierarchy
     # hierarchy shouldn't contain unknowns
     @data.reject! { |k, v| v.blank? }
 
-    @data[:title].gsub!(/\A0+/, "")
+    @data[:title]&.gsub!(/\A0+/, "")
 
     decide_section_vs_part(expected: expected)
 
@@ -204,7 +269,7 @@ class ReferenceParser::Hierarchy
         unless expected[:section]
           @data[:part] = part_section
           @data.delete(:section)
-          puts "cleanup_for_href deleting section" if @debugging
+          puts Rainbow("cleanup_for_href deleting section").orange if @debugging
         end
       end
     end
@@ -234,7 +299,7 @@ class ReferenceParser::Hierarchy
 
     slide_right(:paragraph, :sublocators) # url uses "sublocators"
 
-    puts "cleanup_for_href #{self}" if @debugging
+    puts Rainbow("cleanup_for_href #{self}").blue if @debugging
 
     self
   end

@@ -51,25 +51,50 @@ class ReferenceParser
   end
 
   def self.cfr_best_guess_hierarchy_parser
-    ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, prefer_part: true}})
+    ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, allow_aliases: true, prefer_part: true}})
   end
 
   def self.cfr_best_guess_hierarchy(text)
     cfr_best_guess_hierarchy_parser.guess_hierarchy(text)
   end
 
+  def self.cfr_best_guess_hierarchies(text)
+    cfr_best_guess_hierarchy_parser.guess_hierarchies(text)
+  end
+
   def guess_hierarchy(text)
-    guess = nil
+    guess_hierarchies(text, first: true).first
+  end
+
+  def guess_hierarchies(text, first: false)
+    guesses = []
     each(text) do |citation|
-      guess = citation[:hierarchy].compact
-      guess[:appendix] = citation[:href_hierarchy][:appendix].gsub("%20", " ") if guess[:appendix].present?
-      break
+      if (guess = citation[:hierarchy])
+        guesses << cleanup_guess(guess, citation)
+      elsif (guess = citation[:ambiguous])
+        guess.each do |ambiguous_guess|
+          guesses << cleanup_guess(ambiguous_guess, citation)
+        end
+      end
+      break if first
     end
-    raise ParseError unless guess
-    guess
+
+    raise ParseError unless guesses.present?
+
+    guesses
   end
 
   private
+
+  def cleanup_guess(guess, citation)
+    return unless guess
+
+    guess = guess.compact
+    if guess[:appendix].present? && (href_appendix = citation.dig(:href_hierarchy, :appendix))
+      guess[:appendix] = href_appendix.gsub("%20", " ")
+    end
+    guess
+  end
 
   def default_parser_types
     %i[usc email dfars_pgi cfr federal_register executive_order public_law patent url]
