@@ -50,7 +50,7 @@ class ReferenceParser::HierarchyCaptures
     slide_left(:section, :part_string)
 
     if @data[:hierarchy_alias].present?
-      if (alias_config = ReferenceParser::Cfr::HIERARCHY_ALIASES[@data[:hierarchy_alias].strip.tr(".", "")])
+      if (alias_config = ReferenceParser::Cfr::HIERARCHY_ALIASES[@data[:hierarchy_alias].strip.tr(".", "").upcase])
         @data[:alias_hierarchies] = (alias_config[:hierarchies]&.dup || [])
         @data[:alias_hierarchies] << alias_config[:hierarchy].dup if alias_config[:hierarchy]
         puts Rainbow("from_named_captures using alias \"#{@data[:hierarchy_alias]}\" ").blue + Rainbow(@data).green if @debugging

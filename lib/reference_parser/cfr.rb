@@ -855,21 +855,21 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     return "" unless hierarchy[:part]
     return "/part-#{hierarchy[:part]}" unless hierarchy[:section]
     result << "/part-#{hierarchy[:part]}" if hierarchy[:part].present? && options&.[](:explicitly_expected)&.include?(:part)
-    result << "/section-#{section_string(hierarchy)}"
+    result << "/section-#{ReferenceParser::Cfr.section_string(hierarchy)}"
   end
 
-  def section_string(hierarchy)
+  def self.section_string(hierarchy)
     if hierarchy[:part] && hierarchy[:section]&.start_with?(hierarchy[:part] + ".")
       (hierarchy[:section]).to_s
     elsif hierarchy[:appendix]
       hierarchy[:appendix]
     else
-      "#{hierarchy[:part]}.#{hierarchy[:section]}"
+      hierarchy.values_at(*%i[part section]).select(&:present?).join(".")
     end
   end
 
   def sublocators_string(hierarchy)
     return "" unless hierarchy[:sublocators]
-    "#p-" << section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
+    "#p-" << ReferenceParser::Cfr.section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
   end
 end

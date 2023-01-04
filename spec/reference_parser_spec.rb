@@ -122,6 +122,14 @@ RSpec.describe ReferenceParser do
       )
     end
 
+    it "provides best-guess suggestions w/ linkable paragraph details" do
+      expect(
+        described_class.cfr_best_guess_hierarchy("14/1266.102(b)(4)")
+      ).to eql(
+        {title: "14", section: "1266.102", paragraph: "1266.102(b)(4)"}
+      )
+    end
+
     it "allows plucking values" do
       results = []
       described_class.new.each("40 CFR 273.13, 273.33, and 273.52") do |citation|
