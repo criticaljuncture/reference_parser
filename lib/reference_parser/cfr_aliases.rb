@@ -64,7 +64,7 @@ module ReferenceParser::CfrAliases
   end
 
   module ClassMethods
-    def alternate_citation_for(hierarchy)
+    def alternate_reference_for(hierarchy)
       matched_hierarchy = nil
       alias_text = nil
       HIERARCHY_ALIASES.each do |hierarchy_alias|
