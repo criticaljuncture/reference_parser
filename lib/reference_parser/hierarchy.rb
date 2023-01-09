@@ -65,6 +65,8 @@ class ReferenceParser::Hierarchy
   end
 
   def self.hash_from_composite(composite)
+    return {} unless composite.present?
+
     hierarchy_from_composite = %i[title subtitle chapter subchapter part subpart section_identifier]
       .zip(composite.split(":")).to_h
 
