@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_USC = [
+USC_SCENERIOS = [
   {ex: "Lorem ipsum dolor sit amet, 12 USC 345 consectetur adipiscing elit.", text: "12 USC 345", citation: {title: 12, part: 345}},
   {ex: ["10 USC 1",
     "10 U.S.C. 1"], citation: {title: 10, part: 1}},
@@ -112,12 +112,12 @@ RSpec.describe ReferenceParser::Usc do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.govinfo.gov/link/uscode/12/345">12 USC 345</a> consectetur adipiscing elit.'
     end
 
-    SCENERIOS_USC.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|
+    USC_SCENERIOS.each do |scenario|
+      [scenario[:ex]].flatten.each do |example|
         it example.to_s do
           result_html = ReferenceParser.new.hyperlink(example, default: {target: nil, class: nil})
 
-          citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
+          citations = [scenario[:citation], scenario[:citations]].flatten.compact
 
           citations.each do |citation|
             next if citation == :expect_none
@@ -137,7 +137,7 @@ RSpec.describe ReferenceParser::Usc do
           if citations.present?
             expect(result_html).to have_tag("a", count: citations.count)
 
-            unless scenerio[:expect_variance]
+            unless scenario[:expect_variance]
               result_html_text = Nokogiri::HTML.parse(result_html).text
               example_text = Nokogiri::HTML.parse(example).text
               expect(

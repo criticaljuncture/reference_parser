@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_FR_DOC_NUMBER = [
+FR_DOC_NUMBER_SCENARIOS = [
   {ex: "FR Doc. 2021-22057", citation: {doc_number: "2021-22057"}},
   {ex: "FR Document Number 2021-05296 (Pages 14313-14314)", citation: {doc_number: "2021-05296"}},
   {ex: "FR Document Number 2020-12413", citation: {doc_number: "2020-12413"}},
@@ -33,12 +33,12 @@ RSpec.describe ReferenceParser::FederalRegisterDocNumber do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="/d/2021-99999">FR Document Number 2021-99999</a> consectetur adipiscing elit.'
     end
 
-    SCENERIOS_FR_DOC_NUMBER.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|
+    FR_DOC_NUMBER_SCENARIOS.each do |scenario|
+      [scenario[:ex]].flatten.each do |example|
         it example.to_s do
           result_html = ReferenceParser.new(only: :federal_register_doc_number).hyperlink(example, default: {target: nil, class: nil})
 
-          citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
+          citations = [scenario[:citation], scenario[:citations]].flatten.compact
 
           citations.each do |citation|
             expect(
@@ -48,7 +48,7 @@ RSpec.describe ReferenceParser::FederalRegisterDocNumber do
 
           expect(result_html).to have_tag("a", count: citations.count)
 
-          [scenerio[:expected_html]].flatten.compact.each do |expected_html|
+          [scenario[:expected_html]].flatten.compact.each do |expected_html|
             expect(result_html).to include(expected_html)
           end
         end

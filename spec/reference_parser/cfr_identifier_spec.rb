@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_CFR_IDENTIFIER = [
+CFR_IDENTIFIER_SCENARIOS = [
   "subpart identifier", ReferenceParser::Cfr::SUBPART_ID, true, [
     "0", "1", "1.01", "1001.4",
     "101-25.4",
@@ -21,7 +21,7 @@ SCENERIOS_CFR_IDENTIFIER = [
 
 RSpec.describe ReferenceParser::Cfr do
   describe "CFR identifiers" do
-    SCENERIOS_CFR_IDENTIFIER.each_slice(4) do |description, pattern, expect_match, examples|
+    CFR_IDENTIFIER_SCENARIOS.each_slice(4) do |description, pattern, expect_match, examples|
       describe description do
         examples.each_with_index do |example, index|
           it "(#{index}) #{example.truncate(24)}" do

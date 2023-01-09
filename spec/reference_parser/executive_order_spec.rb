@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_EO = [
+EO_SCENARIOS = [
   {ex: "Lorem ipsum dolor sit amet, Executive Order 14028 consectetur adipiscing elit.", text: "Executive Order 14028", citation: {eo_number: 14028}},
   {ex: ["Executive Order 12944",
     "EO 12944",
@@ -21,13 +21,13 @@ RSpec.describe ReferenceParser::ExecutiveOrder do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/executive-order/14028" class="external_fr_link" target="_blank" rel="noopener noreferrer">Executive Order 14028</a> consectetur adipiscing elit.'
     end
 
-    SCENERIOS_EO.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|
+    EO_SCENARIOS.each do |scenario|
+      [scenario[:ex]].flatten.each do |example|
         it example.to_s do
           expect(
             ReferenceParser.new(only: :executive_order).hyperlink(example, default: {target: nil, class: nil})
-          ).to have_tag("a", text: scenerio[:text] || example,
-            with: {href: executive_order_url(scenerio[:citation])})
+          ).to have_tag("a", text: scenario[:text] || example,
+            with: {href: executive_order_url(scenario[:citation])})
         end
       end
     end

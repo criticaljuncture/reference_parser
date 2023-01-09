@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_FR = [
+FR_SCENARIOS = [
   {ex: "Redesignated and amended at 53 FR 15991, 15999",
    citations: [{volume: "53", page: "15991"}, {volume: "53", page: "15999"}],
    expected_html: ['data-reference="53 FR 15991"', 'data-reference="53 FR 15999"']},
@@ -44,19 +44,19 @@ RSpec.describe ReferenceParser::FederalRegister do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/citation/60-FR-1000" data-reference="60 FR 1000">60 FR 1000</a> consectetur 1 CFR 1.1 adipiscing elit.'
     end
 
-    SCENERIOS_FR.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|
+    FR_SCENARIOS.each do |scenario|
+      [scenario[:ex]].flatten.each do |example|
         it example.to_s do
           result_html = ReferenceParser.new(only: [:federal_register, :url_prtpage]).hyperlink(example, default: {target: nil, class: nil})
 
-          citations = [scenerio[:citation], scenerio[:citations]].flatten.compact
+          citations = [scenario[:citation], scenario[:citations]].flatten.compact
 
           if citations == 1
 
             expect(
               result_html
-            ).to have_tag("a", text: scenerio[:text] || example,
-              with: {href: scenerio[:expected_href] || fr_url(citation)})
+            ).to have_tag("a", text: scenario[:text] || example,
+              with: {href: scenario[:expected_href] || fr_url(citation)})
 
           else
 
@@ -70,7 +70,7 @@ RSpec.describe ReferenceParser::FederalRegister do
 
           end
 
-          [scenerio[:expected_html]].flatten.compact.each do |expected_html|
+          [scenario[:expected_html]].flatten.compact.each do |expected_html|
             expect(result_html).to include(expected_html)
           end
         end

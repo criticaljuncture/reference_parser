@@ -55,7 +55,7 @@ RSpec.describe ReferenceParser::UrlPrtpage do
   end
 
   context "with spaces in links" do
-    scenerios = [
+    scenarios = [
       {description: "PDF w/ spaces",
        source: "<em>www.energy.gov/sites/prod/files/2016/12/f34/Summary of Public Input Report FINAL.pdf</em>",
        expected: 'Lorem ipsum dolor sit <em><a href="http://www.energy.gov/sites/prod/files/2016/12/f34/Summary%20of%20Public%20Input%20Report%20FINAL.pdf">www.energy.gov/&#8203;sites/&#8203;prod/&#8203;files/&#8203;2016/&#8203;12/&#8203;f34/&#8203;Summary of Public Input Report FINAL.pdf</a></em> amet, consectetuer adipiscing elit.'},
@@ -76,11 +76,11 @@ RSpec.describe ReferenceParser::UrlPrtpage do
        expected: 'Lorem ipsum dolor sit <em><a href="https://www.ftc.gov/system/files/documents/public_statements/1566385/statement_by_commissioners_wilson_and_chopra_re_hsr_6b.pdf#:~:text=Statement%20of%20Commissioner%20Christine%20S.%20Wilson%2C%20Joined%20by,that%20drive%20content%20curation%20and%20targeted%20advertising%20practices">https://www.ftc.gov/&#8203;system/&#8203;files/&#8203;documents/&#8203;public_&#8203;statements/&#8203;1566385/&#8203;statement_&#8203;by_&#8203;commissioners_&#8203;wilson_&#8203;and_&#8203;chopra_&#8203;re_&#8203;hsr_&#8203;6b.pdf#:~:text=&#8203;Statement%20of%20Commissioner%20Christine%20S.%20Wilson%2C%20Joined%20by,that%20drive%20content%20curation%20and%20targeted%20advertising%20practices</a>.</em> amet, consectetuer adipiscing elit.'}
     ]
 
-    scenerios.each do |scenerio|
-      it "handles #{scenerio[:description]}" do
-        result = hyperlink("Lorem ipsum dolor sit #{scenerio[:source]} amet, consectetuer adipiscing elit.")
+    scenarios.each do |scenario|
+      it "handles #{scenario[:description]}" do
+        result = hyperlink("Lorem ipsum dolor sit #{scenario[:source]} amet, consectetuer adipiscing elit.")
 
-        expect(result).to eq(scenerio[:expected])
+        expect(result).to eq(scenario[:expected])
       end
     end
   end

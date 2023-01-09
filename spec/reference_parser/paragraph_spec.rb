@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_PARAGRAPH_GUESS_LEVELS = {
+PARAGRAPH_GUESS_LEVEL_SCENARIOS = {
   letters: ["(a)", "(bc)", "(zzz)"],
   upper_letters: ["(A)", "(MN)", "(YYY)"],
   romans: ["(i)", "(ix)", "(xvi)"],
@@ -9,11 +9,9 @@ SCENERIOS_PARAGRAPH_GUESS_LEVELS = {
   italic_numbers: ["(<em>1</em>)", "(<em>10</em>)", "<em>(42)</em>"]
 }
 
-SCENERIOS_PARAGRAPH_GUESS_LEVELS.each
-
 RSpec.describe ReferenceParser::Paragraph do
   describe "Paragraph.guess_level" do
-    SCENERIOS_PARAGRAPH_GUESS_LEVELS.each do |level, examples|
+    PARAGRAPH_GUESS_LEVEL_SCENARIOS.each do |level, examples|
       describe level.to_s do
         examples.each do |example|
           it "#{example} is #{level}" do

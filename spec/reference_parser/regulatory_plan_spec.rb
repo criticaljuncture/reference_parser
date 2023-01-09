@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_RIN = [
+RIN_SCENARIOS = [
   {ex: "See RIN 1234-AB12 and RIN 1234-AB34.", citations: [{rin: "1234-AB12"}, {rin: "1234-AB34"}], result: 'See <a href="/r/1234-AB12">RIN 1234-AB12</a> and <a href="/r/1234-AB34">RIN 1234-AB34</a>.'}
 ]
 
@@ -15,7 +15,7 @@ RSpec.describe ReferenceParser::RegulatoryPlan do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/r/8888-AB88" class="external_fr_link" target="_blank" rel="noopener noreferrer">RIN 8888-AB88</a> consectetur adipiscing elit.'
     end
 
-    SCENERIOS_RIN.each do |scenerio|
+    RIN_SCENARIOS.each do |scenerio|
       [scenerio[:ex]].flatten.each do |example|
         it example.to_s do
           result = ReferenceParser.new(only: :regulatory_plan).hyperlink(example, default: {target: nil, class: nil})

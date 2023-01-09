@@ -1,6 +1,6 @@
 require "spec_helper"
 
-ALTERNATE_REFERENCE_SCENERIOS = {
+ALTERNATE_REFERENCE_SCENARIOS = {
   "generic" => [
     {citation: "48 CFR 1.105-2", alternate: "FAR 1.105-2", overlay: :none, overlay_link: :none, hierarchy: {title: "48", chapter: "1", section: "1.105-2"}},
     {citation: "48 CFR 814.202-4", alternate: "VAAR 814.202-4", overlay: "48 CFR 14.202-4", overlay_link: '<a href="/current/title-48/section-14.202-4" class="cfr external">48 CFR 14.202-4</a>', hierarchy: {title: "48", chapter: "8", section: "814.202-4"}},
@@ -15,9 +15,9 @@ ALTERNATE_REFERENCE_SCENERIOS = {
 }
 
 RSpec.describe ReferenceParser::CfrAliases do
-  ALTERNATE_REFERENCE_SCENERIOS.each do |description, scenerios|
+  ALTERNATE_REFERENCE_SCENARIOS.each do |description, scenarios|
     describe "CFR aliases & overlays (#{description})" do
-      scenerios.each do |scenerio|
+      scenarios.each do |scenerio|
         it "recognizes #{scenerio[:citation]}" do
           if scenerio[:alternate]
             expect(

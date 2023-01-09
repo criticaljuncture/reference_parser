@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe ReferenceParser::Guesses do
-  scenerios_guesses_numbers_seem_like_a_range = {
+  guessed_numbers_seem_like_a_range_scenarios = {
     true => [
       [1, 2],
       ["1", "2"],
@@ -28,7 +28,7 @@ RSpec.describe ReferenceParser::Guesses do
   }
 
   describe "Paragraph.numbers_seem_like_a_range?" do
-    scenerios_guesses_numbers_seem_like_a_range.each do |range, sets_of_numbers|
+    guessed_numbers_seem_like_a_range_scenarios.each do |range, sets_of_numbers|
       description = range ? "range" : "not range"
       describe description do
         sets_of_numbers.each do |numbers|
@@ -40,7 +40,7 @@ RSpec.describe ReferenceParser::Guesses do
     end
   end
 
-  scenerios_guesses_numbers_similarish = {
+  guessed_numbers_similarish_scenarios = {
     true => [
       [1, 2, 3, 4],
       ["1", "2", "3", "4"],
@@ -56,7 +56,7 @@ RSpec.describe ReferenceParser::Guesses do
   }
 
   describe "Paragraph.numbers_similarish" do
-    scenerios_guesses_numbers_similarish.each do |similar, sets_of_numbers|
+    guessed_numbers_similarish_scenarios.each do |similar, sets_of_numbers|
       description = similar ? "similar" : "not similar"
       describe description do
         sets_of_numbers.each do |numbers|

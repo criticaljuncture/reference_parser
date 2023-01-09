@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe ReferenceParser::HierarchyContainer do
-  scenerios_slide_likely_paragraph_right = {
+  slide_likely_paragraph_right_scenarios = {
     "2584.8477(e)-4(a)" => ["2584.8477(e)-4", "(a)"],
     "2584.8477(e)-4(d)(2)" => ["2584.8477(e)-4", "(d)(2)"],
     "31.3401(a)(8)(C)-1(b)" => ["31.3401(a)(8)(C)-1", "(b)"],
@@ -9,7 +9,7 @@ RSpec.describe ReferenceParser::HierarchyContainer do
   }
 
   describe "HierarchyContainer#slide_likely_paragraph_right" do
-    scenerios_slide_likely_paragraph_right.each do |section, (expected_section, expected_paragraph)|
+    slide_likely_paragraph_right_scenarios.each do |section, (expected_section, expected_paragraph)|
       it "splits #{section}" do
         hierarchy = ReferenceParser::Hierarchy.new({section: section.dup}, options: {})
         hierarchy.slide_likely_paragraph_right(:section, :paragraph)

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SCENERIOS_CFR = [
+CFR_SCENARIOS = [
 
   "extracts", [],
 
@@ -124,7 +124,7 @@ RSpec.describe ReferenceParser::Cfr do
   include CfrHelper
 
   describe "per DDH" do # Document Drafting Handbook
-    SCENERIOS_CFR.each_slice(2) do |description, examples|
+    CFR_SCENARIOS.each_slice(2) do |description, examples|
       describe description do
         examples.each_with_index do |example, index|
           example[:index] = index
@@ -136,7 +136,7 @@ RSpec.describe ReferenceParser::Cfr do
     end
 
     def all_non_context_specific_examples
-      SCENERIOS_CFR.each_slice(2).map do |description, examples|
+      CFR_SCENARIOS.each_slice(2).map do |description, examples|
         result = examples.select do |example|
           !example[:context_specific] && example[:expected_prior_urls]&.empty?
         end

@@ -28,7 +28,7 @@ RSpec.shared_examples "url examples" do
                     </p>
     HTML
 
-    scenerios_url = [
+    url_scenarios = [
       {ex: "<p>https://a.local www.b.local</p>", result: '<p><a href="https://a.local" class="external">https://a.local</a> <a href="http://www.b.local" class="external">www.b.local</a></p>'},
       {ex: '<img src="https://images.null.local/AB01CD23.456/original.gif"/>', result: :no_change},
       {ex: "visit www.example.com", result: 'visit <a href="http://www.example.com" class="external">www.example.com</a>'},
@@ -39,12 +39,12 @@ RSpec.shared_examples "url examples" do
       {ex: '<a href="http://www.example.com"><b>www.example.com</b></a> http://www.google.com', result: '<a href="http://www.example.com"><b>www.example.com</b></a> <a href="http://www.google.com" class="external">http://www.google.com</a>'}
     ]
 
-    scenerios_url.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|
+    url_scenarios.each do |scenario|
+      [scenario[:ex]].flatten.each do |example|
         it example.to_s do
           expect(
             ReferenceParser.new(options: {html_awareness: :careful}).hyperlink(example, default: {target: nil})
-          ).to eq((scenerio[:result] == :no_change) ? example : scenerio[:result])
+          ).to eq((scenario[:result] == :no_change) ? example : scenario[:result])
         end
       end
     end
