@@ -4,7 +4,7 @@ class ReferenceParser::FederalRegisterDocNumber < ReferenceParser::Base
     (?:\.|ument)?\s*
     (?:Number|No\.?|\#)?[:,\s]*)
     (?:\(FR\sDoc\))?\s*
-    (?<doc_number>[A-Z0-9]+-[0-9]+)
+    (?<doc_number>[A-Z0-9]+-[0-9]+(?:-[0-9]+)?)
     \b
     /ix)
 

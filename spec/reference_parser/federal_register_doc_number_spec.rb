@@ -10,7 +10,9 @@ FR_DOC_NUMBER_SCENARIOS = [
   {ex: "(FR Doc. 84-38590)", citation: {doc_number: "84-38590"}},
   {ex: "FR document, 2020-07884,", citation: {doc_number: "2020-07884"}},
   {ex: "FR Document 2020-05700,", citation: {doc_number: "2020-05700"}},
-  {ex: "FR Doc. 2021-22057 Filed ", citation: {doc_number: "2021-22057"}}
+  {ex: "FR Doc. 2021-22057 Filed ", citation: {doc_number: "2021-22057"}},
+  {ex: "[FR Doc. C1-2022-21248 Filed 12-15-22; 8:45 am]", citation: {doc_number: "C1-2022-21248"}},
+  {ex: "[FR Doc. C1-2022-12234 Filed 6-27-22; 8:45 am]", citation: {doc_number: "C1-2022-12234"}}
 ]
 
 RSpec.describe ReferenceParser::FederalRegisterDocNumber do
