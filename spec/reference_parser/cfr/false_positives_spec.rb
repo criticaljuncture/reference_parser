@@ -120,8 +120,10 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: '<tag ex="e" ></tag><tag><tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum">2 CFR 2</tag><tag></tag></tag><tag>3 CFR 3</tag>', options: {html_awareness: :careful},
          citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
         {ex: '<tag ex="f" ></tag><tag><tag></tag><tag></tag><tag>2 CFR 2</tag></tag><tag attribute="Lorem 1 CFR 1.1 ipsum">3 CFR 3</tag>', options: {html_awareness: :careful},
-         citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none}
+         citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
 
+        # /current/title-49/subtitle-B/chapter-I/subchapter-C/part-175/subpart-A/section-175.10#p-175.10(a)(19)
+        {ex: "in the UN Manual of Tests and Criteria, Part III, Subsection 38.3. Recharging of the devices", citation: :expect_none, html_appearance: :expect_none, context: {title: "49", section: "175.10"}}
       ]
     ].each_slice(2) do |description, examples|
       describe description do

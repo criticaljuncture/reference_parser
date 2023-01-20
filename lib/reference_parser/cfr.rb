@@ -349,7 +349,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PREFIXED_PARAGRAPHS}
       (?<prefixed_paragraph_suffix>\s*(?:of|in)\s*)
     )?
-    (?<section_label>(?:§+|section)\s*)#{SECTIONS}
+    (?<section_label>(?:§+|\bsection)\s*)#{SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}
     (?<suffix>\s*(?:of\s*this\s*(?:title|(?:sub)?chapter|(?:sub)?part))?)
     (?:
