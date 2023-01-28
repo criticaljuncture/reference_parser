@@ -33,7 +33,8 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "15 CFR Supplement No. 6 to Part 744", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "15", part: "744", appendix: "6"},
          expected_url: "/current/title-15/part-744/appendix-Supplement%20No.%206%20to%20Part%20744"},
         {ex: "1 CFR Supplement No 2 to Part 3", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", part: "3", appendix: "2"},
-         expected_url: "/current/title-1/part-3/appendix-Supplement%20No%202%20to%20Part%203"}
+         expected_url: "/current/title-1/part-3/appendix-Supplement%20No%202%20to%20Part%203"},
+        {ex: "40 Subpart Cc", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "40", subpart: "Cc"}}
       ]
     ].each_slice(2) do |description, examples|
       describe description do

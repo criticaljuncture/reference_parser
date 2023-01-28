@@ -548,6 +548,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{TRAILING_BOUNDRY}
     (?<source_label>\s*)
     (?:#{PART_LABEL})?
+    (?:#{SUBPART_LABEL}#{SUBPART})?
     (?:
       #{SECTION}
       #{TRAILING_BOUNDRY}
