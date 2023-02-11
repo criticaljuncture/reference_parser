@@ -172,6 +172,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo
 
   # 240.15c3-1e(a)(1)(viii)(G)
+  # 165.T07-0806
 
   SECTION_UNLABELED = /
     \d+#{NEXT_TITLE_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
@@ -179,6 +180,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:
       [a-z]\d+-\d |
       -\d+T?[a-z]? | # dash suffix if present tends to mark end of section area
+      \.T\d{,2}-\d{,6} |
       \.\d+  |
       \(T\)    # temporary may be marked w T suffix
     )*

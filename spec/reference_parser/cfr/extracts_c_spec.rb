@@ -97,7 +97,10 @@ RSpec.describe "ReferenceParser::Cfr" do
 
         # /current/title-32/subtitle-B/chapter-XX/part-2001/subpart-B/section-2001.10
         {ex: "Section 1.1(a) of the Order specifies the conditions that must be met when making classification decisions. Section 1.4 specifies that information shall not be considered for", context: {composite_hierarchy: "10::II:D:430:B:Appendix M1 to Subpart B of Part 430"},
-         citation: :expect_none}
+         citation: :expect_none},
+
+        {ex: "33 CFR 165.701", citation: {title: "33", section: "165.701"}},
+        {ex: "33 CFR 165.T07-0806", citation: {title: "33", section: "165.T07-0806"}}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
