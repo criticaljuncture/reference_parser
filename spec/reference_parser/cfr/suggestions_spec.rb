@@ -5,7 +5,7 @@ RSpec.describe "ReferenceParser::Cfr" do
 
   describe "fuzzy matches" do
     [
-      "buest guess / suggestions", [
+      "best guess / suggestions", [
         {ex: "Title 14 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", section: "1266.102"}},
         {ex: "Title 14 Chapter V Part 1266 § 1266.102", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "14", chapter: "V", part: "1266", section: "1266.102"}},
         {ex: "Title 1 Chapter I Subchapter B", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "1", chapter: "I", subchapter: "B"}},
@@ -42,6 +42,27 @@ RSpec.describe "ReferenceParser::Cfr" do
           example[:index] = index
           it "(#{index}) #{example[:ex].to_s.truncate(24)}" do
             expect_passing_cfr_scenerio(example)
+          end
+        end
+      end
+    end
+  end
+
+  describe "best guess hierarchies" do
+    {
+      "ambiguous" => [
+        {ex: "FAR 61.31(g)", guesses: [
+          {paragraph: "61.31(g)", section: "61.31", title: "14"},
+          {chapter: "1", paragraph: "61.31(g)", section: "61.31", title: "48"}
+        ]}
+      ]
+    }.each do |description, examples|
+      describe description do
+        examples.each do |example|
+          it example[:ex].to_s.truncate(24).to_s do
+            expect(
+              ReferenceParser.cfr_best_guess_hierarchies(example[:ex])
+            ).to eq(example[:guess] || example[:guesses])
           end
         end
       end

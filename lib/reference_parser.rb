@@ -94,7 +94,7 @@ class ReferenceParser
       guess[:appendix] = href_appendix.gsub("%20", " ")
     end
     if guess[:paragraph].present?
-      guess[:paragraph] = "#{ReferenceParser::Cfr.section_string(citation[:hierarchy])}#{guess[:paragraph]}"
+      guess[:paragraph] = "#{ReferenceParser::Cfr.section_string(guess)}#{guess[:paragraph]}"
     end
     guess
   end
