@@ -47,6 +47,10 @@ module CfrHelper
       expect(result_html).to have_tag("a", with: {href: href})
     end
 
+    (example[:expected_hrefs] || []).each do |href|
+      expect(result_html).to have_tag("a", with: {href: href})
+    end
+
     # confirm linking didn't damage source text
     references_only_result_html = references.map { |r| r[:result] }.join
     references_only_result_html_text = Nokogiri::HTML.parse(references_only_result_html).text

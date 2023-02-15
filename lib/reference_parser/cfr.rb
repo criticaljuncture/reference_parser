@@ -61,8 +61,45 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   TRAILING_BOUNDRY = /(?!\.?\d|\/)/ix # don't stop mid-number or date
 
-  JOIN = /\s*(?!CFR)(?:,|(?:,\s*|)and\b|(?:,\s*|)or\b|through)\s*/ixo
-  JOIN_SECTION = /\s*(?!CFR)(?:,|;|(?:[,;]\s*|)and\b|(?:,\s*|)or\b|to\b|through)\s*/ixo
+  JOIN = /
+    \s*
+      (?!CFR)
+      (?:
+        ,(?:\s*and\s*)? |
+        (?:,\s*)?and\b |
+        (?:,\s*|)or\b |
+        through
+      )
+    \s*
+  /ixo
+
+  LOOSE_SECTION_SAFE_JOINS = /
+    , |
+    ; |
+    (?:[,;]\s*|)and\b |
+    (?:,\s*|)or\b |
+    to\b |
+    through\s*
+    /ixo
+
+  LOOSE_SECTION_JOIN_SECTION = /
+    \s*
+      (?!CFR)
+      (?:
+        #{LOOSE_SECTION_SAFE_JOINS}
+      )
+    \s*
+    /ixo
+
+  JOIN_SECTION = /
+    \s*
+      (?!CFR)
+      (?:
+        #{LOOSE_SECTION_SAFE_JOINS} |
+        and(?:\s*parts?\s*|\s*§+\s*)?
+      )
+    \s*
+    /ixo
 
   SUBTITLE_LABEL = /(?<subtitle_label>subtitle\s*)/ix
   SUBTITLE = /(?<subtitle>[A-Z])/ix
@@ -71,7 +108,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBCHAPTER_LABEL = /(?<subchapter_label>\s*Subch(?:ap(?:ter)?)?\s*)/ix
   SUBCHAPTER = /(?<subchapter>#{SUBCHAPTER_ID})/ixo
 
-  SUBPART_LABEL = /(?<subpart_label>,?\s*su[pb]{2}arts?\s*)/ix
+  SUBPART_LABEL = /(?<subpart_label>[,:]?\s*su[pb]{2}arts?\s*)/ix
   SUBPART = /(?<subpart>#{SUBPART_ID})/ixo
 
   SUBPARTS = /
@@ -89,7 +126,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   PARTS = /
     (?<parts>
       (?:
-        (?:\s|,|and|or|through|-|(?:\s*part\s*))+
+        (?:\s|,|and(?:\s*parts?\s*)?|or|through|-|(?:\s*part\s*))+
         (?:\d+)
       )+
     )
@@ -199,19 +236,61 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
-  APPENDIX = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<section>[A-Z]+)/ixo
-  APPENDIX_EXPLICT = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<appendix>[A-Z]+)/ixo
+  LOOSE_SECTION_SECTIONS = /
+    (?<sections>
+      (?:
+        (?:#{LOOSE_SECTION_JOIN_SECTION})?
+        #{SECTION_UNLABELED}
+      )+
+    )
+    /ixo
+
+  APPENDIX_ID = /[A-Z]+/ixo
+  APPENDIX = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<section>#{APPENDIX_ID})/ixo
+  APPENDIX_UNLABELED = /,?\s*(?:appendix|table)\s*#{APPENDIX_ID}/ixo
+  APPENDIX_EXPLICT = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<appendix>#{APPENDIX_ID})/ixo
   APPENDIX_EXPLICT_MID = /
     (?<appendix_label_middle>,?\s*(?:appendix|table)\s*)
-    (?<appendix>\d?[A-Z]+)
+    (?<appendix>\d?#{APPENDIX_ID})
     (?<appendix_suffix>\s*to\s*)?
-  /ixo
+    /ixo
 
   APPENDIX_EXPLICT_MID_EXPANDED = /
     (?<appendix_label_middle>,?\s*(?:appendix|table|supplement\s+no\.?)\s*)
-    (?<appendix>\d?(?:[A-Z]+|\d+))
+    (?<appendix>\d?(?:#{APPENDIX_ID}|\d+))
     (?<appendix_suffix>\s*to\s*)?
-  /ixo
+    /ixo
+
+  APPENDIX_FIRST_JOIN = /
+    (?:
+      (?:,\s*)?appendix |
+      table |
+      ;\s+and\s+appendices
+    )
+    \s*
+    /ixo
+
+  APPENDIX_ADDITIONAL_JOIN = /
+    \s*
+    (?:
+      and |
+      appendix |
+      table |
+      ;\s+and\s+appendices
+    )
+    \s*
+    /ixo
+
+  APPENDICES = /
+    (?<appendices>
+      #{APPENDIX_FIRST_JOIN}
+      #{APPENDIX_ID}
+      (?:
+        #{APPENDIX_ADDITIONAL_JOIN}
+        #{APPENDIX_ID}
+      )*
+    )
+    /ixo
 
   # reference replacements
   replace(/
@@ -224,7 +303,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:#{APPENDIX_EXPLICT_MID})?
       (?:#{PART_LABEL})?#{PART}
       #{SUBPART_LABEL}#{SUBPARTS}
-      (?:#{APPENDIX})?
+      (?:
+        (?<section_label>((?:;\s+and\s+)?(?:,\sespecially\s)?§+|sec\.?(tion)?)\s*)
+        #{SECTIONS}
+      )?
+      (?:#{APPENDICES})?
     /ixo, pattern_slug: :labeled_part, will_consider_pre_match: true)
 
   replace(/
@@ -243,12 +326,25 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(/
       #{TITLE_SOURCE}
       (?<part_label>(?:parts?|pts?\.?)\s*)?
+      (?<part>\d+\s*:\s*)?
       (?<section_label>(§+|sec\.?(tion)?)\s*)?
       #{SECTIONS}
       #{PARAGRAPH}
       (?:#{APPENDIX_EXPLICT})?
       #{TRAILING_BOUNDRY}
     /ixo, will_consider_pre_match: true)
+
+  # informal or non-standard patterns
+
+  # 10 CFR § 71.5(a)(1)(ii & iii)
+  replace(/
+    #{TITLE_SOURCE}
+    (?<part_label>(?:parts?|pts?\.?)\s*)?
+    #{PART}
+    (?<section_label>\s*:\s*(?:§+|sec\.?(tion)?)\s*)
+    #{SECTIONS}
+    #{TRAILING_BOUNDRY}
+  /ixo, pattern_slug: :informal_a, will_consider_pre_match: true)
 
   # partial reference replacements (of this ...)
 
@@ -351,7 +447,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PREFIXED_PARAGRAPHS}
       (?<prefixed_paragraph_suffix>\s*(?:of|in)\s*)
     )?
-    (?<section_label>(?:§+|\bsection)\s*)#{SECTIONS}
+    (?<section_label>(?:§+|\bsection)\s*)#{LOOSE_SECTION_SECTIONS}
     #{PARAGRAPHS_OPTIONAL_LIST}
     (?<suffix>\s*(?:of\s*this\s*(?:title|(?:sub)?chapter|(?:sub)?part))?)
     (?:
@@ -765,7 +861,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     issue = :failure_to_preserve_source_characters if !issue && !preserved_character_count?(captures, results: results)
 
-    puts "qualify_match #{issue}" if @debugging && issue
+    puts Rainbow("qualify_match #{issue}").red if @debugging && issue
     !issue
   end
 

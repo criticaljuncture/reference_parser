@@ -5,7 +5,7 @@ RSpec.describe "ReferenceParser::Cfr" do
 
   describe "extracts" do
     [
-      "extracts (30+)", [
+      "(30+)", [
 
         # #31 /current/title-49/subtitle-B/chapter-I/subchapter-D/part-192/subpart-A/section-192.7#p-192.7(j)(1)
         {ex: "192.712(b)", context: {composite_hierarchy: "49:B:I:D:192:A:192.7"}, citation: :expect_none},
@@ -100,7 +100,54 @@ RSpec.describe "ReferenceParser::Cfr" do
          citation: :expect_none},
 
         {ex: "33 CFR 165.701", citation: {title: "33", section: "165.701"}},
-        {ex: "33 CFR 165.T07-0806", citation: {title: "33", section: "165.T07-0806"}}
+        {ex: "33 CFR 165.T07-0806", citation: {title: "33", section: "165.T07-0806"}},
+
+        # #39 /current/title-10/chapter-I/part-71#p-71.5(a)
+        {ex: "49 CFR part 173: subparts A, B, and I", context: {composite_hierarchy: "10::I::71:A:71.5"},
+         citations: [
+           {title: "49", part: "173", subpart: "A"},
+           {title: "49", part: "173", subpart: "B"},
+           {title: "49", part: "173", subpart: "I"}
+         ]},
+
+        {ex: "49 CFR part 171: §§ 171.15 and 171.16", context: {composite_hierarchy: "10::I::71:A:71.5"},
+         citations: [
+           {title: "49", part: "171", section: "171.15"},
+           {title: "49", part: "171", section: "171.16"}
+         ]},
+
+        {ex: "49 CFR part 172: subpart H", context: {composite_hierarchy: "10::I::71:A:71.5"},
+         citations: [
+           {title: "49", part: "172", subpart: "H"}
+         ]},
+
+        {ex: "49 CFR part 177 and parts 390 through 397", context: {composite_hierarchy: "10::I::71:A:71.5"},
+         citations: [
+           {title: "49", part: "177"},
+           {title: "49", part: "390"},
+           {title: "49", part: "397"}
+         ]},
+
+        {ex: "49 CFR part 172: subpart D; and §§ 172.400 through 172.407 and §§ 172.436 through 172.441", context: {composite_hierarchy: "10::I::71:A:71.5"},
+         citations: [
+           {title: "49", part: "172", subpart: "D", section: "172.400"},
+           {title: "49", part: "172", subpart: "D", section: "172.407"},
+           {title: "49", part: "172", subpart: "D", section: "172.436"},
+           {title: "49", part: "172", subpart: "D", section: "172.441"}
+         ]},
+
+        {ex: "49 CFR part 172: subpart F, especially §§ 172.500 through 172.519 and 172.556; and appendices B and C", context: {composite_hierarchy: "10::I::71:A:71.5"},
+         citations: [
+           {title: "49", part: "172", subpart: "F", section: "172.500"},
+           {title: "49", part: "172", subpart: "F", section: "172.519"},
+           {title: "49", part: "172", subpart: "F", section: "172.556"},
+           {title: "49", part: "172", appendix: "B"},
+           {title: "49", part: "172", appendix: "C"}
+         ],
+         expected_hrefs: [
+           "/current/title-49/part-172/appendix-Appendix%20B%20to%20Part%20172",
+           "/current/title-49/part-172/appendix-Appendix%20C%20to%20Part%20172"
+         ]}
       ]
     ].each_slice(2) do |description, examples|
       describe description do

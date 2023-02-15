@@ -5,7 +5,7 @@ RSpec.describe "ReferenceParser::Cfr" do
 
   describe "extracts" do
     [
-      "extracts (20-29)", [
+      "(20-29)", [
 
         # (#20)
         {ex: "3 CFR", citations: [{title: "3"}], html_appearance: :expect_none, context: {title: "29", section: "100.603"},

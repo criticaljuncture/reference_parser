@@ -31,6 +31,7 @@ class ReferenceParser::HierarchyCaptures
     # cleanup
     slide_right(:paragraph, :suffix) if only_whitespace?(:paragraph)
     slide_right(:sections, :section) if @data[:sections] && !@data[:section] && !(LIST_DESIGNATORS =~ @data[:sections])
+    slide_left(:sections, :appendices) if @data[:appendices]
     restore_paragraph
     if list?(@data[:sections]) && list?(@data[:paragraphs])
       @data[:rolled_up_paragraphs] = true
@@ -191,9 +192,9 @@ class ReferenceParser::HierarchyCaptures
 
       if split.present?
         all_dividers = (key == :paragraphs) ? ALL_DIVIDERS_IN_PARAGRAPH : ALL_DIVIDERS
-        x = 1
+        x = 0
         while x < split.length
-          puts "split x #{x} split #{split}" if @debugging
+          puts Rainbow("split x #{x} split #{split}").blue if @debugging
           if all_dividers.match?(split[x]) # only list cruft
             if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1))
               split[x + 1] = split[x] + split[x + 1]

@@ -125,7 +125,7 @@ class ReferenceParser::Hierarchy
       @data[:paragraph].gsub!(/paragraph/i, "")
     end
     @data.transform_values! do |value|
-      list_items = /(\s+|,|;|or|and|through)+/i
+      list_items = /(\s+|,|;|:|or|and|through)+/i
       value.gsub(/\A#{list_items}/, "") # prefixed whitespace / list items
         .gsub(/#{list_items}\z/, "") # suffixed whitespace / list items
     end
@@ -141,12 +141,22 @@ class ReferenceParser::Hierarchy
     slide_right(:prefixed_subpart, :subpart)
     slide_right(:prefixed_paragraph, :paragraph)
 
-    slide_right(:section, :appendix) if /\A(Appendix|Table)/ix.match?(@data[:section])
-    slide_right(:section, :appendix) if expected[:appendix]
+    # correct delimiting labels
+    if @data[:section]&.match?(/\Aappendices/ix)
+      @data[:section]&.gsub!(/\Aappendices/ix, "appendix")
+      expected[:section_list_appendix_toggle] = true
+    elsif expected[:section_list_appendix_toggle] && @data[:section]&.match?(/\A#{ReferenceParser::Cfr::APPENDIX_ID}\z/ixo)
+      @data[:section] = "Appendix #{@data[:section]}"
+    end
+
+    slide_right(:section, :appendix) if expected[:appendix] || expected[:section_list_appendix_toggle] || /\A(Appendix|Table)/ix.match?(@data[:section])
     slide_right(:appendix, :table) if /Table/ix.match?(captures[:appendix_label])
 
     # drop list duplicated labels
-    @data[:part]&.gsub!(/\s*part\s*/ix, "")
+    @data[:part]&.gsub!(/\s*parts?\s*/ix, "")
+    @data[:section]&.gsub!(/\A§§\s*/x, "")
+
+    @data.delete(:subpart) if @data[:appendix].present? && expected[:section_list_appendix_toggle]
 
     if @data[:paragraph].present?
       @data[:paragraph].gsub!(/paragraph\s*/, "")

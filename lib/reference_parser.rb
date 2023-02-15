@@ -176,7 +176,7 @@ class ReferenceParser
           # skip ahead unless this pattern has captures present
           next unless captures.any? { |x| !x.nil? }
 
-          puts "[#{index}] matched #{replacement.pattern_slug} \"#{match[0]}\"" if @debugging
+          puts Rainbow("[#{index}] matched #{replacement.pattern_slug ? ":#{replacement.pattern_slug}" : "<missing slug>"} \"#{match[0]}\"").green if @debugging
 
           # only captures used by this replacement
           named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys

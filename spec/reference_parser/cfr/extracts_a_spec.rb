@@ -5,7 +5,7 @@ RSpec.describe "ReferenceParser::Cfr" do
 
   describe "extracts" do
     [
-      "extracts (1-19)", [
+      "(1-19)", [
         {ex: "40 CFR 273.13, 273.33, and 273.52",
          citations: [{title: "40", section: "273.13"}, {title: "40", section: "273.33"}, {title: "40", section: "273.52"}]},
 

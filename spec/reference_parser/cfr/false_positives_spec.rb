@@ -123,7 +123,12 @@ RSpec.describe "ReferenceParser::Cfr" do
          citations: [{title: "2", section: "2"}, {title: "3", section: "3"}], html_appearance: :expect_none},
 
         # /current/title-49/subtitle-B/chapter-I/subchapter-C/part-175/subpart-A/section-175.10#p-175.10(a)(19)
-        {ex: "in the UN Manual of Tests and Criteria, Part III, Subsection 38.3. Recharging of the devices", citation: :expect_none, html_appearance: :expect_none, context: {title: "49", section: "175.10"}}
+        {ex: "in the UN Manual of Tests and Criteria, Part III, Subsection 38.3. Recharging of the devices", citation: :expect_none, html_appearance: :expect_none, context: {title: "49", section: "175.10"}},
+
+        # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR1d0453abf9d86e0/section-1.6851-2
+        # expect only the dot format § prefixed loose section (other should fail qualify_match w/ :formating)
+        {ex: "§ 1.6012-1", citation: {title: "26", section: "1.6012-1"}, context: {composite_hierarchy: "26::I:A:1::1.6851-2"},
+         with_surrounding_text: "the return required under section 6012 and § 1.6012-1 for the preceding taxable year"}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
