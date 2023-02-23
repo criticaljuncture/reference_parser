@@ -147,7 +147,12 @@ RSpec.describe "ReferenceParser::Cfr" do
          expected_hrefs: [
            "/current/title-49/part-172/appendix-Appendix%20B%20to%20Part%20172",
            "/current/title-49/part-172/appendix-Appendix%20C%20to%20Part%20172"
-         ]}
+         ]},
+
+        # #40 /current/title-10/chapter-I/part-71#p-71.5(a)
+        {ex: "48 CFR subpart 2.1", context: {composite_hierarchy: "2:B:XI:A:1108:B:1108.340"},
+         with_surrounding_text: "...by the Federal Acquisition Regulation at 48 CFR subpart 2.1, which is...",
+         citation: {title: "48", subpart: "2.1", expected_url: "/current/title-48/subpart-2.1"}} # /current/title-48/part-2/subpart-2.1 also acceptable
       ]
     ].each_slice(2) do |description, examples|
       describe description do

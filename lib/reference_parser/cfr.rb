@@ -943,18 +943,27 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def part_or_section_string(hierarchy, options: {})
     result = ""
     content = hierarchy[:appendix] || hierarchy[:section]
-    return "/section-#{hierarchy[:section]}" if hierarchy[:section] && !hierarchy[:part]
-    return "/part-#{hierarchy[:part]}/subpart-#{hierarchy[:subpart]}" if !content && hierarchy[:subpart]
-    if !hierarchy[:section] && hierarchy[:appendix]
-      result << "/part-#{hierarchy[:part]}" if hierarchy[:part]
-      result << "/subpart-#{hierarchy[:subpart]}" if hierarchy[:subpart]
-      result << "/appendix-#{hierarchy[:appendix]}" if hierarchy[:appendix]
-      return result
+
+    part = subpart = section = appendix = nil
+
+    if !hierarchy[:part] && (section = hierarchy[:section])
+      # no-op
+    elsif !content && (subpart = hierarchy[:subpart])
+      part = hierarchy[:part]
+    elsif !hierarchy[:section] && (appendix = hierarchy[:appendix])
+      part = hierarchy[:part]
+      subpart = hierarchy[:subpart]
+    elsif (part = hierarchy[:part])
+      if (section = hierarchy[:section])
+        part = nil unless hierarchy[:part].present? && options&.[](:explicitly_expected)&.include?(:part)
+      end
     end
-    return "" unless hierarchy[:part]
-    return "/part-#{hierarchy[:part]}" unless hierarchy[:section]
-    result << "/part-#{hierarchy[:part]}" if hierarchy[:part].present? && options&.[](:explicitly_expected)&.include?(:part)
-    result << "/section-#{ReferenceParser::Cfr.section_string(hierarchy)}"
+
+    result << "/part-#{part}" if part
+    result << "/subpart-#{subpart}" if subpart
+    result << "/section-#{ReferenceParser::Cfr.section_string(hierarchy)}" if section
+    result << "/appendix-#{appendix}" if appendix
+    result
   end
 
   def self.section_string(hierarchy)
