@@ -469,13 +469,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<paragraphs>
       (?:
         (?:#{ReferenceParser::HierarchyCaptures::LIST_EXAMPLES})?
-        paragraph\s*
-        #{PARAGRAPH_UNLABELED}
+        (?:sub)?paragraphs?\s*
+        #{PARAGRAPH_UNLABELED_REQUIRED}
         (?:,\s*(?:and\s*)?)?
       )+
     )
     (?<suffix_unlinked>
-          \s*of\sthis\ssection                        # of this section
+          \s*of\sthis\s(?:sub)?section                        # of this section
     )
     /ixo, if: :context_present?, context_expected: %i[title section])
 
@@ -487,7 +487,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:#{EXAMPLES})?
     )
     (?<suffix_unlinked>
-      \s*of\sthis\ssection                            # of this section
+      \s*of\sthis\s(?:sub)?section                            # of this section
     )
     /ixo, if: :context_present?, context_expected: %i[title section])
 

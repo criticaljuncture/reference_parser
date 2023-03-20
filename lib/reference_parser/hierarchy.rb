@@ -122,7 +122,7 @@ class ReferenceParser::Hierarchy
     # drop any list or range related items that made it through
     if @data[:paragraph].present?
       @data[:paragraph].gsub!(ReferenceParser::HierarchyCaptures::LIST_EXAMPLES, "") if @data[:paragraph].include?("xample")
-      @data[:paragraph].gsub!(/paragraph/i, "")
+      @data[:paragraph].gsub!(/(?:sub)?paragraph/i, "")
     end
     @data.transform_values! do |value|
       list_items = /(\s+|,|;|:|or|and|through)+/i
@@ -159,7 +159,7 @@ class ReferenceParser::Hierarchy
     @data.delete(:subpart) if @data[:appendix].present? && expected[:section_list_appendix_toggle]
 
     if @data[:paragraph].present?
-      @data[:paragraph].gsub!(/paragraph\s*/, "")
+      @data[:paragraph].gsub!(/(?:sub)?paragraph\s*/, "")
       @data[:paragraph] = @data[:paragraph].partition("through").first.strip if @data[:paragraph].include?("through")
     end
 
