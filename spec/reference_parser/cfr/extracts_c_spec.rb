@@ -152,7 +152,34 @@ RSpec.describe "ReferenceParser::Cfr" do
         # #40 /current/title-10/chapter-I/part-71#p-71.5(a)
         {ex: "48 CFR subpart 2.1", context: {composite_hierarchy: "2:B:XI:A:1108:B:1108.340"},
          with_surrounding_text: "...by the Federal Acquisition Regulation at 48 CFR subpart 2.1, which is...",
-         citation: {title: "48", subpart: "2.1", expected_url: "/current/title-48/subpart-2.1"}} # /current/title-48/part-2/subpart-2.1 also acceptable
+         citation: {title: "48", subpart: "2.1", expected_url: "/current/title-48/subpart-2.1"}}, # /current/title-48/part-2/subpart-2.1 also acceptable
+
+        # #43 /current/title-40/chapter-I/subchapter-I/part-270#270.14
+        {ex: "§ 264.15(b) of this part", context: {composite_hierarchy: "40::I:I:270:B:270.14"},
+         with_surrounding_text: "A copy of the general inspection schedule required by § 264.15(b) of this part.",
+         citation: {title: "40", section: "264.15", paragraph: "(b)", expected_url: "/current/title-40/part-264/section-264.15#p-264.15(b)"}},
+
+        {ex: "§§ 264.174, 264.193(i), 264.195, 264.226, 264.254, 264.273, 264.303, 264.602, 264.1033, 264.1052, 264.1053, 264.1058, 264.1084, 264.1085, 264.1086, and 264.1088 of this part",
+         context: {composite_hierarchy: "40::I:I:270:B:270.14"},
+         with_surrounding_text: "specific requirements in §§ 264.174, 264.193(i), 264.195, 264.226, 264.254, 264.273, 264.303, 264.602, 264.1033, 264.1052, 264.1053, 264.1058, 264.1084, 264.1085, 264.1086, and 264.1088 of this part.",
+         citations: [
+           {title: "40", section: "264.174"},
+           {title: "40", section: "264.193", paragraph: "(i)"},
+           {title: "40", section: "264.195"},
+           {title: "40", section: "264.226"},
+           {title: "40", section: "264.254"},
+           {title: "40", section: "264.273"},
+           {title: "40", section: "264.303"},
+           {title: "40", section: "264.602"},
+           {title: "40", section: "264.1033"},
+           {title: "40", section: "264.1052"},
+           {title: "40", section: "264.1053"},
+           {title: "40", section: "264.1058"},
+           {title: "40", section: "264.1084"},
+           {title: "40", section: "264.1085"},
+           {title: "40", section: "264.1086"},
+           {title: "40", section: "264.1088"}
+         ]}
       ]
     ].each_slice(2) do |description, examples|
       describe description do

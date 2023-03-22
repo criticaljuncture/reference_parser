@@ -14,6 +14,7 @@ module ReferenceParser::HierarchyContainer
     @order = order || ReferenceParser::CaptureOrder.new
     @parent = parent
     @data = data || {}
+    @potentially_misleading = []
   end
 
   def slide_left(left, right)

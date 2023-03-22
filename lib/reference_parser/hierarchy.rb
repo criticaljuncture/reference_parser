@@ -87,7 +87,7 @@ class ReferenceParser::Hierarchy
     # ranks explictly listed by the replace definition are required
     result = PARSED_RANKS.detect do |rank|
       result = context_expected.include?(rank) && !@data[rank].present?
-      result = false if result && (rank == :section) && @data[:appendix].present?
+      result = false if result && ((rank == :section) && @data[:appendix].present?)
       result
     end
 
@@ -97,7 +97,8 @@ class ReferenceParser::Hierarchy
       PARSED_RANKS.each do |rank|
         if captures[:suffix]&.downcase&.include?(rank.to_s)
           if !@data[rank].present? && # missing the listed rank
-              !(%i[chapter subchapter subpart].include?(rank) && @data[:section].present?) # section makes several ranks disposable
+              !(%i[chapter subchapter subpart].include?(rank) && @data[:section].present?) && # section makes several ranks disposable
+              !@potentially_misleading.include?(rank) # intentionally excluded
             result ||= rank
           end
           break if result
@@ -113,8 +114,14 @@ class ReferenceParser::Hierarchy
   end
 
   def take_missing_from_context(captures: {})
-    determine_available_from_context(captures: captures).each do |rank|
-      @data[rank] = context[rank] if context[rank].present? && !@data[rank].present?
+    determine_available_from_context(captures: captures).each do |rank, reason|
+      if context[rank].present? && !@data[rank].present?
+        if reason == :potentially_misleading
+          @potentially_misleading << rank
+        else
+          @data[rank] = context[rank]
+        end
+      end
     end
   end
 
@@ -323,25 +330,27 @@ class ReferenceParser::Hierarchy
   private
 
   def determine_available_from_context(captures: {})
-    results = []
+    results = {}
 
-    results << :title if context[:title] && !@data[:title].present? &&
+    results[:title] = :present if context[:title] && !@data[:title].present? &&
       context_expected.include?(:title)
 
     if context[:section] && !@data[:section].present? &&
         (@data[:paragraph].present? || @data[:subpart].present?) &&
         (context_expected.include?(:section) ||
         context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
-      results << :section
+      results[:section] = :present
     elsif context[:appendix] && !@data[:section].present? &&
         (@data[:paragraph].present? || @data[:subpart].present?) &&
         (context_expected.include?(:section) ||
         context_expected.include?(:in_suffix) && captures[:suffix]&.downcase&.include?("section"))
-      results << :appendix
+      results[:appendix] = :present
     end
 
     %i[chapter subchapter part].each do |rank|
-      results << rank if determine_rank_usability(rank: rank, captures: captures, existing: results, exclude_sub: (rank != :part))
+      if (reason = determine_rank_usability(rank: rank, captures: captures, existing: results, exclude_sub: (rank != :part)))
+        results[rank] = reason
+      end
     end
 
     puts "determine_available_from_context \"#{results}\" context_expected \"#{context_expected}\"" if @debugging
@@ -362,7 +371,14 @@ class ReferenceParser::Hierarchy
           reason ||= :not_expecting_lower_rank
         end
       end
-      reason ||= :due_to_suffix if context_expected.include?(:in_suffix) && (!exclude_sub || !captures[:suffix]&.downcase&.include?("sub#{rank}")) && captures[:suffix]&.downcase&.include?(rank.to_s)
+
+      if context_expected.include?(:in_suffix) && (!exclude_sub || !captures[:suffix]&.downcase&.include?("sub#{rank}")) && captures[:suffix]&.downcase&.include?(rank.to_s)
+        reason ||= if rank == :part && (section = captures[:section]).present? && section.include?(".") && !section.include?(context[:part])
+          :potentially_misleading
+        else
+          :due_to_suffix
+        end
+      end
     end
 
     puts "adding #{rank} from context (#{reason})" if reason && @debugging
