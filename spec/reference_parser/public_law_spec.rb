@@ -9,6 +9,11 @@ PL_SCENARIOS = [
     "Pub. L. 107-295",
     "P.L. 107-295"], citation: {congress: 107, law: 295}},
 
+  {ex: ["Public Law 104–208",
+    "Pub. Law 104–208",
+    "Pub. L. 104–208",
+    "P.L. 104–208"], citation: {congress: 104, law: 208}},
+
   {ex: "phone number 202-693-0126 or e-mailed", citation: :expect_none}
 ]
 
