@@ -2,7 +2,7 @@ class ReferenceParser::HierarchyCaptures
   LIST_DESIGNATORS = /,|;|or|and|through|to/ix
 
   LIST_EXAMPLES = /
-    (<em>)?\s*Examples?\s*.                           # required example text
+    (?:<em>)?\s*Examples?\s*.                         # required example text
     (?:
       (?:<em>)?\s*(?:Examples?\s*)?                   # optional italics and or repeated example test
       \d+                                             # number
@@ -195,13 +195,20 @@ class ReferenceParser::HierarchyCaptures
         x = 0
         while x < split.length
           puts Rainbow("split x #{x} split #{split}").blue if @debugging
-          if all_dividers.match?(split[x]) # only list cruft
-            if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1))
+          if all_dividers.match?(split[x]) || # only list cruft
+              (collapsing_examples = (split[x - 1].include?("example") && !split[x - 1].include?("paragraph"))) # "examples 1, 2, 3, 4, 5, and 6 in paragraph (j) of this section"
+            if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1)) && !collapsing_examples
               split[x + 1] = split[x] + split[x + 1]
-            else
+              split.delete_at(x)
+            elsif x > 0
               split[x - 1] = split[x - 1] + split[x]
+              split.delete_at(x)
+            elsif x < split.length - 1
+              split[x] = split[x] + split[x + 1]
+              split.delete_at(x + 1)
+            else
+              x += 1
             end
-            split.delete_at(x)
           else
             x += 1
           end

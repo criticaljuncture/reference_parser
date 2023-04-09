@@ -179,6 +179,13 @@ RSpec.describe "ReferenceParser::Cfr" do
            {title: "40", section: "264.1085"},
            {title: "40", section: "264.1086"},
            {title: "40", section: "264.1088"}
+         ]},
+
+        {ex: "paragraph (j)", context: {composite_hierarchy: "26::I:A:1::1.51-1"},
+         with_surrounding_text: "(See examples 1, 2, 3, 4, 5, and 6 in paragraph (j) of this section for examples illustrating the application of the rules in this paragraph (b)(2))",
+         citations: [
+           {title: "26", section: "1.51-1", paragraph: "(j)", expected_url: "/current/title-26/section-1.51-1#p-1.51-1(j)"},
+           {title: "26", section: "1.51-1", paragraph: "(b)(2)", expected_url: "/current/title-26/section-1.51-1#p-1.51-1(b)(2)"}
          ]}
       ]
     ].each_slice(2) do |description, examples|
