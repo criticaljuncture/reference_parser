@@ -172,6 +172,8 @@ class ReferenceParser::Hierarchy
 
     slide_likely_paragraph_right(:section, :paragraph)
 
+    @data.transform_values! { |value| ReferenceParser::Dashes.ascii(value) }
+
     self
   end
 
@@ -314,7 +316,7 @@ class ReferenceParser::Hierarchy
     end
 
     # from match 12 CFR § 275.206(a)(3)-3 expecting "/on/2021-05-17/title-12/section-275.206(a)(3)-3"
-    slide_left(:section, :paragraph) if @data[:paragraph]&.include?("-")
+    slide_left(:section, :paragraph) if ReferenceParser::Dashes::ANY.match?(@data[:paragraph])
 
     slide_right(:paragraph, :sublocators) # url uses "sublocators"
 

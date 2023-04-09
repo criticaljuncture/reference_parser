@@ -13,11 +13,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   TITLE_ID = /\d+/
   SUBTITLE_ID = /(?:[A-Z]{1,7})/ix
   CHAPTER_ID = /[IVXLCDM0-9]+/ix
-  SUBCHAPTER_ID = /[A-Z]+[-_]?[A-Z]*/ix
+  SUBCHAPTER_ID = /[A-Z]+[-–—_]?[A-Z]*/ix
   PART_ID = /\w+[-–—]?\w*/ix
   SUBPART_ID = /\w{1,4}[\w.\-–—]{0,6}(?:suspended)?/ix # constraint /\w+[\w.\-–—]*\w*/ix generated/internal ECFR[0-9A-Z]{15,16}
   SUBPART_ID_ADDITIONAL = /\w{1,4}([.\-–—][\w.\-–—]{0,5}|)(?:suspended)?\b/ix
-  SECTION_ID = /[\w-]+.?[\w\-–—()]*/ix
+  SECTION_ID = /[\w\-–—]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
@@ -216,8 +216,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{OPTIONAL_PARENTHETICALS}
     (?:
       [a-z]\d+-\d |
-      -\d+T?[a-z]? | # dash suffix if present tends to mark end of section area
-      \.T\d{,2}-\d{,6} |
+      [-–—]\d+T?[a-z]? | # dash suffix if present tends to mark end of section area
+      \.T\d{,2}[-–—]\d{,6} |
       \.\d+  |
       \(T\)    # temporary may be marked w T suffix
     )*
@@ -522,7 +522,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                   \(\s*\d+\s*\) |
                   \(\s*[a-z]{1,5}\s*\) |
                 )
-                ([a-z]{1,5}-\d+)?
+                ([a-z]{1,5}[-–—]\d+)?
                 (?:\s*note)?
                 #{NEXT_TITLE_STOP}
               )+
@@ -580,9 +580,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, options) {
     return unless options[:best_guess]
     /
-    #{TITLE_SOURCE}
+    #{TITLE_SOURCE_ALLOW_SLASH_SHORTHAND_CFR}
     #{APPENDIX_EXPLICT_MID_EXPANDED}
-    #{PART_LABEL}#{PART}
+    (?:#{PART_LABEL}#{PART})?
     (?:#{SUBPART_LABEL}#{SUBPARTS})?
     (?:#{APPENDIX})?
     #{TRAILING_BOUNDRY}
