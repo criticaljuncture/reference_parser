@@ -274,7 +274,7 @@ class ReferenceParser
   end
 
   def merge_patterns_from(replacements)
-    patterns = replacements.map(&:regexp).compact
+    patterns = replacements.filter_map(&:regexp)
     Regexp.union(patterns)
   end
 

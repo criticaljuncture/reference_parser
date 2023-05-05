@@ -19,12 +19,12 @@ module CfrHelper
 
     if expected_citation.present?
       if expected_citation == [:expect_none]
-        expect(references.map { |r| r[:hierarchy] }.compact).to be_empty
+        expect(references.filter_map { |r| r[:hierarchy] }).to be_empty
       else
         expected_citation *= example[:repeat_reference] if example[:repeat_reference]
 
         # verify extracted references (if present)
-        citations = references.map { |r| r[:hierarchy] }.compact
+        citations = references.filter_map { |r| r[:hierarchy] }
         references.each do |r|
           if r[:ambiguous].present?
             citations << {ambiguous: r[:ambiguous]}
@@ -32,7 +32,7 @@ module CfrHelper
         end
         expect(citations).to eq(expected_citation.map { |c| c.except(:expected_url) })
 
-        expected_citation.map { |expected_citation| expected_citation[:expected_url] }.compact.each do |expected_url|
+        expected_citation.filter_map { |expected_citation| expected_citation[:expected_url] }.each do |expected_url|
           expect(result_html).to have_tag("a", with: {href: expected_url})
         end
 

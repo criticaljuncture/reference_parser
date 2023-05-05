@@ -20,7 +20,7 @@ class ReferenceParser::HierarchyCaptures
   def from_named_captures(named_captures)
     # save initial capture order
     @order = ReferenceParser::CaptureOrder.new(named_captures)
-    @captured_characters = named_captures.values.map { |value| value.to_s.length }.sum
+    @captured_characters = named_captures.values.sum { |value| value.to_s.length }
 
     # normalize captures & discard empty groups
     @data = named_captures.select { |k, v| v }.symbolize_keys

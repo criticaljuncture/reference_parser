@@ -822,7 +822,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         if potential_danger.detect { |section| @accumulated_context[:sections].include?(section) }
           issue = :context_match
         else
-          prefixes = potential_danger.map { |s| s.include?(".") ? s.split(".")[0] : nil }.compact
+          prefixes = potential_danger.filter_map { |s| s.include?(".") ? s.split(".")[0] : nil }
           if prefixes.detect { |prefix| @accumulated_context[:section_prefixes].include?(prefix) }
             issue = :context_prefix_match
           end
@@ -836,7 +836,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       if issue
         sections = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
         @accumulated_context[:sections].merge(sections)
-        @accumulated_context[:section_prefixes].merge(sections.map { |s| s.include?(".") ? s.split(".")[0] : nil }.compact)
+        @accumulated_context[:section_prefixes].merge(sections.filter_map { |s| s.include?(".") ? s.split(".")[0] : nil })
 
         puts "qualify_match @accumulated_context #{@accumulated_context}" if @debugging
       end
@@ -866,9 +866,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def preserved_character_count?(captures, results: nil)
-    result_characters = results.map do |result|
-      result.values_at(:prefix, :text, :suffix).compact.map(&:length).sum
-    end.sum
+    result_characters = results.sum do |result|
+      result.values_at(:prefix, :text, :suffix).compact.sum(&:length)
+    end
     if @debugging
       text = results.map { |result| result.values_at(:prefix, :text, :suffix).compact.join }.join
       puts "preserved_character_count? #{result_characters} vs #{captures.captured_characters} \"#{text}\""

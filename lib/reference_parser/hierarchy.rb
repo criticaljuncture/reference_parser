@@ -94,10 +94,11 @@ class ReferenceParser::Hierarchy
     # if the definition lists "in_suffix" then ranks listed by name in the
     # suffix capture are expected (ie: in this chapter, in this part)
     if context_expected.include?(:in_suffix)
+      section_disposable_ranks = %i[chapter subchapter subpart]
       PARSED_RANKS.each do |rank|
         if captures[:suffix]&.downcase&.include?(rank.to_s)
           if !@data[rank].present? && # missing the listed rank
-              !(%i[chapter subchapter subpart].include?(rank) && @data[:section].present?) && # section makes several ranks disposable
+              !(section_disposable_ranks.include?(rank) && @data[:section].present?) && # section makes several ranks disposable
               !@potentially_misleading.include?(rank) # intentionally excluded
             result ||= rank
           end
@@ -178,13 +179,14 @@ class ReferenceParser::Hierarchy
   end
 
   def cleanup_list_ranges_if_needed!(repeated_capture: :section, processing_a_list: nil)
+    range_captures = %i[section part paragraph]
     effective_capture = repeated_capture
     effective_capture = :part if effective_capture == :section && !@data[effective_capture]
     [effective_capture, :paragraph].uniq.each do |effective_capture|
       value = @data[effective_capture]
       next unless value.present?
       puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
-      if %i[section part paragraph].include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1)))
+      if range_captures.include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1)))
         items = value.split(/\bto\b|-|through/)
         if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
           puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
