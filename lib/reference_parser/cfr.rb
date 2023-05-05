@@ -641,7 +641,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, options) {
     return unless options[:best_guess]
     /
-    (?<![.\d])
+    (?<![-–—.\d])
     (?<title>\d{1,2})
     #{TRAILING_BOUNDRY}
     (?<source_label>\s*)

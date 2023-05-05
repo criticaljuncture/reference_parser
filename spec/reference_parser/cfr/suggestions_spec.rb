@@ -39,6 +39,11 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "26/1.0–1", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "26", section: "1.0-1"}},
         {ex: "2 CFR Appendix X", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "2", appendix: "X"}},
         {ex: "2/Appendix X", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "2", appendix: "X"}}
+      ],
+      "false positives", [
+        {ex: "1.1388-1", options: {cfr: {best_guess: true, prefer_part: true}}, citation: :expect_none},
+        {ex: "1.1388–1", options: {cfr: {best_guess: true, prefer_part: true}}, citation: :expect_none},
+        {ex: "1.1388—1", options: {cfr: {best_guess: true, prefer_part: true}}, citation: :expect_none}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
