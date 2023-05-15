@@ -64,6 +64,10 @@ class ReferenceParser::Hierarchy
     end
   end
 
+  def self.truncate(hierarchy, rank)
+    hierarchy.slice(*ReferenceParser::Hierarchy.levels_at_or_above(rank))
+  end
+
   def self.hash_from_composite(composite)
     return {} unless composite.present?
 
