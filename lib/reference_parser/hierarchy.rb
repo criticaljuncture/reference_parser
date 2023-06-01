@@ -7,10 +7,10 @@ class ReferenceParser::Hierarchy
 
   include ReferenceParser::HierarchyContainer
 
-  def self.citation(hierarchy, alias_hierarchy: nil, alias_text: nil, build_id: nil, current: true, date_format: nil, short: false, title_date: nil)
+  def self.citation(hierarchy, alias_hierarchy: nil, alias_text: nil, build_id: nil, current: true, date_format: nil, short: false, simple: false, title_date: nil)
     citation = []
 
-    prefix = (alias_text || "Title #{hierarchy[:title]}")
+    prefix = (alias_text || "#{hierarchy[:title]} CFR")
     hierarchy = hierarchy.except(*alias_hierarchy.keys) if alias_hierarchy.present?
     citation << prefix
 
@@ -27,13 +27,13 @@ class ReferenceParser::Hierarchy
       end
       citation << "Subchapter #{hierarchy[:subchapter]}" if hierarchy[:subchapter].present?
     when :part, :subpart, :subject_group
-      citation << "Part #{hierarchy[:part]}" unless hierarchy[:subpart].present? && hierarchy[:subpart].start_with?(hierarchy[:part])
+      citation << "#{simple ? "" : "Part "}#{hierarchy[:part]}" unless hierarchy[:subpart].present? && hierarchy[:subpart].start_with?(hierarchy[:part])
       citation << "Subpart #{hierarchy[:subpart]}" if hierarchy[:subpart].present?
-      citation << " - #{hierarchy[:subject_group]}" if hierarchy[:subject_group].present? && !short
+      citation << "- #{hierarchy[:subject_group_title] || hierarchy[:subject_group]}" if hierarchy[:subject_group_title].present? || hierarchy[:subject_group].present? && !short
     when :section
       citation << hierarchy[:section]
     when :appendix
-      citation = ["#{hierarchy[:appendix]},", prefix]
+      citation = ["#{hierarchy[:appendix]},", (alias_text || "Title #{hierarchy[:title]}")]
     end
 
     case date_format
@@ -48,6 +48,8 @@ class ReferenceParser::Hierarchy
           " (up to date as of #{title_date.to_formatted_s(:us_standard)})"
         end
       end
+    when :skip
+      # noop
     else
       citation << " (#{hierarchy.date})" unless current
     end

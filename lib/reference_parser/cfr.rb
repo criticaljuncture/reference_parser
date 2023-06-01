@@ -662,6 +662,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     true
   end
 
+  def self.url(...)
+    new({}).url(...)
+  end
+
   def url(citation, url_options = {})
     return unless citation
     citation_options = citation[:options] || {}
@@ -948,7 +952,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     if !hierarchy[:part] && (section = hierarchy[:section])
       # no-op
-    elsif !content && (subpart = hierarchy[:subpart])
+    elsif !content && ((subject_group = hierarchy[:subject_group]) || (subpart = hierarchy[:subpart]))
       part = hierarchy[:part]
     elsif !hierarchy[:section] && (appendix = hierarchy[:appendix])
       part = hierarchy[:part]
@@ -961,6 +965,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     result << "/part-#{part}" if part
     result << "/subpart-#{subpart}" if subpart
+    result << "/subject-group-#{subject_group}" if subject_group
     result << "/section-#{ReferenceParser::Cfr.section_string(hierarchy)}" if section
     result << "/appendix-#{appendix}" if appendix
     result
