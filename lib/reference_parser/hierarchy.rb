@@ -62,7 +62,7 @@ class ReferenceParser::Hierarchy
     return :paragraph if hierarchy[:paragraph].present?
 
     RANKS.reverse.detect do |level|
-      hierarchy[level].present? && (!ignore_generated || !GENERATED_LEVEL_PATTERN.match?(hierarchy[level]))
+      hierarchy[level].present? && (!ignore_generated || !hierarchy[level].is_a?(String) || !GENERATED_LEVEL_PATTERN.match?(hierarchy[level]))
     end
   end
 
