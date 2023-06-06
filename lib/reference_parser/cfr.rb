@@ -292,6 +292,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
+  # generally ignore title structure
+  replace(/
+    (?<ignorable><)(?:SECTION|APPENDIX|div)[^>]*>
+    /ix,
+    pattern_slug: :ignorable, prepend_pattern: true)
+
   # reference replacements
   replace(/
       #{TITLE_SOURCE}
