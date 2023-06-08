@@ -86,12 +86,19 @@ module ReferenceParser::CfrAliases
     end
 
     def overlay_for(hierarchy)
-      if hierarchy[:title] == "48" && (chapter = hierarchy[:chapter].to_i) > 1 && hierarchy[:section].present?
-        section = hierarchy[:section]
-        if (match = /\A(?<section>\d+)(?<remainder>.+)/.match(section))
-          offset = chapter * 100
-          if (prefix = match[:section].to_i).between?(offset, offset + 99)
-            "48 CFR #{prefix - offset}#{match[:remainder]}"
+      if hierarchy[:title].to_s == "48" && (chapter = hierarchy[:chapter].to_i) > 1
+        offset = chapter * 100
+        description = if (section = hierarchy[:section]).present? && (match = /\A(?<prefix>\d+)(?<remainder>.+)/.match(section))
+          ""
+        elsif (subpart = hierarchy[:subpart]).present? && (match = /\A(?<prefix>\d+)(?<remainder>.+)?/.match(subpart))
+          "Subpart "
+        elsif (part = hierarchy[:part]).present? && (match = /\A(?<prefix>\d+)(?<remainder>.+)?/.match(part))
+          "Part "
+        end
+
+        if match && (prefix = match[:prefix].to_i)&.between?(offset, offset + 99)
+          if (overlay = prefix - offset) > 0
+            "48 CFR #{description}#{overlay}#{match[:remainder]}"
           end
         end
       end
