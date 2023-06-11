@@ -50,8 +50,12 @@ class ReferenceParser
     result
   end
 
+  def self.cfr_parser
+    @cached_cfr ||= ReferenceParser.new(only: %i[cfr])
+  end
+
   def self.cfr_best_guess_hierarchy_parser
-    ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, allow_aliases: true, prefer_part: true}})
+    @cfr_best_guess_hierarchy_parser ||= ReferenceParser.new(only: :cfr, options: {cfr: {best_guess: true, allow_aliases: true, prefer_part: true}})
   end
 
   def self.cfr_best_guess_hierarchy(text)

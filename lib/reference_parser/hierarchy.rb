@@ -27,7 +27,7 @@ class ReferenceParser::Hierarchy
       end
       citation << "Subchapter #{hierarchy[:subchapter]}" if hierarchy[:subchapter].present?
     when :part, :subpart, :subject_group
-      citation << "#{simple ? "" : "Part "}#{hierarchy[:part]}" unless hierarchy[:subpart].present? && hierarchy[:subpart].start_with?(hierarchy[:part])
+      citation << "#{simple ? "" : "Part "}#{hierarchy[:part]}"
       citation << "Subpart #{hierarchy[:subpart]}" if hierarchy[:subpart].present?
       citation << "- #{hierarchy[:subject_group_title] || hierarchy[:subject_group]}" if hierarchy[:subject_group_title].present? || hierarchy[:subject_group].present? && !short
     when :section

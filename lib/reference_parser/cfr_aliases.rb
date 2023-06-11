@@ -72,33 +72,74 @@ module ReferenceParser::CfrAliases
         matched_hierarchy = (definition[:hierarchies] || [definition[:hierarchy]]).detect { |h| !h.detect { |k, v| hierarchy[k].to_s != v } }
         break if matched_hierarchy
       end
-      ReferenceParser::Hierarchy.citation(hierarchy, alias_hierarchy: matched_hierarchy, alias_text: alias_text) if matched_hierarchy
+
+      if matched_hierarchy
+        effective_hierarchy = hierarchy
+        if effective_hierarchy&.include?(:appendix) && matched_hierarchy.include?(:chapter)
+          effective_hierarchy = effective_hierarchy.dup
+          effective_hierarchy[:appendix] = effective_hierarchy[:appendix].delete_suffix(" to Chapter #{matched_hierarchy[:chapter]}")
+        end
+
+        ReferenceParser::Hierarchy.citation(effective_hierarchy, alias_hierarchy: matched_hierarchy, alias_text: alias_text)
+      end
     end
 
     def known_overlay_chapter?(hierarchy)
       (hierarchy[:title] == "48") && (FAR_CHAPTERS[hierarchy[:chapter]]&.[](:structure) == :overlay)
     end
 
-    def linked_overlay_for(hierarchy)
-      if (overlay = overlay_for(hierarchy)).present?
-        ReferenceParser.new(only: %i[cfr]).hyperlink(overlay, options: {cfr: {relative: true}})
+    def linked_primary_for(hierarchy, url_options = {on: "current", relative: true})
+      if (details = primary_details_for(hierarchy, citation: true)).present?
+        ReferenceParser::Cfr.new({}).link_to(details[:title], details[:citation], url_options)
       end
     end
 
-    def overlay_for(hierarchy)
+    def primary_details_for(hierarchy, url_options = {on: "_SUBSTITUTE_DATE_", relative: true}, citation: false)
       if hierarchy[:title].to_s == "48" && (chapter = hierarchy[:chapter].to_i) > 1
         offset = chapter * 100
+        offsetting = nil
         description = if (section = hierarchy[:section]).present? && (match = /\A(?<prefix>\d+)(?<remainder>.+)/.match(section))
+          offsetting = :section
           ""
         elsif (subpart = hierarchy[:subpart]).present? && (match = /\A(?<prefix>\d+)(?<remainder>.+)?/.match(subpart))
+          offsetting = :subpart
           "Subpart "
         elsif (part = hierarchy[:part]).present? && (match = /\A(?<prefix>\d+)(?<remainder>.+)?/.match(part))
+          offsetting = :part
           "Part "
         end
 
         if match && (prefix = match[:prefix].to_i)&.between?(offset, offset + 99)
-          if (overlay = prefix - offset) > 0
-            "48 CFR #{description}#{overlay}#{match[:remainder]}"
+          if ((overlay = prefix - offset) > 0) && (overlay < 70)
+            # described by 48/1.105-2(b)(1)
+            subpart_section, subsection = /\.(?<subpart_section>\d+-?(?<subsection>\d+))/.match(match[:remainder])&.captures&.map(&:to_i)
+
+            usable = if !subpart_section
+              true
+            elsif hierarchy[:section].present?
+              subpart_section < 7000 && (subpart_section % 100 < 70) && (!subsection || (subsection < 70))
+            else
+              subpart_section < 70
+            end
+
+            if usable
+              overlay_hierarchy = hierarchy.slice(:title, offsetting)
+              overlay_hierarchy[offsetting] = "#{overlay}#{match[:remainder]}"
+
+              title = "48 CFR #{description}#{overlay}#{match[:remainder]}"
+              path = ReferenceParser::Cfr.url(
+                overlay_hierarchy,
+                url_options
+              )
+
+              details = {title: title}
+              if citation
+                details[:citation] = overlay_hierarchy
+              elsif path.present?
+                details[:path] = path
+              end
+              details
+            end
           end
         end
       end
