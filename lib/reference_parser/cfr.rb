@@ -522,7 +522,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
             (?<section_label>\s*§\s*|\s*<\/em>\s*§\s*<em>\s*)?
             (?<sections>
               (?:
-                (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|-|\s*through\s*|\s*and\s*|\s*or\s*)*
+                (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|[-–—]|\s*through\s*|\s*and\s*|\s*or\s*)*
                 (?:
                   \s*\d+(?:[a-z]{1,5})? |
                   \(\s*\d+\s*\) |
