@@ -12,7 +12,9 @@ FR_SCENARIOS = [
    citations: [{expected_href: "https://www.nationalrtap.org/Technology-Tools/GTFS-Builder"}]},
 
   {ex: "51 FR 6537-42", citations: [{volume: "51", page: "6537"}]},
-  {ex: "59 FR 62896-62953", citations: [{volume: "59", page: "62896"}]}
+  {ex: "59 FR 62896-62953", citations: [{volume: "59", page: "62896"}]},
+  {ex: "59 FR 62896–62953", citations: [{volume: "59", page: "62896", expected_href: "https://www.federalregister.gov/citation/59-FR-62896"}]},
+  {ex: "59 FR 62896—62953", citations: [{volume: "59", page: "62896", expected_href: "https://www.federalregister.gov/citation/59-FR-62896"}]}
 ]
 
 RSpec.describe ReferenceParser::FederalRegister do

@@ -100,7 +100,9 @@ USC_SCENERIOS = [
   {ex: "(7 U.S.C.</em>          §         <em>13 and 18 U.S.C.</em>         §         <em>1001)",
    citations: [{title: "7", part: "13"}, {title: "18", part: "1001"}], context: {title: "17", appendix: "Appendix A to Part 49"}, expect_variance: true},
 
-  {ex: "(15 U.S.C. 80b–3a(a))", citation: {title: "15", part: "80b-3a"}}
+  {ex: "(15 U.S.C. 80b–3a(a))", citation: {title: "15", part: "80b-3a"}},
+  {ex: "42 U.S.C. 290dd–2", citation: {title: "42", part: "290dd-2"}}
+
 ]
 
 RSpec.describe ReferenceParser::Usc do

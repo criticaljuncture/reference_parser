@@ -1,7 +1,9 @@
 require "spec_helper"
 
 RIN_SCENARIOS = [
-  {ex: "See RIN 1234-AB12 and RIN 1234-AB34.", citations: [{rin: "1234-AB12"}, {rin: "1234-AB34"}], result: 'See <a href="/r/1234-AB12">RIN 1234-AB12</a> and <a href="/r/1234-AB34">RIN 1234-AB34</a>.'}
+  {ex: "See RIN 1234-AB12 and RIN 1234-AB34.", citations: [{rin: "1234-AB12"}, {rin: "1234-AB34"}], result: 'See <a href="/r/1234-AB12">RIN 1234-AB12</a> and <a href="/r/1234-AB34">RIN 1234-AB34</a>.'},
+  {ex: "See RIN 1234–AB12 and RIN 1234–AB34.", citations: [{rin: "1234–AB12"}, {rin: "1234–AB34"}], result: 'See <a href="/r/1234-AB12">RIN 1234–AB12</a> and <a href="/r/1234-AB34">RIN 1234–AB34</a>.'},
+  {ex: "See RIN 1234—AB12 and RIN 1234—AB34.", citations: [{rin: "1234—AB12"}, {rin: "1234—AB34"}], result: 'See <a href="/r/1234-AB12">RIN 1234—AB12</a> and <a href="/r/1234-AB34">RIN 1234—AB34</a>.'}
 ]
 
 RSpec.describe ReferenceParser::RegulatoryPlan do

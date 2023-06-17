@@ -3,11 +3,11 @@ class ReferenceParser::FederalRegister < ReferenceParser::Base
     return unless citation&.values_at(:volume, :page)&.all?(&:present?)
     result = ""
     result << "https://www.federalregister.gov" if absolute?(url_options)
-    result << "/citation/#{citation[:volume]}-FR-#{citation[:page]}"
+    result << "/citation/#{citation[:volume]}-FR-#{ReferenceParser::Dashes.ascii(citation[:page])}"
   end
 
   def link_options(citation)
-    {class: "fr-reference", "data-reference": "#{citation[:volume]} FR #{citation[:page]}"}
+    {class: "fr-reference", "data-reference": "#{citation[:volume]} FR #{ReferenceParser::Dashes.ascii(citation[:page])}"}
   end
 
   def clean_up_named_captures(captures, options: {})
@@ -17,6 +17,8 @@ class ReferenceParser::FederalRegister < ReferenceParser::Base
     captures[:page] = captures[:chapter] if !captures[:part] && captures[:chapter]
     captures[:page] = captures[:part].partition("(").first if captures[:part]&.include?("(")
     captures[:page] = captures[:page].split("-")[0] if captures[:page]&.include?("-")
+    captures[:page] = captures[:page].split("–")[0] if captures[:page]&.include?("–")
+    captures[:page] = captures[:page].split("—")[0] if captures[:page]&.include?("—")
   end
 
   def depends_on_parser
