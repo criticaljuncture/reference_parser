@@ -19,7 +19,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "48 CFR Supbart 816.70", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "48", subpart: "816.70"}},
         {ex: "48 CFR Ch. 7, Appendix D", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "48", chapter: "7", appendix: "D"}},
         {ex: "50 CFR Table 1b to Part 660, Subpart C", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "50", part: "660", subpart: "C", table: "1b"},
-         expected_url: "/current/title-50/part-660/subpart-C/appendix-Table%201b%20to%20Part%20660,%20Subpart%20C"},
+         expected_url: "/current/title-50/part-660/appendix-Table%201b%20to%20Part%20660,%20Subpart%20C"},
         {ex: "09 CFR 75.4", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "9", section: "75.4"}},
         {ex: "40 Part 63", options: {cfr: {best_guess: true, prefer_part: true}}, citation: {title: "40", part: "63"}},
         # Citations

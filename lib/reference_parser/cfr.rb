@@ -970,8 +970,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
 
     result << "/part-#{part}" if part
-    result << "/subpart-#{subpart}" if subpart
-    result << "/subject-group-#{subject_group}" if subject_group
+    result << "/subpart-#{subpart}" if subpart && !appendix
+    result << "/subject-group-#{subject_group}" if subject_group && !appendix
     result << "/section-#{ReferenceParser::Cfr.section_string(hierarchy)}" if section
     result << "/appendix-#{appendix}" if appendix
     result

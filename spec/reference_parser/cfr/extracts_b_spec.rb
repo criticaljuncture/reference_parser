@@ -98,7 +98,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         # /current/title-10/section-429.53
         {ex: "10 CFR part 431, subpart R, appendix C", citation: {title: "10", part: "431", subpart: "R", appendix: "C"}, context: {title: "10", appendix: "429.53"},
          with_surrounding_text: "test procedure in 10 CFR part 431, subpart R, appendix C. Follow",
-         expected_url: "/current/title-10/part-431/subpart-R/appendix-Appendix%20C%20to%20Part%20431"},
+         expected_url: "/current/title-10/part-431/appendix-Appendix%20C%20to%20Part%20431"},
 
         # /current/title-12/section-238.153
         {ex: "12 CFR part 217, subparts D and E", citations: [{title: "12", part: "217", subpart: "D"},
