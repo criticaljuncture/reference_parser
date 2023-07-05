@@ -27,6 +27,9 @@ class ReferenceParser::Url < ReferenceParser::Base
       if (opening = BRACKETS[punctuation.last]) && (url.scan(opening).size > url.scan(punctuation.last).size)
         url << punctuation.pop
         break
+      elsif punctuation.last == "-" && punctuation.count > 1
+        url << punctuation.pop
+        break
       end
     end
     link_text = url

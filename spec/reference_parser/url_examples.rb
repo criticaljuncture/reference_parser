@@ -256,4 +256,20 @@ RSpec.shared_examples "url examples" do
       </E>
     XML
   end
+
+  describe "production issues" do
+    [
+      {description: "trailing -", surrounding_text: "website at %URL. The request",
+       url: "https://www.cms.gov/Medicare/Quality-Initiatives-Patient-Assessment-Instruments/Value-Based-Programs/SNF-VBP/Extraordinary-Circumstance-Exception-"}
+    ].each do |scenario|
+      it "handles #{scenario[:description]}" do
+        text = scenario[:surrounding_text].gsub("%URL", scenario[:url])
+        expect(
+          hyperlink(text).gsub("&#8203;", "")
+        ).to eq(
+          scenario[:surrounding_text].gsub("%URL", %(<a href="#{scenario[:url]}">#{scenario[:url]}</a>))
+        )
+      end
+    end
+  end
 end
