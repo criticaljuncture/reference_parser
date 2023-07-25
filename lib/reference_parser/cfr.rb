@@ -416,11 +416,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo, will_consider_pre_match: true)
 
   LIKELY_EXTERNAL_SECTIONS = /
-      \A\s*of\s*
+    \A\s*
+    (?:
+      as\sreferenced\sin
+      |
+      of\s*
       (?:the|those|)
       (?:
           \s*EAR |
           \s*Order |
+          \s*AHAM |
           \s*AHRI |
           \s*ANSI |
           \s*APSP |
@@ -433,6 +438,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           (?:Act|Amendments|Code|regulations)
         )
       )
+    )
     /ix
 
   LIKELY_UNLINKABLE = /revised.{0,18}(?<revised_year>(?:19|20)\d{2})/ix
@@ -839,8 +845,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         end
 
         # fails to match common formatting
-        if potential_danger.present? && !potential_danger.detect { |r| r.include?(".") }
-          issue = :formating
+        if potential_danger.present?
+          if !potential_danger.detect { |r| r.include?(".") }
+            issue = :formating
+          elsif options[:context][:appendix].present?
+            issue = :formating unless captures[:section_label]&.include?("§") || /of this part/i.match?(captures[:suffix])
+          end
         end
       end
       if issue

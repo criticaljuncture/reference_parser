@@ -128,7 +128,23 @@ RSpec.describe "ReferenceParser::Cfr" do
         # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR1d0453abf9d86e0/section-1.6851-2
         # expect only the dot format § prefixed loose section (other should fail qualify_match w/ :formating)
         {ex: "§ 1.6012-1", citation: {title: "26", section: "1.6012-1"}, context: {composite_hierarchy: "26::I:A:1::1.6851-2"},
-         with_surrounding_text: "the return required under section 6012 and § 1.6012-1 for the preceding taxable year"}
+         with_surrounding_text: "the return required under section 6012 and § 1.6012-1 for the preceding taxable year"},
+
+        # appendix cleanup
+        {ex: "Section 3.4", citation: :expect_none, context: {composite_hierarchy: "10::II:D:430:B:Appendix C1 to Subpart B of Part 430"},
+         with_surrounding_text: "Section 3.4 as referenced in sections 3 and 3.2 of this appendix"},
+
+        {ex: "Section 1", citation: :expect_none, context: {composite_hierarchy: "10::II:D:431:R:Appendix A to Subpart R of Part 431"},
+         with_surrounding_text: "Section 1 Scope, is inapplicable"},
+
+        {ex: "Section 7.3", citation: :expect_none, context: {composite_hierarchy: "10::II:D:431:R:Appendix A to Subpart R of Part 431"},
+         with_surrounding_text: "Section 7.3 Test Conditions, is inapplicable"},
+
+        {ex: "§ 200.306 of this Part", citation: {part: "200", section: "200.306", title: "2"}, context: {composite_hierarchy: "2:A:II::200::Appendix I to Part 200"},
+         with_surrounding_text: "as described in § 200.306 of this Part"},
+
+        {ex: "§ 200.211", citation: {section: "200.211", title: "2"}, context: {composite_hierarchy: "2:A:II::200::Appendix I to Part 200"},
+         with_surrounding_text: "See also § 200.211"}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
