@@ -22,8 +22,9 @@ class ReferenceParser::Guesses
   end
 
   COMMON_WORDS = %w[a addresses administrative after all an any applicable applies apply are as at awards be burn but by carried contains copies designed debarred declared do each ensuring equals even except expressed failure freedom from general have if in ineligible is it liquid may need no on privacy provide pursuant receive rounded rr see shall sign special specifies subject success such suspended that this to under until value we whether which who will with within you].freeze
+  DISCARDABLE_PREFIX = /\A\s*(?:and|or|through)\s*/i
 
   def self.unlikely_trailing_identifier?(identifier)
-    COMMON_WORDS.include?(identifier.strip.downcase)
+    COMMON_WORDS.include?(identifier.strip.downcase.gsub(DISCARDABLE_PREFIX, ""))
   end
 end

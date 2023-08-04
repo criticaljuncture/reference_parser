@@ -144,7 +144,10 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "as described in § 200.306 of this Part"},
 
         {ex: "§ 200.211", citation: {section: "200.211", title: "2"}, context: {composite_hierarchy: "2:A:II::200::Appendix I to Part 200"},
-         with_surrounding_text: "See also § 200.211"}
+         with_surrounding_text: "See also § 200.211"},
+
+        {ex: "7 CFR part 400, subpart R", citation: {part: "400", subpart: "R", title: "7"}, context: {composite_hierarchy: "7:B:IV::457::457.8"},
+         with_surrounding_text: "in accordance with section 515(h) of the Act and 7 CFR part 400, subpart R, and any applicable civil or"}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
