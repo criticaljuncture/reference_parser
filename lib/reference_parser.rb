@@ -90,6 +90,14 @@ class ReferenceParser
 
   private
 
+  def apply_hint_corrections(modified_text, hint_corrections)
+    puts Rainbow("hint_corrections ").blue + Rainbow(hint_corrections).orange if @debugging
+    hint_corrections.each do |a, b|
+      modified_text.gsub!(a, b)
+    end
+    modified_text
+  end
+
   def cleanup_guess(guess, citation)
     return unless guess
 
@@ -163,7 +171,9 @@ class ReferenceParser
 
     tag_context = ReferenceParser::TagContext.new(searchable_text, @html_aware)
 
-    searchable_text.gsub(merged_patterns) do
+    hint_corrections = []
+
+    modified_text = searchable_text.gsub(merged_patterns) do
       match = Regexp.last_match
       all_captures = match.captures
       result = nil
@@ -223,6 +233,10 @@ class ReferenceParser
                 result << citation_result
                 citation[:result] = citation_result
               end
+
+              if (updated_result = resolve_url_hints(citation, replacement_options, hint_corrections))
+                result = updated_result
+              end
             else
               citation = {text: match[0], result: match[0]}
             end
@@ -234,7 +248,97 @@ class ReferenceParser
       Thread.pass
 
       result || match[0]
-    end.html_safe # !?
+    end
+    apply_hint_corrections(modified_text, hint_corrections).html_safe # !?
+  end
+
+  def resolve_url_hints(citation, replacement_options, absorb_suffix_replacements)
+    result = nil
+    puts Rainbow("checking hints for ").blue + Rainbow((citation[:url]).to_s).green if @debugging
+    if (hints = @options[:hints]).present?
+      puts Rainbow("hints ").blue + Rainbow(@options[:hints]).green if @debugging
+      hints.detect do |hint|
+        replacement_url = nil
+
+        clean_hint = space_agnostic(hint)
+        clean_citation = space_agnostic(citation[:text])
+
+        if clean_hint == clean_citation
+          # url space correction needed
+          replacement_url = hint
+        elsif clean_hint.start_with?(clean_citation) && (remaining = space_agnostic_remainder(hint, citation[:text])) && space_agnostic(citation[:suffix] + replacement_options[:post_match]).include?(remaining)
+          # url text absorption needed
+          if (absorb_suffix = space_agnostic_remainder(citation[:suffix] + replacement_options[:post_match], remaining, return_prefix: true))
+            puts Rainbow("absorbing ").blue + Rainbow(absorb_suffix).green if @debugging
+            replacement_url = citation[:url] + remaining
+            absorb_suffix_replacements << [
+              "#{citation[:text]}</a>#{absorb_suffix}",
+              "#{citation[:text]}#{absorb_suffix}</a>"
+            ]
+          end
+        elsif clean_citation.start_with?(clean_hint)
+          # url text ejection needed
+          if (eject_suffix = space_agnostic_remainder(citation[:text], hint)) && (eject_url_suffix = space_agnostic_remainder(citation[:url], hint))
+            puts Rainbow("ejecting ").blue + Rainbow(eject_suffix).green + Rainbow(" / ").blue + Rainbow(eject_url_suffix).green if @debugging
+            replacement_url = citation[:url].delete_suffix(eject_url_suffix)
+            absorb_suffix_replacements << [
+              "#{citation[:text]}</a>#{citation[:suffix]}",
+              "#{citation[:text].delete_suffix(eject_suffix)}</a>#{citation[:suffix]}#{eject_suffix}"
+            ]
+          end
+        end
+
+        if replacement_url
+          citation[:result].gsub!('href="' + citation[:url] + '"', 'href="' + replacement_url + '"')
+          citation[:url] = replacement_url
+        end
+
+        if replacement_url
+          result = citation[:result]
+        end
+      end
+    end
+    result
+  end
+
+  def space_agnostic(text)
+    text.gsub(/\s|&#8203;|%20/, "")
+  end
+
+  def space_agnostic_remainder(haystack, needle, return_prefix: false)
+    haystack_index = 0
+    haystack_length = haystack.length
+    needle_index = 0
+    needle_length = needle.length
+    ignore = false
+    while !ignore && haystack_index < haystack_length && needle_index < needle_length
+      if haystack[haystack_index] == needle[needle_index]
+        haystack_index += 1
+        needle_index += 1
+      elsif haystack[haystack_index] == " "
+        haystack_index += 1
+      elsif haystack[haystack_index..haystack_index + 2] == "%20"
+        haystack_index += 3
+      elsif haystack[haystack_index..haystack_index + 6] == "&#8203;"
+        haystack_index += 7
+      elsif needle[needle_index] == " "
+        needle_index += 1
+      elsif needle[needle_index..needle_index + 2] == "%20"
+        needle_index += 3
+      elsif needle[needle_index..needle_index + 6] == "&#8203;"
+        needle_index += 7
+      else
+        ignore = true
+      end
+    end
+
+    if !ignore
+      if return_prefix
+        haystack[..haystack_index - 1]
+      else
+        haystack[haystack_index..]
+      end
+    end
   end
 
   ALL_DIVIDER_PATTERN = /(?<split>(?:,|;|\s+|and|or|through)+)/ix
