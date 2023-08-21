@@ -30,8 +30,13 @@ RSpec.describe ReferenceParser::UrlPrtpage do
     {description: "errant space in path (c)", # /d/2023-15073/p-245
      source: "<em>https://doi.org/10.1016/j.scitotenv. 2019.07.295.</em>",
      hints: ["https://doi.org/10.1016/j.scitotenv.2019.07.295"],
-     expected: '<em><a href="https://doi.org/10.1016/j.scitotenv.2019.07.295" class="external" target="_blank" rel="noopener noreferrer">https://doi.org/&#8203;10.1016/&#8203;j.scitotenv. 2019.07.295</a>.</em>'}
-  ].each do |scenario|
+     expected: '<em><a href="https://doi.org/10.1016/j.scitotenv.2019.07.295" class="external" target="_blank" rel="noopener noreferrer">https://doi.org/&#8203;10.1016/&#8203;j.scitotenv. 2019.07.295</a>.</em>'},
+
+    {description: "knowing to break in apparent middle of URL", # /d/2023-08961/p-315
+      source: "<em>https://www.macpac.gov/publication/june-2022-report-to-congress-on-medicaid-and-chip/June 2022 Report to Congress on Medicaid and CHIP, Chapter 2.</em>",
+      hints: ["https://www.macpac.gov/publication/june-2022-report-to-congress-on-medicaid-and-chip/"],
+      expected: '<em><a href="https://www.macpac.gov/publication/june-2022-report-to-congress-on-medicaid-and-chip/" class="external" target="_blank" rel="noopener noreferrer">https://www.macpac.gov/&#8203;publication/&#8203;june-2022-report-to-congress-on-medicaid-and-chip/</a>&#8203;June 2022 Report to Congress on Medicaid and CHIP, Chapter 2.</em>'},
+    ].each do |scenario|
     it "handles #{scenario[:description]}" do
       result = hyperlink("#{prefix}#{scenario[:source]}#{suffix}", hints: scenario[:hints]).delete_prefix(prefix).delete_suffix(suffix)
 
