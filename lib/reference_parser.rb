@@ -4,6 +4,7 @@ require "active_support"
 require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/hash"
 require "action_view"
+require "timeout"
 
 require_relative "reference_parser/all"
 

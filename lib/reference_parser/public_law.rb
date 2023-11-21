@@ -12,7 +12,7 @@ class ReferenceParser::PublicLaw < ReferenceParser::Base
   end
 
   def clean_up_named_captures(captures, options: {})
-    captures[:congress] = captures[:congress]&.gsub(/,/, "")&.to_i || 0
+    captures[:congress] = captures[:congress]&.delete(",")&.to_i || 0
   end
 
   def slug

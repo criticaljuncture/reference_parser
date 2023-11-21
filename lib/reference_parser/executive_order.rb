@@ -10,7 +10,7 @@ class ReferenceParser::ExecutiveOrder < ReferenceParser::Base
   end
 
   def clean_up_named_captures(captures, options: {})
-    captures[:eo_number] = captures[:eo_number]&.gsub(/,/, "")&.to_i || 0
+    captures[:eo_number] = captures[:eo_number]&.delete(",")&.to_i || 0
   end
 
   def slug

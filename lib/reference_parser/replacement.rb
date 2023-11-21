@@ -35,7 +35,7 @@ class ReferenceParser::Replacement
   end
 
   def describe
-    "#{parser&.class&.name} prepend_pattern #{prepend_pattern} #{@regexp.to_s&.gsub("\n", "")&.[](0..48)}"
+    "#{parser&.class&.name} prepend_pattern #{prepend_pattern} #{@regexp.to_s&.delete("\n")&.[](0..48)}"
   end
 
   def inspect

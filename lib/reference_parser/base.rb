@@ -31,7 +31,7 @@ class ReferenceParser::Base
 
   def link_to(text, citation, options = {})
     if (href = url(citation, options))
-      content_tag(:a, text.html_safe, **{href: href.gsub("&amp;", "&")}.merge(get_link_options(citation, options)))
+      content_tag(:a, text.html_safe, href: href.gsub("&amp;", "&"), **get_link_options(citation, options))
     else
       text
     end
