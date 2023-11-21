@@ -1,19 +1,24 @@
 class ReferenceParser::Spaces
   THIN_SPACE = " "
+  EM_SPACE = " "
+  EN_SPACE = " "
+  NON_BREAKING_SPACE = " "
 
-  SPACES = [" ", THIN_SPACE]
+  SPACES = [" ", EM_SPACE, EN_SPACE, THIN_SPACE]
 
   def self.ascii(text)
     simplify(text, " ")
   end
 
   def self.complex?(text)
-    text.include?(THIN_SPACE)
+    SPACES.detect { |space| text&.include?(space) }
   end
 
   def self.simplify(text, replacement = nil)
     return text unless text.present?
     text = text.to_s unless text.is_a?(String)
-    text&.tr(THIN_SPACE, replacement || " ")
+    text = text&.tr(THIN_SPACE, replacement || " ")
+    text = text&.tr(EM_SPACE, replacement || " ")
+    text&.tr(EN_SPACE, replacement || " ")
   end
 end
