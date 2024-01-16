@@ -67,13 +67,13 @@ CFR_SCENARIOS = [
   ],
 
   "Authority", [
-    {ex: "44 U.S.C. 1506; sec. 6, E.O. 10530, 19 FR 2709; 3 CFR, 1954-1958 Comp., p. 189; 1 U.S.C. 112; 1 U.S.C. 113.",
+    {ex: "44 U.S.C. 1506; sec. 6, E.O. 7531, 19 FR 2709; 3 CFR, 1954-1958 Comp., p. 189; 1 U.S.C. 112; 1 U.S.C. 113.",
      citations: [{section: "1506", title: "44"},
        {title: "19", section: "2709"},
        {title: "3"},
        {title: "1", section: "112"},
        {title: "1", section: "113"}],
-     expected_html: '<a href="https://www.govinfo.gov/link/uscode/44/1506" class="usc external" target="_blank" rel="noopener noreferrer">44 U.S.C. 1506</a>; sec. 6, E.O. 10530, <a href="/citation/19-FR-2709" class="fr-reference" data-reference="19 FR 2709">19 FR 2709</a>; <a href="/current/title-3" class="cfr external">3 CFR</a>, 1954-1958 Comp., p. 189; <a href="https://www.govinfo.gov/link/uscode/1/112" class="usc external" target="_blank" rel="noopener noreferrer">1 U.S.C. 112</a>; <a href="https://www.govinfo.gov/link/uscode/1/113" class="usc external" target="_blank" rel="noopener noreferrer">1 U.S.C. 113</a>'}
+     expected_html: '<a href="https://www.govinfo.gov/link/uscode/44/1506" class="usc external" target="_blank" rel="noopener noreferrer">44 U.S.C. 1506</a>; sec. 6, E.O. 7531, <a href="/citation/19-FR-2709" class="fr-reference" data-reference="19 FR 2709">19 FR 2709</a>; <a href="/current/title-3" class="cfr external">3 CFR</a>, 1954-1958 Comp., p. 189; <a href="https://www.govinfo.gov/link/uscode/1/112" class="usc external" target="_blank" rel="noopener noreferrer">1 U.S.C. 112</a>; <a href="https://www.govinfo.gov/link/uscode/1/113" class="usc external" target="_blank" rel="noopener noreferrer">1 U.S.C. 113</a>'}
   ],
 
   "issues/recent changes", [
