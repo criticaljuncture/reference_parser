@@ -6,6 +6,10 @@ class ReferenceParser::Spaces
 
   SPACES = [" ", EM_SPACE, EN_SPACE, THIN_SPACE]
 
+  def self.any?(text)
+    text.include?(" ") || complex?(text)
+  end
+
   def self.ascii(text)
     simplify(text, " ")
   end
