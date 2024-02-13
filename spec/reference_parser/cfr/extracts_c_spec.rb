@@ -186,6 +186,12 @@ RSpec.describe "ReferenceParser::Cfr" do
          citations: [
            {title: "26", section: "1.51-1", paragraph: "(j)", expected_url: "/current/title-26/section-1.51-1#p-1.51-1(j)"},
            {title: "26", section: "1.51-1", paragraph: "(b)(2)", expected_url: "/current/title-26/section-1.51-1#p-1.51-1(b)(2)"}
+         ]},
+
+        {ex: "5 CFR part 900, subpart F", context: {basic_hierarchy: "20::V::652:C:652.215"},
+         with_surrounding_text: "described in 5 CFR part 900, subpart F—Standards for a",
+         citations: [
+           {title: "5", part: "900", subpart: "F", expected_url: "/current/title-5/part-900/subpart-F"}
          ]}
       ]
     ].each_slice(2) do |description, examples|
