@@ -10,7 +10,7 @@ class ReferenceParser::Hierarchy
   def self.citation(hierarchy, alias_hierarchy: nil, alias_text: nil, build_id: nil, current: true, date_format: nil, short: false, simple: false, title_date: nil)
     citation = []
 
-    prefix = (alias_text || "#{hierarchy[:title]} CFR")
+    prefix = alias_text || "#{hierarchy[:title]} CFR"
     hierarchy = hierarchy.except(*alias_hierarchy.keys) if alias_hierarchy.present?
     citation << prefix
 
@@ -33,7 +33,7 @@ class ReferenceParser::Hierarchy
     when :section
       citation << hierarchy[:section]
     when :appendix
-      citation = ["#{hierarchy[:appendix]},", (alias_text || "Title #{hierarchy[:title]}")]
+      citation = ["#{hierarchy[:appendix]},", alias_text || "Title #{hierarchy[:title]}"]
     end
 
     case date_format
@@ -197,7 +197,7 @@ class ReferenceParser::Hierarchy
         if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
           puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
           @data[effective_capture] = items.first.to_s.strip
-          @data["#{effective_capture}_end".to_sym] = items.last.to_s.strip
+          @data[:"#{effective_capture}_end"] = items.last.to_s.strip
         end
       end
     end

@@ -57,7 +57,7 @@ RSpec.describe ReferenceParser do
     ).to eql(lorem)
   end
 
-  it "will only link requested items" do
+  it "only links requested items" do
     expect(
       described_class.new(only: %i[email]).hyperlink("1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by test@nil.local")
     ).to eql('1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by <a href="mailto:test@nil.local" class="email">test@nil.local</a>')

@@ -28,11 +28,11 @@ RSpec.describe ReferenceParser::Cfr do
             if expect_match
               expect(
                 /\A#{pattern}\z/ix
-              ).to be_match(example)
+              ).to match(example)
             else
               expect(
                 /\A#{pattern}\z/ix
-              ).not_to be_match(example)
+              ).not_to match(example)
             end
           end
         end

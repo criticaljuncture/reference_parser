@@ -31,8 +31,8 @@ class ReferenceParser::TagContext
   def linkable?
     return false if @ignorable
 
-    previously_linked = ((pre_match =~ AUTO_LINK_CRE[0] && post_match =~ AUTO_LINK_CRE[1]) ||
-      (pre_match.rindex(AUTO_LINK_CRE[2]) && $' !~ AUTO_LINK_CRE[3]))
+    previously_linked = (pre_match =~ AUTO_LINK_CRE[0] && post_match =~ AUTO_LINK_CRE[1]) ||
+      (pre_match.rindex(AUTO_LINK_CRE[2]) && $' !~ AUTO_LINK_CRE[3])
 
     result = !previously_linked
     @linkable_pointer = @pointer if result

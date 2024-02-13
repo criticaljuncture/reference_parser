@@ -93,7 +93,7 @@ class ReferenceParser::HierarchyCaptures
   def determine_repeated_capture
     @repeated_capture, @repeated = nil, nil
 
-    to_consider = %i[prefixed_paragraph section subpart paragraph part].map { |rank| ["#{rank}s".to_sym, rank] }
+    to_consider = %i[prefixed_paragraph section subpart paragraph part].map { |rank| [:"#{rank}s", rank] }
 
     to_consider.each_with_index do |rank_keys, index|
       rank_values = @data.values_at(*rank_keys).flatten.select(&:present?)
@@ -196,7 +196,7 @@ class ReferenceParser::HierarchyCaptures
         while x < split.length
           puts Rainbow("split x #{x} split #{split}").blue if @debugging
           if all_dividers.match?(split[x]) || # only list cruft
-              (collapsing_examples = (split[x - 1].include?("example") && !split[x - 1].include?("paragraph"))) # "examples 1, 2, 3, 4, 5, and 6 in paragraph (j) of this section"
+              (collapsing_examples = split[x - 1].include?("example") && !split[x - 1].include?("paragraph")) # "examples 1, 2, 3, 4, 5, and 6 in paragraph (j) of this section"
             if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1)) && !collapsing_examples
               split[x + 1] = split[x] + split[x + 1]
               split.delete_at(x)
