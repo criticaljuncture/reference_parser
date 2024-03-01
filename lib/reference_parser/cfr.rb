@@ -517,7 +517,23 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<prefix_unlinked>this\s*)
     (?<paragraph_label>paragraph\s*)
     #{PARAGRAPH}
-    /ixo, if: :context_present?, context_expected: %i[title section])
+    /ixo, pattern_slug: :this_paragraph, if: :context_present?, context_expected: %i[title section])
+
+  # 3 CFR compilations
+  replace(/
+      (?<title>3)
+      #{SOURCE_LABEL_ALLOW_SHORTHAND_CFR}
+      (?<suffix_unlinked>
+        ,?
+        (?:19|20|21)\d\d
+        [-–— ]+
+        (?:
+        \d{4}
+        )?
+        \s*
+        comp
+      )
+    /ixo, pattern_slug: :presdoc_compilation, prepend_pattern: true)
 
   # primarly list replacements
   # relaxed / non-CFR

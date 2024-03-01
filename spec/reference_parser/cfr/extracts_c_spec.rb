@@ -192,7 +192,23 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "described in 5 CFR part 900, subpart F—Standards for a",
          citations: [
            {title: "5", part: "900", subpart: "F", expected_url: "/current/title-5/part-900/subpart-F"}
-         ]}
+         ]},
+
+        # #44 /current/title-26/chapter-I/subchapter-F/part-303/section-303.1-1#p-303.1-1(b)
+        {ex: "3 CFR", context: {composite_hierarchy: "26::I:F:303::303.1-1"},
+         with_surrounding_text: "pursuant to Executive Order 9788 (3 CFR 1943–1948 Comp., p. 575), and",
+         citation: {title: "3", expected_url: "/current/title-3"}},
+
+        {ex: "3 CFR", context: {composite_hierarchy: "26::I:F:303::303.1-1"},
+         with_surrounding_text: "pursuant to Executive Order 9788 (3 CFR 1943-1948 Comp., p. 575), and",
+         citation: {title: "3", expected_url: "/current/title-3"}},
+
+        {ex: "3 C.F.R. 298", context: {composite_hierarchy: "26::I:F:303::303.1-1"},
+         with_surrounding_text: "3 C.F.R. 298 (1992 comp.)",
+         citation: {title: "3", section: "298", expected_url: "/current/title-3/part-298"}},
+
+        {ex: "3 CFR", with_surrounding_text: "3 CFR, 2019 Comp.", citation: {title: "3", expected_url: "/current/title-3"}},
+        {ex: "3 CFR", with_surrounding_text: "3 CFR, 1966–1970 Comp., p. 684;", citation: {title: "3", expected_url: "/current/title-3"}}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
