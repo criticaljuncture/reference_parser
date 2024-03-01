@@ -192,12 +192,20 @@ class ReferenceParser::Hierarchy
       value = @data[effective_capture]
       next unless value.present?
       puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
-      if range_captures.include?(effective_capture) && ((/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1)))
-        items = value.split(/\bto\b|-|through/)
-        if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
-          puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
+
+      if range_captures.include?(effective_capture)
+        if (value&.count("-") == 3) && (value&.count(".") == 2) && (items = value.split("-")) && (items.count == 4) && (items[0] == items[2])
+          # potential range w/ dashed identifiers "100-1.100-100-1.111"
+          items = items.each_slice(2).to_a.map { |a| a.join("-") }
           @data[effective_capture] = items.first.to_s.strip
           @data[:"#{effective_capture}_end"] = items.last.to_s.strip
+        elsif (/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1))
+          items = value.split(/\bto\b|-|through/)
+          if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
+            puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
+            @data[effective_capture] = items.first.to_s.strip
+            @data[:"#{effective_capture}_end"] = items.last.to_s.strip
+          end
         end
       end
     end

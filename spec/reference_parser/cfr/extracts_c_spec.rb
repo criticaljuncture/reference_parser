@@ -208,7 +208,12 @@ RSpec.describe "ReferenceParser::Cfr" do
          citation: {title: "3", section: "298", expected_url: "/current/title-3/part-298"}},
 
         {ex: "3 CFR", with_surrounding_text: "3 CFR, 2019 Comp.", citation: {title: "3", expected_url: "/current/title-3"}},
-        {ex: "3 CFR", with_surrounding_text: "3 CFR, 1966–1970 Comp., p. 684;", citation: {title: "3", expected_url: "/current/title-3"}}
+        {ex: "3 CFR", with_surrounding_text: "3 CFR, 1966–1970 Comp., p. 684;", citation: {title: "3", expected_url: "/current/title-3"}},
+
+        # #46 /current/title-26/chapter-I/subchapter-F/part-303/section-303.1-1#p-303.1-1(b)
+        {ex: "41 CFR 301–11.300—301–11.306", context: {composite_hierarchy: "41:F:301:B:301-11:A:301-11.6"},
+         with_surrounding_text: "see 41 CFR 301–11.300—301–11.306.",
+         citation: {title: "41", section: "301-11.300", section_end: "301-11.306"}}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
