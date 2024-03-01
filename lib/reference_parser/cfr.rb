@@ -338,7 +338,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PARAGRAPH}
       (?:#{APPENDIX_EXPLICT})?
       #{TRAILING_BOUNDRY}
-    /ixo, will_consider_pre_match: true)
+    /ixo, pattern_slug: :labeled_part_section, will_consider_pre_match: true)
 
   # informal or non-standard patterns
 
@@ -357,12 +357,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(/
     (?<chapter_label>chapter\s*)(?<chapter>[A-Z]+)    # chapter - required
     (?<suffix>\s*of\s*this\s*title)                   # of this title
-    /ix, if: :context_present?, context_expected: :title)
+    /ix, pattern_slug: :chapter_of_this_title, if: :context_present?, context_expected: :title)
 
   replace(/
     #{SUBTITLE_LABEL}#{SUBTITLE}                      # subtitle - required
     (?<suffix>\s*of\s*this\s*title)                   # of this title
-    /ixo, if: :context_present?, context_expected: :title)
+    /ixo, pattern_slug: :subtitle_of_this_title, if: :context_present?, context_expected: :title)
 
   replace(/
     (?:(?<prefixed_subpart_label>subpart\s*)(?<prefixed_subpart>[A-Z]+)
@@ -372,7 +372,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?<subpart_label>\s*,\s*subpart\s*)(?<subpart>[A-Z]+) # part 30, subpart A of this chapter
     )?
     (?<suffix>\s*of\s*this\s*(?:title|(?:sub)?chapter)) # of this title.chapter
-    /ixo, if: :context_present?, context_expected: %i[title in_suffix])
+    /ixo, pattern_slug: :part_of_this, if: :context_present?, context_expected: %i[title in_suffix])
 
   replace(/
     (?:
@@ -381,7 +381,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{APPENDIX}
     )
     (?<suffix>\s*of\s*this\s*part)                    # of this part
-    /ixo, if: :context_present?, context_expected: %i[title part])
+    /ixo, pattern_slug: :of_this_part, if: :context_present?, context_expected: %i[title part])
 
   replace(/
     (?:
@@ -413,7 +413,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<title_label>Title\s*)(?<title>#{TITLE_ID})
     (?<title_connector>\s*(?:,|of\s*the)?)
     #{SOURCE_LABEL}
-    /ixo, will_consider_pre_match: true)
+    /ixo, pattern_slug: :appendix_of_the, will_consider_pre_match: true)
 
   LIKELY_EXTERNAL_SECTIONS = /
     \A\s*
@@ -489,7 +489,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
           \s*of\sthis\s(?:sub)?section                        # of this section
     )
-    /ixo, if: :context_present?, context_expected: %i[title section])
+    /ixo, pattern_slug: :paragraph_list, if: :context_present?, context_expected: %i[title section])
 
   # expanded preable local list of paragraphs
   replace(/
@@ -501,7 +501,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
       \s*of\sthis\s(?:sub)?section                            # of this section
     )
-    /ixo, if: :context_present?, context_expected: %i[title section])
+    /ixo, pattern_slug: :preable_paragraph_list, if: :context_present?, context_expected: %i[title section])
 
   # local list of paragraphs w/out "paragraph" prefix (of this section anchor remains)
   replace(/
@@ -510,7 +510,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<suffix_unlinked>
       \s*of\sthis\ssection
     )
-    /ixo, if: :context_present?, context_expected: %i[title section])
+    /ixo, pattern_slug: :local_paragraph_list, if: :context_present?, context_expected: %i[title section])
 
   # "this paragraph"
   replace(/
@@ -541,7 +541,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
             )
             #{TRAILING_BOUNDRY}
             /ixo
-          }, prepend_pattern: true)
+          }, pattern_slug: :lax_list_replacements, prepend_pattern: true)
 
   # catch "3 CFR," style in Authority sections
   replace(->(context, options) {
@@ -551,7 +551,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{TRAILING_BOUNDRY}
     #{NEXT_TITLE_STOP}
     /ix
-  }, prepend_pattern: true, will_consider_pre_match: true)
+  }, pattern_slug: :presdoc_comma, prepend_pattern: true, will_consider_pre_match: true)
 
   # primarly list replacements
   # strict / CFR
@@ -569,7 +569,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{TRAILING_BOUNDRY}
     #{NEXT_TITLE_STOP}
     /ix
-  }, prepend_pattern: true, will_consider_pre_match: true)
+  }, pattern_slug: :list_replacements, prepend_pattern: true, will_consider_pre_match: true)
 
   # context specific patterns
 
