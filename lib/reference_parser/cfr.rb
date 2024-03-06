@@ -863,9 +863,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         # fails to match common formatting
         if potential_danger.present?
           if !potential_danger.detect { |r| r.include?(".") }
-            issue = :formating
+            issue = :formatting
           elsif options[:context][:appendix].present?
-            issue = :formating unless captures[:section_label]&.include?("§") || /of this part/i.match?(captures[:suffix])
+            issue = :formatting unless captures[:section_label]&.include?("§") || /of this part/i.match?(captures[:suffix])
           end
         end
       end
