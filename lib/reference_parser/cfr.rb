@@ -20,7 +20,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SECTION_ID = /[\w\-–—]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
-  USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?/ix
+  USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?(?:\s*\(IRC\))?/ix
   IRC_LABEL = /I(?:nternal)?\.?\s*R(?:evenue)?\.?\s*C(?:ode)?\.?/ix
   FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
 
@@ -453,7 +453,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # loose section | §§
 
   replace(/
-    (?<![>"'§])                                       # avoid matching start of tag for section header
+    (?<!["'§])                                       # avoid matching start of tag for section header
     (?:
       (?<prefixed_paragraph_label>paragraphs?\s*)
       #{PREFIXED_PARAGRAPHS}
@@ -548,7 +548,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                 (?:
                   \s*\d+(?:[a-z]{1,5})? |
                   \(\s*\d+\s*\) |
-                  \(\s*[a-z]{1,5}\s*\) |
+                  \(\s*[a-z]{1,5}\s*\)
                 )
                 ([a-z]{1,5}[-–—]\d+)?
                 (?:\s*note)?
@@ -600,7 +600,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     #{TRAILING_BOUNDRY}
     #{NEXT_TITLE_STOP}
     /ix
-  }, if: :context_present?, context_expected: :title)
+  }, pattern_slug: :current_section, if: :context_present?, context_expected: :title)
 
   # best guess fallback patterns
 
@@ -842,11 +842,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     if options[:pattern_slug] == :loose_section
       puts "qualify_match options[:post_match] #{options[:post_match]}" if @debugging
-      match = LIKELY_EXTERNAL_SECTIONS.match(options[:post_match])
-      if match
+      if options[:pre_match] && /[^m]>\s*\Z/ix.match?(options[:pre_match])
+        issue = :heading_title # reject anything other then <em>
+      elsif (match = LIKELY_EXTERNAL_SECTIONS.match(options[:post_match]))
         issue = :direct_match
       end
-      unless issue
+      if !issue || (issue == :heading_title)
         potential_danger = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
         puts "potential_danger #{potential_danger}" if @debugging
 
@@ -869,7 +870,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           end
         end
       end
-      if issue
+      if issue && (issue != :heading_title)
         sections = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
         @accumulated_context[:sections].merge(sections)
         @accumulated_context[:section_prefixes].merge(sections.filter_map { |s| s.include?(".") ? s.split(".")[0] : nil })

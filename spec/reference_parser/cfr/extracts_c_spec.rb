@@ -213,7 +213,20 @@ RSpec.describe "ReferenceParser::Cfr" do
         # #46 /current/title-26/chapter-I/subchapter-F/part-303/section-303.1-1#p-303.1-1(b)
         {ex: "41 CFR 301–11.300—301–11.306", context: {composite_hierarchy: "41:F:301:B:301-11:A:301-11.6"},
          with_surrounding_text: "see 41 CFR 301–11.300—301–11.306.",
-         citation: {title: "41", section: "301-11.300", section_end: "301-11.306"}}
+         citation: {title: "41", section: "301-11.300", section_end: "301-11.306"}},
+
+        # #47 /current/title-29/subtitle-B/chapter-XVII/part-1915/subpart-A/section-1915.5#p-1915.5(b)
+        {ex: "5 U.S.C. 552(a)", context: {composite_hierarchy: "29:B:XVII::1915:A:1915.5"},
+         with_surrounding_text: "in accordance with <em>5 U.S.C. 552(a)</em> and <em>1 CFR part 51</em>. To enforce",
+         citations: [
+           {title: "5", section: "552", paragraph: "(a)"},
+           {title: "1", part: "51"}
+         ],
+         expected_html: 'in accordance with <em><a href="https://www.govinfo.gov/link/uscode/5/552" class="usc external" target="_blank" rel="noopener noreferrer">5 U.S.C. 552(a)</a></em> and <em><a href="/current/title-1/part-51" class="cfr external">1 CFR part 51</a></em>. To enforce'},
+
+        {ex: "§ 1.6012–1", context: {composite_hierarchy: "26::I:A:1::1.6851-2"},
+         with_surrounding_text: "on the subsequent return under section 6012 and § 1.6012–1.",
+         citation: {title: "26", section: "1.6012-1"}}
       ]
     ].each_slice(2) do |description, examples|
       describe description do
