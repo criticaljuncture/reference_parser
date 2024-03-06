@@ -12,6 +12,8 @@ Style/GlobalVars:
   Enabled: true
   AllowedVariables: [$redis]
 
+RSpec/EmptyExampleGroup:
+  Enabled: false
 RSpec/ExampleLength:
   Enabled: false
 RSpec/MultipleExpectations:

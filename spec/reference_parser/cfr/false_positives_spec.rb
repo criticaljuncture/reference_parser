@@ -150,14 +150,7 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "in accordance with section 515(h) of the Act and 7 CFR part 400, subpart R, and any applicable civil or"}
       ]
     ].each_slice(2) do |description, examples|
-      describe description do
-        examples.each_with_index do |example, index|
-          example[:index] = index
-          it "(#{index}) #{example[:ex].to_s.truncate(24)}" do
-            expect_passing_cfr_scenerio(example)
-          end
-        end
-      end
+      expect_passing_cfr_scenerios(description, examples)
     end
   end
 end

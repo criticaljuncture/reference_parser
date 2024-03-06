@@ -1,9 +1,6 @@
 require "spec_helper"
 
 CFR_SCENARIOS = [
-
-  "extracts", [],
-
   "26 CFR 1.704-1 (paragraphs)", [ # /current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c407b470bde109/section-1.704-1
     {ex: "paragraphs (b) through (e) of this section", citations: [{title: "26", section: "1.704-1", paragraph: "(b)"},
       {title: "26", section: "1.704-1", paragraph: "(e)"}], context: {title: "26", section: "1.704-1"},
@@ -125,14 +122,7 @@ RSpec.describe ReferenceParser::Cfr do
 
   describe "per DDH" do # Document Drafting Handbook
     CFR_SCENARIOS.each_slice(2) do |description, examples|
-      describe description do
-        examples.each_with_index do |example, index|
-          example[:index] = index
-          it "(#{index}) #{example[:ex].to_s.truncate(24)}" do
-            expect_passing_cfr_scenerio(example)
-          end
-        end
-      end
+      expect_passing_cfr_scenerios(description, examples)
     end
 
     def all_non_context_specific_examples
