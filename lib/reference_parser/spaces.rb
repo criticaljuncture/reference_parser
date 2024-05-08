@@ -10,6 +10,10 @@ class ReferenceParser::Spaces
     text.include?(" ") || complex?(text)
   end
 
+  def self.none?(text)
+    !any?(text)
+  end
+
   def self.ascii(text)
     simplify(text, " ")
   end
