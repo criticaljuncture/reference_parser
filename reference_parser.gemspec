@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec-html-matchers"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "rainbow"
-  spec.add_development_dependency "rubocop", "1.29.1"
+  spec.add_development_dependency "rubocop"
   spec.add_development_dependency "rubocop-rspec"
   spec.add_development_dependency "rubocop-performance"
   spec.add_development_dependency "standard", ">= 1.12.1"
