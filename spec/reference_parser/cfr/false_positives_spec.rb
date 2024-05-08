@@ -147,7 +147,18 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "See also § 200.211"},
 
         {ex: "7 CFR part 400, subpart R", citation: {part: "400", subpart: "R", title: "7"}, context: {composite_hierarchy: "7:B:IV::457::457.8"},
-         with_surrounding_text: "in accordance with section 515(h) of the Act and 7 CFR part 400, subpart R, and any applicable civil or"}
+         with_surrounding_text: "in accordance with section 515(h) of the Act and 7 CFR part 400, subpart R, and any applicable civil or"},
+
+        # state citations
+        {ex: '<td class="align-left">Title 7, Chapter 27, Section 8.1</td>', citation: :expect_none, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"}},
+        {ex: "§ 52.1570", citation: {title: "40", section: "52.1570"}, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"},
+         with_surrounding_text: '<td class="align-left">Lorem § 52.1570 ipsum</td>'},
+        {ex: '<table><td class="align-left">Title 7, Chapter 27, Section 8.1</td></table>', citation: :expect_none, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"}},
+        {ex: "Section 1.1", citation: {title: "40", section: "1.1"}, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"},
+         with_surrounding_text: "</td></table><p>Lorem Section 1.1"},
+        {ex: "Section 1.1", citation: {title: "40", section: "1.1"}, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"},
+         with_surrounding_text: "Section 1.1 Lorem</p><table><td>"},
+        {ex: '<table><td class="align-left">Lorem Section 1.1 ipsum</td></table>', citation: :expect_none, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"}}
       ]
     ].each_slice(2) do |description, examples|
       expect_passing_cfr_scenerios(description, examples)

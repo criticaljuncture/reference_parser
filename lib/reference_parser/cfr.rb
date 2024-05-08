@@ -846,6 +846,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         issue = :heading_title # reject anything other then <em>
       elsif (match = LIKELY_EXTERNAL_SECTIONS.match(options[:post_match]))
         issue = :direct_match
+      elsif !captures[:section_label]&.include?("§") && (
+            a_closer_than_b_in_haystack("<td", "</table>", options[:pre_match], reference: :end) ||
+            a_closer_than_b_in_haystack("</td", "<table>", options[:post_match], reference: :start))
+        issue = :loose_section_table_column # 40/52.1570 "state citations"
       end
       if !issue || (issue == :heading_title)
         potential_danger = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
@@ -870,7 +874,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           end
         end
       end
-      if issue && (issue != :heading_title)
+      if issue && (issue != :heading_title) && (issue != :loose_section_table_column)
         sections = captures.values_at(:section, :sections).flatten.compact.map(&:strip).select(&:present?)
         @accumulated_context[:sections].merge(sections)
         @accumulated_context[:section_prefixes].merge(sections.filter_map { |s| s.include?(".") ? s.split(".")[0] : nil })
@@ -1017,5 +1021,21 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def sublocators_string(hierarchy)
     return "" unless hierarchy[:sublocators]
     "#p-" << ReferenceParser::Cfr.section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
+  end
+
+  private
+
+  def a_closer_than_b_in_haystack(a, b, haystack, reference: :start)
+    return unless haystack
+
+    if reference == :end
+      if (a_index = haystack.rindex(a))
+        b_index = haystack.rindex(b)
+        true if !b_index || (b_index < a_index)
+      end
+    elsif (a_index = haystack.index(a))
+      b_index = haystack.index(b)
+      true if !b_index || (b_index > a_index)
+    end
   end
 end
