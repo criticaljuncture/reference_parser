@@ -101,8 +101,10 @@ USC_SCENERIOS = [
    citations: [{title: "7", part: "13"}, {title: "18", part: "1001"}], context: {title: "17", appendix: "Appendix A to Part 49"}, expect_variance: true},
 
   {ex: "(15 U.S.C. 80b–3a(a))", citation: {title: "15", part: "80b-3a"}},
-  {ex: "42 U.S.C. 290dd–2", citation: {title: "42", part: "290dd-2"}}
+  {ex: "42 U.S.C. 290dd–2", citation: {title: "42", part: "290dd-2"}},
 
+  {ex: "5 U.S.C. 5701-11", text: "5 U.S.C. 5701", citation: {title: "5", part: "5701"}, context: {title: "2", part: "200.475"},
+   expected_html: '<a href="https://www.govinfo.gov/link/uscode/5/5701">5 U.S.C. 5701</a>-11'} # 2 CFR 200.475(d)
 ]
 
 RSpec.describe ReferenceParser::Usc do
@@ -150,6 +152,10 @@ RSpec.describe ReferenceParser::Usc do
             end
           else
             expect(result_html).not_to have_tag("a")
+          end
+
+          [scenario[:expected_html]].flatten.compact.each do |expected_html|
+            expect(result_html).to include(expected_html)
           end
         end
       end

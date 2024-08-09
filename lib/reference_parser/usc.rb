@@ -8,6 +8,8 @@ class ReferenceParser::Usc < ReferenceParser::Base
     "https://www.govinfo.gov/link/uscode/#{citation[:title]}/#{citation[:part]}"
   end
 
+  ALL_NUMERIC_RANGE_PATTERN = /\A(\d+)(-\d+)\z/
+
   def clean_up_named_captures(captures, options: {})
     puts "ReferenceParser::Usc clean_up_named_captures captures #{captures}" if @debugging
     captures.reverse_merge!(captures[:href_hierarchy] || captures[:hierarchy]) if captures[:href_hierarchy].present? || captures[:hierarchy].present?
@@ -15,6 +17,13 @@ class ReferenceParser::Usc < ReferenceParser::Base
     captures[:part] = captures[:section] if !captures[:part] && captures[:section]
     captures[:part] = captures[:chapter] + "01" if !captures[:part] && captures[:chapter]
     captures[:part] = captures[:part].partition("(").first if captures[:part]&.include?("(")
+    if (match = ALL_NUMERIC_RANGE_PATTERN.match(captures[:part]))
+      captures[:part] = match[1]
+      if captures[:text].end_with?(match[2])
+        captures[:text] = captures[:text].delete_suffix(match[2])
+        captures[:suffix] = (captures[:suffix] || "") + match[2]
+      end
+    end
     captures[:part] = nil if ReferenceParser::Dashes::DASHES.include?(captures[:part])
   end
 
