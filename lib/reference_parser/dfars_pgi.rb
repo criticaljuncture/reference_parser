@@ -1,5 +1,5 @@
 class ReferenceParser::DfarsPgi < ReferenceParser::Base
-  replace(/PGI\s*(?<page>\d{3}\.\d)(?<anchor_suffix>[\d\-–—]*)/ix)
+  replace(/PGI\s*(?<page>\d{3}\.\d)(?<anchor_suffix>[\d\-–—]*)/ix, pattern_slug: :dfars_pgi)
 
   def url(citation, url_options = {})
     if citation[:page].present?

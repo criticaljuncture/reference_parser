@@ -1,7 +1,7 @@
 class ReferenceParser::Usc < ReferenceParser::Base
-  replace(/section\s*(?<section>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{ReferenceParser::Cfr::USC_LABEL}/ixo)
-  replace(/chapter\s*(?<chapter>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{ReferenceParser::Cfr::USC_LABEL}/ixo)
-  replace(/(?<irc_label>#{ReferenceParser::Cfr::IRC_LABEL})(?<section_label>\s*§\s*|\s*section\s*)(?<section>\d+[a-z]?)\b/ixo) # I.R.C. § 6212
+  replace(/section\s*(?<section>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{ReferenceParser::Cfr::USC_LABEL}/ixo, pattern_slug: :section_of_title_usc)
+  replace(/chapter\s*(?<chapter>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{ReferenceParser::Cfr::USC_LABEL}/ixo, pattern_slug: :chapter_of_title_usc)
+  replace(/(?<irc_label>#{ReferenceParser::Cfr::IRC_LABEL})(?<section_label>\s*§\s*|\s*section\s*)(?<section>\d+[a-z]?)\b/ixo, pattern_slug: :usc_irc) # I.R.C. § 6212
 
   def url(citation, url_options = {})
     return unless citation&.values_at(:title, :part)&.all?(&:present?)

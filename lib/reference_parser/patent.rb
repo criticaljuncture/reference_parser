@@ -1,5 +1,5 @@
 class ReferenceParser::Patent < ReferenceParser::Base
-  replace(/Patent Number (?<number>[0-9,]+)/)
+  replace(/Patent Number (?<number>[0-9,]+)/, pattern_slug: :patent)
 
   def url(citation, url_options = {})
     return unless citation[:number]&.present?

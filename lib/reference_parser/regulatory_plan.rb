@@ -1,5 +1,5 @@
 class ReferenceParser::RegulatoryPlan < ReferenceParser::Base
-  replace(/RIN\s(?<rin>[\dA-Z]{4}[-–—][\dA-Z]{4})/ix)
+  replace(/RIN\s(?<rin>[\dA-Z]{4}[-–—][\dA-Z]{4})/ix, pattern_slug: :rin)
 
   def url(citation, url_options = {})
     if citation[:rin].present?

@@ -2,13 +2,13 @@ class ReferenceParser::Url < ReferenceParser::Base
   BRACKETS = "[](){}".chars.each_slice(2).map(&:reverse).to_h
   WORD_PATTERN = '\p{Word}'
 
-  replace %r{
+  replace(%r{
     (?<!(?:"|'|//))
       (?<url>
         (?: (?<scheme>(?:http|https):)// | www.?\. )
         [^\s<\u00A0"]+
       )
-    }ix
+    }ix, pattern_slug: :url)
 
   def default_link_classes
     "external"

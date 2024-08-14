@@ -3,7 +3,7 @@ class ReferenceParser::PublicLaw < ReferenceParser::Base
     (?:
       P(?:ub(?:lic)?)?\.?\s*L(?:aw)?\.?
     )\s+(?<congress>\d+)[-–](?<law>\d+)
-    /ix)
+    /ix, pattern_slug: :public_law)
 
   def url(citation, url_options = {})
     if citation[:congress] >= 104

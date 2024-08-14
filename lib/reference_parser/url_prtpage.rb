@@ -20,7 +20,7 @@ class ReferenceParser::UrlPrtpage < ReferenceParser::Base
     )?                             # optionally link url-ish text with spaces
   }ix
 
-  replace(AUTO_LINK_RE)
+  replace(AUTO_LINK_RE, pattern_slug: :url_prtpage)
 
   def default_link_classes
     "external"

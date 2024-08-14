@@ -6,7 +6,7 @@ class ReferenceParser::FederalRegisterDocNumber < ReferenceParser::Base
     (?:\(FR\sDoc\))?\s*
     (?<doc_number>[A-Z0-9]+[-–—][0-9]+(?:[-–—][0-9]+)?)
     \b
-    /ix)
+    /ix, pattern_slug: :fr_doc_number)
 
   def url(citation, url_options = {})
     if citation[:doc_number].present?

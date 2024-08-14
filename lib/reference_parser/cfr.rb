@@ -615,14 +615,14 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:#{APPENDIX})?
     #{TRAILING_BOUNDRY}
     /ixo
-  })
+  }, pattern_slug: :appendix)
 
   replace(->(context, options) {
     return unless options[:best_guess]
     /
     #{TITLE_SOURCE_ALLOW_SLASH_SHORTHAND}
     /ixo
-  })
+  }, pattern_slug: :title_source)
 
   replace(->(context, options) {
     return unless options[:best_guess]
@@ -630,7 +630,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<title_label>Title\s*)(?<title>#{TITLE_ID})
     (?<source_label>\s*of\s*the\s*#{CFR_LABEL}\s*)
     /ixo
-  })
+  }, pattern_slug: :title_label)
 
   replace(->(context, options) {
     return unless options[:best_guess]
@@ -641,7 +641,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:#{PART_LABEL}#{PART})?
     (?:(?<section_label>\s*§\s*)#{SECTION})?
     /ixo
-  })
+  }, pattern_slug: :part)
 
   # aliases
   replace(->(context, options) {
@@ -652,7 +652,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:#{SUBPART_LABEL}#{SUBPARTS})?
       (?:(?<section_label>(\/|§|Section|Parts?)\s*)?#{SECTIONS})?
     /ixo
-  })
+  }, pattern_slug: :alias)
 
   replace(->(context, options) {
     return unless options[:best_guess]
