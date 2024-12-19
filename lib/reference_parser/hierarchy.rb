@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Hierarchy
   RANKS = %i[title subtitle chapter subchapter part subpart subject_group section appendix]
 
