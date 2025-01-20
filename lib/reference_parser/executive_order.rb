@@ -3,7 +3,7 @@ class ReferenceParser::ExecutiveOrder < ReferenceParser::Base
 
   def url(citation, url_options = {})
     if citation[:eo_number] >= 7_532
-      result = ""
+      result = +""
       result << "https://www.federalregister.gov" if absolute?(url_options)
       result << "/executive-order/#{citation[:eo_number]}"
     end

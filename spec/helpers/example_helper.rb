@@ -1,6 +1,6 @@
 module ExampleHelper
   def describe_example(example, index: nil)
-    result = ""
+    result = +""
     result << "(#{index}) " if index
     result << example[:ex].to_s.truncate(24).to_s
     result << " (#{example[:additional_description]})" if example[:additional_description]

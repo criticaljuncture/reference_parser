@@ -698,7 +698,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     return unless citation
     citation_options = citation[:options] || {}
     citation = citation[:href_hierarchy] || citation[:hierarchy] || (citation&.include?(:title) ? citation : {})
-    result = ""
+    result = +""
     result << "https://www.ecfr.gov" if absolute?(url_options)
     result << url_current_compare_or_on(url_date_from_options(url_options || {}))
     result << "/title-#{citation[:title]}"
@@ -982,7 +982,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def part_or_section_string(hierarchy, options: {})
-    result = ""
+    result = +""
     content = hierarchy[:appendix] || hierarchy[:section]
 
     part = subpart = section = appendix = nil
@@ -1020,7 +1020,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def sublocators_string(hierarchy)
     return "" unless hierarchy[:sublocators]
-    "#p-" << ReferenceParser::Cfr.section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
+    +"#p-" << ReferenceParser::Cfr.section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
   end
 
   private

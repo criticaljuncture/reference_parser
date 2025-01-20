@@ -140,7 +140,7 @@ RSpec.describe ReferenceParser::Cfr do
 
     def consolidated_example
       @consolidated_example ||= begin
-        result = ""
+        result = +""
         all_non_context_specific_examples_references.each do |reference|
           result << LOREM_PARAGRAPH[0..rand(1..64)]
           result << " "

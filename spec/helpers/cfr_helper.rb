@@ -4,7 +4,7 @@ module CfrHelper
   def expect_passing_cfr_scenerio(example)
     embed_example_in_text = true
     embed_example_in_text = false if example.dig(:options, :cfr, :allow_aliases) && example.dig(:options, :cfr, :best_guess)
-    text = ""
+    text = +""
     text << LOREM[0..16] << " " if embed_example_in_text
     text << (example[:with_surrounding_text] || example[:ex])
     text << " " << LOREM[18..] << "." if embed_example_in_text

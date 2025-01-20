@@ -1,7 +1,7 @@
 class ReferenceParser::FederalRegister < ReferenceParser::Base
   def url(citation, url_options = {})
     return unless citation&.values_at(:volume, :page)&.all?(&:present?)
-    result = ""
+    result = +""
     result << "https://www.federalregister.gov" if absolute?(url_options)
     result << "/citation/#{citation[:volume]}-FR-#{ReferenceParser::Dashes.ascii(citation[:page])}"
   end

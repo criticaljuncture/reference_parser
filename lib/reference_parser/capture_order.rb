@@ -29,8 +29,7 @@ class ReferenceParser::CaptureOrder
     to_add = {}
 
     results.each do |key|
-      singular = key.to_s
-      if singular.delete_suffix!("s")
+      if (singular = key.to_s).delete_suffix("s")
         singular = singular.to_sym
         to_add[singular] = key
       end

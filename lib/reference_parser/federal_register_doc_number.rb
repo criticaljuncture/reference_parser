@@ -10,7 +10,7 @@ class ReferenceParser::FederalRegisterDocNumber < ReferenceParser::Base
 
   def url(citation, url_options = {})
     if citation[:doc_number].present?
-      result = ""
+      result = +""
       result << "https://www.federalregister.gov" if absolute?(url_options)
       result << "/d/#{ReferenceParser::Dashes.ascii(citation[:doc_number])}"
     end
