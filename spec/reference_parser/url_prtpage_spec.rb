@@ -2,7 +2,7 @@ require "spec_helper"
 require_relative "url_examples"
 
 RSpec.describe ReferenceParser::UrlPrtpage do
-  include_examples "url examples"
+  it_behaves_like "url examples"
 
   it "handles PRTPAGE" do
     result = hyperlink(<<-XML)

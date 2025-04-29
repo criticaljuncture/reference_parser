@@ -1010,7 +1010,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   def self.section_string(hierarchy)
     if hierarchy[:part] && hierarchy[:section]&.start_with?(hierarchy[:part] + ".")
-      (hierarchy[:section]).to_s
+      hierarchy[:section].to_s
     elsif hierarchy[:appendix]
       hierarchy[:appendix]
     else
