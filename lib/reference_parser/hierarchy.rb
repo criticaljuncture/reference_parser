@@ -95,7 +95,7 @@ class ReferenceParser::Hierarchy
     # ranks explictly listed by the replace definition are required
     result = PARSED_RANKS.detect do |rank|
       result = context_expected.include?(rank) && !@data[rank].present?
-      result = false if result && ((rank == :section) && @data[:appendix].present?)
+      result = false if result && (rank == :section) && @data[:appendix].present?
       result
     end
 
@@ -387,7 +387,7 @@ class ReferenceParser::Hierarchy
 
       if @data[:paragraph].present? || @data[:subpart].present? || @data[:part].present?
         if ((rank == :chapter) && !@data[:section].present? && !existing.include?(:section) && !context_expected.include?(:section)) ||
-            ((rank == :subchapter) && !data[:section].present? && !context_expected.include?(:section) && (!context_expected.include?(:chapter) && !existing.include?(:chapter)))
+            ((rank == :subchapter) && !data[:section].present? && !context_expected.include?(:section) && !context_expected.include?(:chapter) && !existing.include?(:chapter))
           reason ||= :not_expecting_lower_rank
         end
       end

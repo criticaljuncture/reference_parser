@@ -99,8 +99,8 @@ class ReferenceParser::HierarchyCaptures
       rank_values = @data.values_at(*rank_keys).flatten.select(&:present?)
       if !repeated || (!repeated.present? && rank_values.present?) ||
           (
-            repeated.is_a?(Array) && ((repeated.count == 1) &&
-            rank_values.is_a?(Array) && ((rank_values&.count || 0) >= 2))
+            repeated.is_a?(Array) && (repeated.count == 1) &&
+            rank_values.is_a?(Array) && ((rank_values&.count || 0) >= 2)
           )
         @repeated = rank_values
         @repeated_capture = rank_keys.last

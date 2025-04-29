@@ -24,9 +24,11 @@ RSpec:
      Expectations:
        - expect_passing_cfr_scenerio
 
-require:
+plugins:
   - rubocop-performance
   - rubocop-rspec
+
+require:
   - standard
 
 inherit_gem:

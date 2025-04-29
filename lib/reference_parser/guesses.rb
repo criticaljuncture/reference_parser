@@ -2,7 +2,7 @@ class ReferenceParser::Guesses
   def self.numbers_seem_like_a_range?(list)
     return unless (list&.compact&.count || 0) > 1
     numbers = to_numbers(list)
-    ((list.compact.count == 2) && (numbers_similarish(numbers) && numbers_increasing(numbers))) ||
+    ((list.compact.count == 2) && numbers_similarish(numbers) && numbers_increasing(numbers)) ||
       ((list.compact.count == 1) && (numbers.max < 50))
   end
 
