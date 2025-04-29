@@ -7,7 +7,6 @@ FR_DOC_NUMBER_SCENARIOS = [
   {ex: "FR DOC# 2020-24608", citation: {doc_number: "2020-24608"}},
   {ex: "FR document: 2021-04052", citation: {doc_number: "2021-04052"}},
   {ex: "FR Document Number (FR Doc) 2020-22044", citation: {doc_number: "2020-22044"}},
-  {ex: "(FR Doc. 84-38590)", citation: {doc_number: "84-38590"}},
   {ex: "FR document, 2020-07884,", citation: {doc_number: "2020-07884"}},
   {ex: "FR Document 2020-05700,", citation: {doc_number: "2020-05700"}},
   {ex: "FR Doc. 2021-22057 Filed ", citation: {doc_number: "2021-22057"}},
@@ -62,6 +61,50 @@ RSpec.describe ReferenceParser::FederalRegisterDocNumber do
 
     def fr_doc_url(options)
       ReferenceParser::FederalRegisterDocNumber.new({}).url(options)
+    end
+  end
+
+  describe "#linkable_document_number?" do
+    let(:parser) { described_class.new({}) }
+
+    it "returns true for non-standard document numbers" do
+      expect(parser.linkable_document_number?("C1-2022-12345")).to be true
+      expect(parser.linkable_document_number?("ABC-12345")).to be true
+    end
+
+    context "with 2-digit year format" do
+      it "returns false for years between 30 and 93" do
+        expect(parser.linkable_document_number?("73-13407")).to be false
+        expect(parser.linkable_document_number?("30-12345")).to be false
+        expect(parser.linkable_document_number?("93-31907")).to be false
+      end
+
+      it "returns true for years outside 30-93 range" do
+        expect(parser.linkable_document_number?("29-12345")).to be true
+        expect(parser.linkable_document_number?("94-12345")).to be true
+        expect(parser.linkable_document_number?("05-12345")).to be true
+      end
+    end
+
+    context "with 4-digit year format" do
+      it "returns false for years before 1994" do
+        expect(parser.linkable_document_number?("1993-12345")).to be false
+        expect(parser.linkable_document_number?("1950-12345")).to be false
+        expect(parser.linkable_document_number?("1800-12345")).to be false
+      end
+
+      it "returns true for years 1994 and later" do
+        expect(parser.linkable_document_number?("1994-12345")).to be true
+        expect(parser.linkable_document_number?("2000-12345")).to be true
+        expect(parser.linkable_document_number?("2025-07333")).to be true
+      end
+    end
+
+    context "with other formats" do
+      it "returns true for non-standard document numbers" do
+        expect(parser.linkable_document_number?("C1-2022-12345")).to be true
+        expect(parser.linkable_document_number?("ABC-12345")).to be true
+      end
     end
   end
 end
