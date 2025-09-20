@@ -12,7 +12,6 @@ class ReferenceParser::Replacement
     :url,
     :slug,
     :options,
-    :ignore?,
     to: :parser
 
   def initialize(regexp = nil, pattern_slug: nil, if: nil, context_expected: nil, will_consider_pre_match: false, will_consider_post_match: false, prepend_pattern: false, debug_pattern: false, &block)
@@ -36,6 +35,11 @@ class ReferenceParser::Replacement
 
   def describe
     "#{parser&.class&.name} prepend_pattern #{prepend_pattern} #{@regexp.to_s&.delete("\n")&.[](0..48)}"
+  end
+
+  def ignore?(citations, options: {})
+    return true if pattern_slug && options&.[](:skip_pattern_slugs)&.include?(pattern_slug)
+    parser.ignore?(citations, options:)
   end
 
   def inspect
