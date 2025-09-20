@@ -2,6 +2,7 @@ require "spec_helper"
 
 RSpec.describe "ReferenceParser::Cfr" do
   include CfrHelper
+
   describe "citation aliases" do
     alias_options = {cfr: {allow_aliases: true, best_guess: true, prefer_part: true}}
 

@@ -2,6 +2,7 @@ require "spec_helper"
 
 RSpec.describe "ReferenceParser::Cfr" do
   include CfrHelper
+
   describe "observed citation formats" do
     [
       "bluebook", [

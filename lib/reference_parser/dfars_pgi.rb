@@ -4,7 +4,7 @@ class ReferenceParser::DfarsPgi < ReferenceParser::Base
   def url(citation, url_options = {})
     if citation[:page].present?
       anchor_suffix = ReferenceParser::Dashes.ascii(citation[:anchor_suffix])
-      "https://www.acq.osd.mil/dpap/dars/dfars/html/current/#{citation[:page].tr(".", "_")}.htm#{anchor_suffix ? "##{citation[:page]}#{anchor_suffix}" : ""}"
+      "https://www.acq.osd.mil/dpap/dars/dfars/html/current/#{citation[:page].tr(".", "_")}.htm#{"##{citation[:page]}#{anchor_suffix}" if anchor_suffix}"
     end
   end
 

@@ -2,6 +2,7 @@ require "spec_helper"
 
 RSpec.describe "ReferenceParser::Cfr" do
   include CfrHelper
+
   describe "per Document Drafting Handbook" do # Document Drafting Handbook
     [
       "DDH table 2-7 (p68/2-50)", [

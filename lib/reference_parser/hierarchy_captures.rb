@@ -15,6 +15,7 @@ class ReferenceParser::HierarchyCaptures
   UNITALICIZED_SECTION_SYMBOL = /(?<pre>\s*)<\/em>(?<symbol>\s*§\s*)<em>(?<post>\s*)/
 
   include ReferenceParser::HierarchyContainer
+
   attr_accessor :options, :repeated, :repeated_capture, :captured_characters
 
   def from_named_captures(named_captures)
