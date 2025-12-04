@@ -17,7 +17,8 @@ RSpec.describe ReferenceParser::Cfr do
   describe "perf triggering fragments" do
     CFR_PERFORMANCE_SCENARIOS.each_slice(2) do |description, examples|
       describe description do
-        default_options = {timeout: 3}
+        let(:default_options) { {timeout: 3} }
+
         examples.each_with_index do |example, index|
           example[:index] = index
           it "(#{index}) #{example[:ex].truncate(24)}" do
