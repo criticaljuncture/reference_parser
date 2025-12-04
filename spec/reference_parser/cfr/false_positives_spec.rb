@@ -149,6 +149,18 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "7 CFR part 400, subpart R", citation: {part: "400", subpart: "R", title: "7"}, context: {composite_hierarchy: "7:B:IV::457::457.8"},
          with_surrounding_text: "in accordance with section 515(h) of the Act and 7 CFR part 400, subpart R, and any applicable civil or"},
 
+        {ex: "section 8.4", citation: :expect_none, context: {composite_hierarchy: "40::I:C:60:XXa:60.503a"},
+         with_surrounding_text: "procedures in Performance Specification 2, section 8.4, of appendix B to this part; the relative"},
+
+        {ex: "section 10.1", citation: :expect_none, context: {composite_hierarchy: "40::I:C:60:XXa:60.503a"},
+         with_surrounding_text: "specified in Method 21 of appendix A-7 to this part, section 10.1, except do"},
+
+        {ex: "section 10.1", citation: :expect_none, context: {composite_hierarchy: "40::I:C:60:XXa:60.504a"},
+         with_surrounding_text: "following the procedure in section 10.1 of Performance Specification 9 and"},
+
+        {ex: "40 CFR part 60, Appendix A-7, EPA Method 21", citation: :expect_none, context: {composite_hierarchy: "40::I:C:63:BBBBBB:63.11092"},
+         with_surrounding_text: "analyzer, in accordance with 40 CFR part 60, Appendix A-7, EPA Method 21 for"},
+
         # state citations
         {ex: '<td class="align-left">Title 7, Chapter 27, Section 8.1</td>', citation: :expect_none, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"}},
         {ex: "§ 52.1570", citation: {title: "40", section: "52.1570"}, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"},

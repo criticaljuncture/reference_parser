@@ -338,7 +338,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{PARAGRAPH}
       (?:#{APPENDIX_EXPLICT})?
       #{TRAILING_BOUNDRY}
-    /ixo, pattern_slug: :labeled_part_section, will_consider_pre_match: true)
+    /ixo, pattern_slug: :labeled_part_section, will_consider_pre_match: true, will_consider_post_match: true)
 
   # informal or non-standard patterns
 
@@ -432,6 +432,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           \s*ASHRAE |
           \s*ICC |
           \s*NFPA |
+          \sPerformance\sSpecification\s\d |
           \s*this\sappendix |
         (?:
           (?:[\s,a-z]{0,128})
@@ -447,7 +448,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       (?:Appendix\s*to\s*)|(?:Appendix\s*[A-Z0-9]{0,3}\s*to\s*\z) |
       from\sthis\sappendix,\sthe |
       When\sperforming |
-      exceeds\sthe\sapplicable
+      exceeds\sthe\sapplicable |
+      Performance\sSpecification\s\d, |
+      appendix\s[A-Za-z\d-]+\sto\sthis\spart,
+    /ix
+
+  UNLINKABLE_POST_MATCH = /
+      -?\d+,\sEPA\sMethod\s\d
     /ix
 
   # loose section | §§
@@ -895,6 +902,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     if !options[:source] || (options[:source] == :cfr)
       issue ||= :pre_match_unlinkable if options[:pre_match].present? && (UNLINKABLE_PRE_MATCH =~ options[:pre_match])
+      issue ||= :post_match_unlinkable if options[:post_match].present? && (UNLINKABLE_POST_MATCH =~ options[:post_match])
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_CFR_TITLE)
     elsif options[:source] == :federal_register
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)
