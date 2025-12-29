@@ -170,7 +170,11 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "</td></table><p>Lorem Section 1.1"},
         {ex: "Section 1.1", citation: {title: "40", section: "1.1"}, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"},
          with_surrounding_text: "Section 1.1 Lorem</p><table><td>"},
-        {ex: '<table><td class="align-left">Lorem Section 1.1 ipsum</td></table>', citation: :expect_none, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"}}
+        {ex: '<table><td class="align-left">Lorem Section 1.1 ipsum</td></table>', citation: :expect_none, context: {composite_hierarchy: "40::I:C:52:FF:52.1570"}},
+
+        # /current/title-12/chapter-III/subchapter-A/part-303/subpart-A/section-303.3
+        {ex: "subparts of this part", citation: :expect_none, context: {composite_hierarchy: "12::III:A:303:A:303.3"},
+         with_surrounding_text: "consult the appropriate subparts of this part. The FDIC may"}
       ]
     ].each_slice(2) do |description, examples|
       expect_passing_cfr_scenerios(description, examples)

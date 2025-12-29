@@ -847,7 +847,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def qualify_match(captures, results: nil, options: nil)
     issue = nil
 
-    if options[:pattern_slug] == :loose_section
+    case options[:pattern_slug]
+    when :loose_section
       puts "qualify_match options[:post_match] #{options[:post_match]}" if @debugging
       if options[:pre_match] && /[^m]>\s*\Z/ix.match?(options[:pre_match])
         issue = :heading_title # reject anything other then <em>
@@ -898,6 +899,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           end
         end
       end
+    when :of_this_part
+      issue = :misconstrued_plural if results.detect { it[:hierarchy][:subpart] && /s/i.match?(it[:hierarchy][:subpart]) && /subparts/i.match?(it[:text]) }
     end
 
     if !options[:source] || (options[:source] == :cfr)
