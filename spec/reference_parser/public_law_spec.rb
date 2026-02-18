@@ -14,7 +14,18 @@ PL_SCENARIOS = [
     "Pub. L. 104–208",
     "P.L. 104–208"], citation: {congress: 104, law: 208}},
 
-  {ex: "phone number 202-693-0126 or e-mailed", citation: :expect_none}
+  # false positives
+  {ex: "phone number 202-693-0126 or e-mailed", citation: :expect_none},
+
+  {ex: ["Public Law 114-1"], citation: {congress: 114, law: 1}},
+  {ex: ["Public Law 114-329"], citation: {congress: 114, law: 329}},
+
+  # suppress implausible
+  {ex: ["Public Law 114-0",
+    "Public Law 114-330",
+    "Public Law 114-357",
+    "Public Law 104-334",
+    "Public Law 118-275"], citation: :expect_none}
 ]
 
 RSpec.describe ReferenceParser::PublicLaw do
