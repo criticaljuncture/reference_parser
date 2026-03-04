@@ -99,6 +99,7 @@ RSpec.describe "ReferenceParser::Cfr" do
 
         # /current/title-32/section-2001.43
         {ex: "required under section 5.4(d)(2) of the Order", citation: :expect_none, html_appearance: :expect_none, context: {title: "32", section: "2001.43"}},
+        {ex: "and guidelines issued under section 5.4(d)(2) and section 6.2(b) of the Order.", citation: :expect_none, html_appearance: :expect_none, context: {title: "32", section: "2001.43"}},
 
         # /current/title-15/subtitle-B/chapter-VII/subchapter-C/part-744/appendix-Supplement%20No.%207%20to%20Part%20744
         {ex: "entities listed in supplement no. 7 to part 744 applies to the", citation: :expect_none, html_appearance: :expect_none, context: {title: "15", appendix: "Supplement%20No.%207%20to%20Part%20744"}},

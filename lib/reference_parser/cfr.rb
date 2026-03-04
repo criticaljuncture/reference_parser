@@ -416,7 +416,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo, pattern_slug: :appendix_of_the, will_consider_pre_match: true)
 
   LIKELY_EXTERNAL_SECTIONS = /
-    \A\s*
+    \A(and\s*section\s*#{SECTION_ID}#{OPTIONAL_PARENTHETICALS})?\s*
     (?:
       as\sreferenced\sin
       |
