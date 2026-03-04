@@ -32,6 +32,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "actionview"
   spec.add_dependency "htmlentities"
 
+  spec.add_development_dependency "irb"
+  spec.add_development_dependency "readline"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rspec-html-matchers"
   spec.add_development_dependency "byebug"
