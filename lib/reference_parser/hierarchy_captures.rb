@@ -185,7 +185,6 @@ class ReferenceParser::HierarchyCaptures
       split = clean&.split(ANY_DIVIDER)&.select { |s| s.length > 0 }
       if @options[:source] && @options[:source] != :cfr
         split = split.map do |s|
-          # resplit = s.split(/\s+/)
           resplit = s.split(/(?<=\s)/)
           (resplit.count(&:present?) == 2) ? resplit : s
         end.flatten
