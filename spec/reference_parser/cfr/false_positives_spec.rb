@@ -175,7 +175,11 @@ RSpec.describe "ReferenceParser::Cfr" do
 
         # /current/title-12/chapter-III/subchapter-A/part-303/subpart-A/section-303.3
         {ex: "subparts of this part", citation: :expect_none, context: {composite_hierarchy: "12::III:A:303:A:303.3"},
-         with_surrounding_text: "consult the appropriate subparts of this part. The FDIC may"}
+         with_surrounding_text: "consult the appropriate subparts of this part. The FDIC may"},
+
+        # /current/title-30/section-560.201
+        {ex: "30 CFR part 556, subpart G", citation: {title: "30", part: "556", subpart: "G"}, context: {composite_hierarchy: "30::V:B:560:B:560.201"},
+         with_surrounding_text: "has met the appropriate requirements of 30 CFR part 556, subpart G, and has submitted a bid."}
       ]
     ].each_slice(2) do |description, examples|
       expect_passing_cfr_scenerios(description, examples)
