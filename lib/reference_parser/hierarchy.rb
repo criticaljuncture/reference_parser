@@ -59,6 +59,10 @@ class ReferenceParser::Hierarchy
     citation.join(" ")
   end
 
+  def self.composite_from_hash(hierarchy)
+    "#{hierarchy[:title]}:#{hierarchy[:subtitle]}:#{hierarchy[:chapter]}:#{hierarchy[:subchapter]}:#{hierarchy[:part]}:#{hierarchy[:subpart]}:#{hierarchy[:section_identifier] || hierarchy[:section] || hierarchy[:appendix]}"
+  end
+
   def self.deepest_level_in(hierarchy, ignore_generated: false)
     return if hierarchy.blank?
     return :paragraph if hierarchy[:paragraph].present?
