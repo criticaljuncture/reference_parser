@@ -434,6 +434,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
           \s*NFPA |
           \sPerformance\sSpecification\s\d |
           \s*this\sappendix |
+          \s*UN\sManual\s |
         (?:
           (?:[\s,a-z]{0,128})
           (?:Act|Amendments|Code|regulations)
@@ -445,11 +446,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   LIKELY_UNLINKABLE = /revised.{0,18}(?<revised_year>(?:19|20)\d{2})/ix
 
   UNLINKABLE_PRE_MATCH = /
-      (?:Appendix\s*to\s*)|(?:Appendix\s*[A-Z0-9]{0,3}\s*to\s*\z) |
+      (?:Appendix\s*(?:[A-Z0-9]{0,3}\s*)?to\s*(?:Subpart\s*[A-Z]+\s*of\s*)?\z) |
       from\sthis\sappendix,\sthe |
       When\sperforming |
       exceeds\sthe\sapplicable |
       Performance\sSpecification\s\d, |
+      sub-\z |
       appendix\s[A-Za-z\d-]+\sto\sthis\spart,
     /ix
 
@@ -905,7 +907,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     if !options[:source] || (options[:source] == :cfr)
       issue ||= :pre_match_unlinkable if options[:pre_match].present? && (UNLINKABLE_PRE_MATCH =~ options[:pre_match])
+      if @debugging && (issue == :pre_match_unlinkable)
+        puts Rainbow("qualify_match pre_match_unlinkable [").blue + Rainbow(options[:pre_match].to_s).green + Rainbow("]").blue
+        puts Rainbow("qualify_match pre_match_unlinkable [").red + Rainbow(UNLINKABLE_PRE_MATCH.match(options[:pre_match]).to_s).orange + Rainbow("]").red
+      end
       issue ||= :post_match_unlinkable if options[:post_match].present? && (UNLINKABLE_POST_MATCH =~ options[:post_match])
+      if @debugging && (issue == :post_match_unlinkable)
+        puts Rainbow("qualify_match post_match_unlinkable [").blue + Rainbow(options[:post_match].to_s).green + Rainbow("]").blue
+        puts Rainbow("qualify_match post_match_unlinkable [").red + Rainbow(UNLINKABLE_POST_MATCH.match(options[:post_match]).to_s).orange + Rainbow("]").red
+      end
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_CFR_TITLE)
     elsif options[:source] == :federal_register
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)

@@ -179,7 +179,10 @@ RSpec.describe "ReferenceParser::Cfr" do
 
         # /current/title-30/section-560.201
         {ex: "30 CFR part 556, subpart G", citation: {title: "30", part: "556", subpart: "G"}, context: {composite_hierarchy: "30::V:B:560:B:560.201"},
-         with_surrounding_text: "has met the appropriate requirements of 30 CFR part 556, subpart G, and has submitted a bid."}
+         with_surrounding_text: "has met the appropriate requirements of 30 CFR part 556, subpart G, and has submitted a bid."},
+
+        # /current/title-49/section-173.185
+        {ex: "the requirements of sub-section 38.3 of the UN Manual of Tests and Criteria, Revision 3, Amendment 1 or any", citation: :expect_none, context: {composite_hierarchy: "49:B:I:C:173:E:173.185"}}
       ]
     ].each_slice(2) do |description, examples|
       expect_passing_cfr_scenerios(description, examples)
