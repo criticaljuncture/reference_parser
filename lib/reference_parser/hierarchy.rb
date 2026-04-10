@@ -95,6 +95,10 @@ class ReferenceParser::Hierarchy
     RANKS[0..RANKS.index(rank)]
   end
 
+  def self.to_basic(hierarchy)
+    (hierarchy.values_at(:title, :part) + [hierarchy.values_at(*%i[section appendix section_identifier]).compact.first]).join(":")
+  end
+
   def appears_incomplete?(captures: {})
     # ranks explictly listed by the replace definition are required
     result = PARSED_RANKS.detect do |rank|
