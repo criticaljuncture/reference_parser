@@ -33,7 +33,7 @@ class ReferenceParser
     perform(text, timeout: options.delete(:timeout)) do |parser, citation|
       original_text = citation[:text]
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default))
-      yield(citation) if block && (citation[:link] != citation[:text])
+      yield(citation, parser.slug) if block && (citation[:link] != citation[:text])
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default)) if citation[:text] != original_text
       citation[:link]
     end
