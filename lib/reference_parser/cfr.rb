@@ -168,12 +168,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   )
   /ixo
 
+  POTENTIAL_LISTED_SECTION = /
+      \d+\.\d+(?:[-–—]\d+)?T?
+    /ixo
+
   # empty connection option intentional for paragraphs directly following section
   PARAGRAPHS_OPTIONAL = /
     (?<paragraphs>                          # list of paragraphs
       (?:
         (?:\s|,|and|or|through||-)+
-        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|\d+\.\d+)
+        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|#{POTENTIAL_LISTED_SECTION})
       )*
     )
     /ixo
@@ -182,7 +186,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?<paragraphs>                          # list of paragraphs
       (?:
         (?:\s|,|;|and|or|through||-)+
-        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|\d+\.\d+)
+        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|#{POTENTIAL_LISTED_SECTION})
         (?:
           [a-z]\d?-\d+[a-z]?
         )?

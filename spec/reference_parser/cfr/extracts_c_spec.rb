@@ -226,7 +226,30 @@ RSpec.describe "ReferenceParser::Cfr" do
 
         {ex: "§ 1.6012–1", context: {composite_hierarchy: "26::I:A:1::1.6851-2"},
          with_surrounding_text: "on the subsequent return under section 6012 and § 1.6012–1.",
-         citation: {title: "26", section: "1.6012-1"}}
+         citation: {title: "26", section: "1.6012-1"}},
+
+        {ex: "§§ 38.10-1(b), 38.10-1(e), and 38.10-10(a) of this chapter", context: {composite_hierarchy: "46::I:O:153:B:153.280"},
+         with_surrounding_text: "the standards of Part 56 and §§ 38.10-1(b), 38.10-1(e), and 38.10-10(a) of this chapter.",
+         citations: [
+           {title: "46", chapter: "I", section: "38.10-1", paragraph: "(b)", expected_url: "/current/title-46/section-38.10-1#p-38.10-1(b)"},
+           {title: "46", chapter: "I", section: "38.10-1", paragraph: "(e)", expected_url: "/current/title-46/section-38.10-1#p-38.10-1(e)"},
+           {title: "46", chapter: "I", section: "38.10-10", paragraph: "(a)", expected_url: "/current/title-46/section-38.10-10#p-38.10-10(a)"}
+         ]},
+
+        {ex: "§§ 1.704-1T(b)(1)(ii)(b)(1) and 1.704-1T(b)(4)(xi)", context: {composite_hierarchy: "29:B:XXV:B:2510::2510.3-37"},
+         with_surrounding_text: "see §§ 1.704-1T(b)(1)(ii)(b)(1) and 1.704-1T(b)(4)(xi) as in effect prior",
+         citations: [
+           {title: "29", section: "1.704-1T", paragraph: "(b)(1)(ii)(b)(1)", expected_url: "/current/title-29/section-1.704-1T#p-1.704-1T(b)(1)(ii)(b)(1)"},
+           {title: "29", section: "1.704-1T", paragraph: "(b)(4)(xi)", expected_url: "/current/title-29/section-1.704-1T#p-1.704-1T(b)(4)(xi)"}
+         ]},
+
+        {ex: "§§ 2510.3-3(d)(1), 2510.3-3(d)(2) and 2520.3-3(d)(3) of this chapter", context: {composite_hierarchy: "29:B:XXV:C:2520::2520.104b-1"},
+         with_surrounding_text: "See §§ 2510.3-3(d)(1), 2510.3-3(d)(2) and 2520.3-3(d)(3) of this chapter.",
+         citations: [
+           {title: "29", chapter: "XXV", section: "2510.3-3", paragraph: "(d)(1)"},
+           {title: "29", chapter: "XXV", section: "2510.3-3", paragraph: "(d)(2)"},
+           {title: "29", chapter: "XXV", section: "2520.3-3", paragraph: "(d)(3)"}
+         ]}
       ]
     ].each_slice(2) do |description, examples|
       expect_passing_cfr_scenerios(description, examples)
