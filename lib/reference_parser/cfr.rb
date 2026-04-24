@@ -825,6 +825,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       end
     end
 
+    eject_text_if_needed(results)
     return :skip unless qualify_match(captures, results: results, options: options)
     validate_and_persist(context: options[:context], references: results) if @validation_and_persistence
 
@@ -1061,6 +1062,19 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     elsif (a_index = haystack.index(a))
       b_index = haystack.index(b)
       true if !b_index || (b_index > a_index)
+    end
+  end
+
+  EJECTABLE_SUFFIX = /
+      \s*of\sthis\schapter\s*
+      \z
+    /ixo
+
+  def eject_text_if_needed(results)
+    return unless results.count > 1
+    if (match = EJECTABLE_SUFFIX.match((last = results[-1])[:text]))
+      last[:text] = last[:text].delete_suffix(match[0])
+      last[:suffix] = match[0] + (last[:suffix] || "")
     end
   end
 end

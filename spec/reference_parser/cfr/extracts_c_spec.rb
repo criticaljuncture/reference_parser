@@ -234,7 +234,8 @@ RSpec.describe "ReferenceParser::Cfr" do
            {title: "46", chapter: "I", section: "38.10-1", paragraph: "(b)", expected_url: "/current/title-46/section-38.10-1#p-38.10-1(b)"},
            {title: "46", chapter: "I", section: "38.10-1", paragraph: "(e)", expected_url: "/current/title-46/section-38.10-1#p-38.10-1(e)"},
            {title: "46", chapter: "I", section: "38.10-10", paragraph: "(a)", expected_url: "/current/title-46/section-38.10-10#p-38.10-10(a)"}
-         ]},
+         ],
+         expected_html: "10(a)</a> of this chapter"}, # confirm ejection of unlinked suffix (per request)
 
         {ex: "§§ 1.704-1T(b)(1)(ii)(b)(1) and 1.704-1T(b)(4)(xi)", context: {composite_hierarchy: "29:B:XXV:B:2510::2510.3-37"},
          with_surrounding_text: "see §§ 1.704-1T(b)(1)(ii)(b)(1) and 1.704-1T(b)(4)(xi) as in effect prior",
