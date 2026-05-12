@@ -15,7 +15,7 @@ class ReferenceParser
 
   def initialize(only: nil, except: [], options: {})
     @options = options || {}
-    @requested_parser_types = [only || @options[:only] || default_parser_types].flatten - except
+    @requested_parser_types = [expand_requested_parser_types(only || @options[:only]) || default_parser_types].flatten - except
     @timeout = @options.delete(:timeout) || 20
     @html_aware = @options[:html_awareness] != :none
     @debugging = false
@@ -106,6 +106,15 @@ class ReferenceParser
 
   def default_parser_types
     %i[usc email dfars_pgi cfr federal_register executive_order public_law patent url]
+  end
+
+  def expand_requested_parser_types(requested_parser_types)
+    case requested_parser_types
+    when :authorities
+      %i[executive_order federal_register usc public_law] + ReferenceParser::Authority.slugs
+    else
+      requested_parser_types
+    end
   end
 
   def new_parser(parser_type)

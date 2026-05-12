@@ -104,7 +104,11 @@ USC_SCENERIOS = [
   {ex: "42 U.S.C. 290dd–2", citation: {title: "42", part: "290dd-2"}},
 
   {ex: "5 U.S.C. 5701-11", text: "5 U.S.C. 5701", citation: {title: "5", part: "5701"}, context: {title: "2", part: "200.475"},
-   expected_html: '<a href="https://www.govinfo.gov/link/uscode/5/5701">5 U.S.C. 5701</a>-11'} # 2 CFR 200.475(d)
+   expected_html: '<a href="https://www.govinfo.gov/link/uscode/5/5701">5 U.S.C. 5701</a>-11'}, # 2 CFR 200.475(d)
+
+  {ex: "1 U.S.C. 112a, 112b; and 22 U.S.C. 2651a.", citations: [{title: "1", part: "112a"}, {title: "1", part: "112b"}, {title: "22", part: "2651a"}]},
+
+  {ex: "30 U.S.C. 901 et seq.", citation: {title: "30", part: "901", expected_text: "30 U.S.C. 901 et seq"}}
 ]
 
 RSpec.describe ReferenceParser::Usc do

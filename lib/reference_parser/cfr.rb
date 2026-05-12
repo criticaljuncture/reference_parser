@@ -548,6 +548,16 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       )
     /ixo, pattern_slug: :presdoc_compilation, prepend_pattern: true)
 
+  TRAILING_MODIFIER = /
+    (?<trailing_modifier>
+      \s*
+      (?:
+        et\s*seq\.? |
+        note
+      )
+    )?
+  /ixo
+
   # primarly list replacements
   # relaxed / non-CFR
   # 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b), 78<em>l,</em> 78m, 78n, 78o(d), 80a-8, 80a-20, 80a-24, 80a-29, 80b-3, 80b-4
@@ -568,6 +578,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                 #{NEXT_TITLE_STOP}
               )+
             )
+            #{TRAILING_MODIFIER}
             #{TRAILING_BOUNDRY}
             /ixo
           }, pattern_slug: :lax_list_replacements, prepend_pattern: true)
@@ -806,6 +817,9 @@ class ReferenceParser::Cfr < ReferenceParser::Base
                   suffix: suffix,
                   options: prepare_citation_options(captures: captures, hierarchy: hierarchy)}
 
+      if (trailing_modifier = captures[:trailing_modifier]&.strip)&.present?
+        citation[:trailing_modifier] = trailing_modifier
+      end
       citation[:source] = source if source
 
       unless qualify_citation(citation, processing_a_list: captures.processing_a_list, final_loop: final_loop)
