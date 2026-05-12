@@ -9,6 +9,7 @@ require "byebug"
 require "rainbow"
 require_relative "helpers/cfr_helper"
 require_relative "helpers/example_helper"
+require_relative "helpers/scenario_helper"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -16,6 +17,7 @@ RSpec.configure do |config|
 
   config.include RSpecHtmlMatchers
   config.extend ExampleHelper
+  config.include ScenarioHelper
 
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!

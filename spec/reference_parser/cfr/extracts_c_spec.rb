@@ -197,11 +197,11 @@ RSpec.describe "ReferenceParser::Cfr" do
         # #44 /current/title-26/chapter-I/subchapter-F/part-303/section-303.1-1#p-303.1-1(b)
         {ex: "3 CFR", context: {composite_hierarchy: "26::I:F:303::303.1-1"},
          with_surrounding_text: "pursuant to Executive Order 9788 (3 CFR 1943–1948 Comp., p. 575), and",
-         citation: {title: "3", expected_url: "/current/title-3"}},
+         citations: [{eo_number: 9788}, {title: "3", expected_url: "/current/title-3"}]},
 
         {ex: "3 CFR", context: {composite_hierarchy: "26::I:F:303::303.1-1"},
          with_surrounding_text: "pursuant to Executive Order 9788 (3 CFR 1943-1948 Comp., p. 575), and",
-         citation: {title: "3", expected_url: "/current/title-3"}},
+         citations: [{eo_number: 9788}, {title: "3", expected_url: "/current/title-3"}]},
 
         {ex: "3 C.F.R. 298", context: {composite_hierarchy: "26::I:F:303::303.1-1"},
          with_surrounding_text: "3 C.F.R. 298 (1992 comp.)",
@@ -257,6 +257,51 @@ RSpec.describe "ReferenceParser::Cfr" do
          citations: [
            {title: "40", part: "262", subpart: "H"},
            {title: "40", part: "265", section: "265.12"}
+         ]},
+
+        {ex: "paragraphs (a)(1) and (a)(2)", context: {composite_hierarchy: "32:A:I:M:223::223.3"},
+         with_surrounding_text: "facilities that support the functions in paragraphs (a)(1) and (a)(2) of this section, including the protection of nuclear weapons, nuclear weapon components",
+         citations: [
+           {title: "32", section: "223.3", paragraph: "(a)(1)"},
+           {title: "32", section: "223.3", paragraph: "(a)(2)"}
+         ]},
+
+        {ex: "15 U.S.C. 78<em>l.</em>", text: "15 U.S.C. 78<em>l.</em>", citation: {title: "15", section: "78l", expected_url: "https://www.govinfo.gov/link/uscode/15/78l"}},
+        {ex: "15 U.S.C. 78<em>l</em> (h) and (i)", text: "15 U.S.C. 78<em>l</em> (h) and (i)", with_surrounding_text: "(15 U.S.C. 78<em>l</em> (h) and (i))", citation: {title: "15", section: "78l", expected_url: "https://www.govinfo.gov/link/uscode/15/78l"}},
+
+        {ex: "§§ 192.903 note to <em>Potential impact radius;</em> 192.907 introductory text, (b); 192.911 introductory text, (i), (k), (l), (m); 192.913(a), (b), (c); 192.917 (a), (b), (c), (d), (e); 192.921(a); 192.923(b); 192.925(b); 192.927(b), (c); 192.929(b); 192.933(c), (d); 192.935 (a), (b); 192.937(c); 192.939(a); and 192.945(a).",
+         with_surrounding_text: "IBR approved for §§ 192.903 note to <em>Potential impact radius;</em> 192.907 introductory text, (b); 192.911 introductory text, (i), (k), (l), (m); 192.913(a), (b), (c); 192.917 (a), (b), (c), (d), (e); 192.921(a); 192.923(b); 192.925(b); 192.927(b), (c); 192.929(b); 192.933(c), (d); 192.935 (a), (b); 192.937(c); 192.939(a); and 192.945(a).",
+         context: {composite_hierarchy: "49:B:I:D:192:A:192.7"},
+         citations: [
+           {title: "49", section: "192.903"},
+           {title: "49", section: "192.907"},
+           {title: "49", section: "192.907", paragraph: "(b)"},
+           {title: "49", section: "192.911"},
+           {title: "49", section: "192.911", paragraph: "(i)"},
+           {title: "49", section: "192.911", paragraph: "(k)"},
+           {title: "49", section: "192.911", paragraph: "(l)"},
+           {title: "49", section: "192.911", paragraph: "(m)"},
+           {title: "49", section: "192.913", paragraph: "(a)"},
+           {title: "49", section: "192.913", paragraph: "(b)"},
+           {title: "49", section: "192.913", paragraph: "(c)"},
+           {title: "49", section: "192.917", paragraph: "(a)"},
+           {title: "49", section: "192.917", paragraph: "(b)"},
+           {title: "49", section: "192.917", paragraph: "(c)"},
+           {title: "49", section: "192.917", paragraph: "(d)"},
+           {title: "49", section: "192.917", paragraph: "(e)"},
+           {title: "49", section: "192.921", paragraph: "(a)"},
+           {title: "49", section: "192.923", paragraph: "(b)"},
+           {title: "49", section: "192.925", paragraph: "(b)"},
+           {title: "49", section: "192.927", paragraph: "(b)"},
+           {title: "49", section: "192.927", paragraph: "(c)"},
+           {title: "49", section: "192.929", paragraph: "(b)"},
+           {title: "49", section: "192.933", paragraph: "(c)"},
+           {title: "49", section: "192.933", paragraph: "(d)"},
+           {title: "49", section: "192.935", paragraph: "(a)"},
+           {title: "49", section: "192.935", paragraph: "(b)"},
+           {title: "49", section: "192.937", paragraph: "(c)"},
+           {title: "49", section: "192.939", paragraph: "(a)"},
+           {title: "49", section: "192.945", paragraph: "(a)"}
          ]}
       ]
     ].each_slice(2) do |description, examples|

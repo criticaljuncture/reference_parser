@@ -149,7 +149,7 @@ class ReferenceParser::Hierarchy
       @data[:paragraph].gsub!(/(?:sub)?paragraph/i, "")
     end
     @data.transform_values! do |value|
-      list_items = /(\s+|,|;|:|or|and|through)+/i
+      list_items = /(\s+|,|;|:|or|and|&|through)+/i
       value.gsub(/\A#{list_items}/, "") # prefixed whitespace / list items
         .gsub(/#{list_items}\z/, "") # suffixed whitespace / list items
     end
@@ -158,6 +158,11 @@ class ReferenceParser::Hierarchy
     @data.reject! { |k, v| v.blank? }
 
     @data[:title]&.gsub!(/\A0+/, "")
+
+    if (match = /\Achapter\s+(?<chapter>\d+)\z/i.match(@data[:section].to_s.strip))
+      @data[:chapter] = match[:chapter]
+      @data.delete(:section)
+    end
 
     decide_section_vs_part(expected: expected)
 
@@ -191,7 +196,33 @@ class ReferenceParser::Hierarchy
 
     @data.transform_values! { |value| ReferenceParser::Dashes.ascii(value) }
 
+    if @data[:section].present?
+      if @options[:source].nil? || @options[:source] == :cfr
+        @data[:section] = @data[:section].sub(ReferenceParser::Cfr::SECTION_TRAILING_MODIFIER, "").strip
+      end
+      @data[:section] = @data[:section].gsub(/<\/?em>/, "")
+      @data[:section].tr!(",", "")
+      if @options[:source] == :usc
+        @data[:section].sub!(/\A(\d+(?:\.\d+)?[a-z]{0,5})\.\z/i, '\1')
+      end
+    end
+
     self
+  end
+
+  def cleanup_authority_if_needed!
+    return unless (section = @data[:section])
+
+    if (match = section.match(/\A(.+?)(nt)\.?\z/i))
+      @data[:section] = match[1]
+      {section: "#{match[1]} note"}
+    elsif (match = ReferenceParser::Cfr::TRAILING_MODIFIER_UNLABELED.match(section))
+      base = section[0...match.begin(0)].strip
+      modifier = match[0].strip.delete_suffix(".")
+      modifier = "note" if modifier.match?(/\A(?:\(\s*notes?\s*\)|nt\.?)\z/i)
+      @data[:section] = base
+      {section: [base, modifier].join(" ").strip}
+    end
   end
 
   def cleanup_list_ranges_if_needed!(repeated_capture: :section, processing_a_list: nil, previous_citation: nil)
@@ -209,9 +240,16 @@ class ReferenceParser::Hierarchy
           items = items.each_slice(2).to_a.map { |a| a.join("-") }
           @data[effective_capture] = items.first.to_s.strip
           @data[:"#{effective_capture}_end"] = items.last.to_s.strip
-        elsif (/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1))
-          items = value.split(/\bto\b|-|through/)
-          if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
+        elsif /\bto\b|through/i.match?(value)
+          items = value.split(/\bto\b|through/i).map(&:strip)
+          if (effective_capture == :paragraph) || ReferenceParser::Guesses.seems_like_a_range?(items)
+            puts Rainbow("cleanup_list_ranges_if_needed! \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"").blue if @debugging
+            @data[effective_capture] = items.first.to_s.strip
+            @data[:"#{effective_capture}_end"] = items.last.to_s.strip
+          end
+        elsif value&.include?("-") && !(value&.count(".") == 1) && !value.match?(/\A-\w+\z/i)
+          items = value.split(/-|–|—/).map(&:strip)
+          if (effective_capture == :paragraph) || ReferenceParser::Guesses.seems_like_a_range?(items)
             puts Rainbow("cleanup_list_ranges_if_needed! \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"").blue if @debugging
             @data[effective_capture] = items.first.to_s.strip
             @data[:"#{effective_capture}_end"] = items.last.to_s.strip
@@ -235,6 +273,23 @@ class ReferenceParser::Hierarchy
   def normalize_paragraph_ranges(text: nil, previous_citation: nil, captures: {}, processing_a_list: nil)
     previous_hierarchy = previous_citation&.[](:hierarchy) || {}
 
+    if @data[:section].to_s.match?(/\A\d+[a-z]?\z/i)
+      options[:mixed_paragraph_and_section_list] = false
+    end
+
+    if processing_a_list && (standalone_modifier = @data[:section].to_s.strip).match?(/\A(?:notes?|nt\.?|et\s*seq\.?|introductory\s+text)\z/i) &&
+        previous_hierarchy[:section].present?
+      @data[:section] = "#{previous_hierarchy[:section]} #{standalone_modifier}"
+    end
+
+    if processing_a_list && previous_hierarchy[:section].present?
+      section = @data[:section].to_s.strip.sub(/\A(?:and|&)\s*/i, "")
+      if (match = section.match(/\A-(\w+)\)?\z/i)) && previous_hierarchy[:section].include?("-")
+        prefix = previous_hierarchy[:section].rpartition("-").first
+        @data[:section] = "#{prefix}-#{match[1]}"
+      end
+    end
+
     # paragraph is section+paragraph?
     if options[:mixed_paragraph_and_section_list] || (processing_a_list && starts_with_a_section?(@data[:paragraph], section: @data[:section]))
       options[:mixed_paragraph_and_section_list] = true
@@ -257,10 +312,12 @@ class ReferenceParser::Hierarchy
       @data[:section] = previous_hierarchy[:section] || original_section unless @data[:section].present?
       @data[:section] = @data[:section]&.strip
       puts "normalize_paragraph_ranges [section is section+paragraph] #{@data[:section]} #{@data[:paragraph]}" if @debugging
+    elsif processing_a_list && @data[:section].blank? && @data[:paragraph].present? && @data[:paragraph].start_with?("(")
+      @data[:section] = previous_hierarchy[:section] if previous_hierarchy[:section].present?
     end
 
     # paragraph is section?
-    move_paragraph_to_section = ((@data[:paragraph]&.count("(") || 0) == 0) && (@data[:paragraph]&.include?(".") || ReferenceParser::Guesses.numbers_seem_like_a_range?([@data[:paragraph], @data[:section]].compact))
+    move_paragraph_to_section = ((@data[:paragraph]&.count("(") || 0) == 0) && (@data[:paragraph]&.include?(".") || ReferenceParser::Guesses.seems_like_a_range?([@data[:paragraph], @data[:section]].compact))
     if move_paragraph_to_section
       # this seems like the list has jumped back up to sections
       @data[:section] = @data[:paragraph]
@@ -277,10 +334,17 @@ class ReferenceParser::Hierarchy
 
     # paragraphs rolled up into sections
     allow_rollup = captures[:rolled_up_paragraphs] || (options[:source] != :cfr)
-    if allow_rollup && @data[:section]&.start_with?("(") && !@data[:paragraph] &&
+    if allow_rollup && @data[:section]&.start_with?("(") &&
         (previous_hierarchy[:section]&.include?("(") || previous_hierarchy[:paragraph]&.include?("("))
-      slide_right(:section, :paragraph)
-      @data[:section] = previous_hierarchy[:section].partition("(").first
+      paragraph_range_suffix = [@data[:section], @data[:paragraph]].compact.join
+      if paragraph_range_suffix.match?(/\)\s*-/)
+        @data[:section] = previous_hierarchy[:section].partition("(").first + paragraph_range_suffix
+        @data.delete(:paragraph)
+        @data.delete(:paragraph_end)
+      elsif !@data[:paragraph]
+        slide_right(:section, :paragraph)
+        @data[:section] = previous_hierarchy[:section].partition("(").first
+      end
     end
   end
 
@@ -288,12 +352,21 @@ class ReferenceParser::Hierarchy
     if ((@data[update]&.count("(") || 0) == 1) &&
         ((prior_example&.count("(") || 0) > 1) &&
         (
-          ((/and|or|through/ =~ text) || (/and|or|through/ =~ captures[update])) ||
+          ((/and|&|or|through/ =~ text) || (/and|&|or|through/ =~ captures[update].to_s)) ||
+          (options[:source] == :usc && text.include?(",")) ||
           update.to_s.end_with?("_end")
         )
-      potential_prefix = prior_example.rpartition("(").first
-      potential_update = potential_prefix + @data[update]
-      if ReferenceParser::Paragraph.guess_level(@data[update]) != ReferenceParser::Paragraph.guess_level(potential_prefix.rpartition("(").last)
+      update_fragment = @data[update]
+      update_level = ReferenceParser::Paragraph.guess_level(update_fragment)
+
+      potential_update = if options[:source] == :usc && update_level == :upper_letters && prior_example.match?(/\([A-Z][^)]*\)(?:\([^)]*\))*\z/)
+        prior_example.sub(/\([A-Z][^)]*\)(?:\([^)]*\))*\z/, "") + update_fragment
+      else
+        potential_prefix = prior_example.rpartition("(").first
+        potential_prefix + update_fragment if ReferenceParser::Paragraph.guess_level(update_fragment) != ReferenceParser::Paragraph.guess_level(potential_prefix.rpartition("(").last)
+      end
+
+      if potential_update
         puts "normalize_paragraph_ranges #{potential_update} <= #{@data[update]}" if @debugging
         @data[update] = potential_update
       elsif @debugging
@@ -305,7 +378,7 @@ class ReferenceParser::Hierarchy
   def starts_with_a_section?(paragraph, section: nil)
     return unless paragraph.present?
     match = /^A[\d[a-z].-]+/ix.match(paragraph)
-    match || (section && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
+    match || (section.present? && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
   end
 
   def ends_with_a_paragraph?(section, paragraph: nil)
@@ -333,7 +406,7 @@ class ReferenceParser::Hierarchy
     end
 
     @data[:paragraph].gsub!(/\s*\(last\s*sentence\)\s*/ix, "") if @data[:paragraph].present?
-    @data[:part].gsub!(" note", "") if @data[:part]&.end_with?(" note")
+    @data[:part].gsub!(/\s+notes?\z/i, "") if @data[:part]&.match?(/\s+notes?\z/i)
 
     drop_whitespace_and_italics(:part)
     drop_whitespace_and_italics(:paragraph)
@@ -363,7 +436,10 @@ class ReferenceParser::Hierarchy
   end
 
   def finish!
-    @data[:appendix].gsub!(/appendix/i, "")&.strip! if @data[:appendix].present?
+    return unless (appendix = @data[:appendix]).present?
+
+    stripped = appendix.gsub(/appendix/i, "").strip
+    @data[:appendix] = stripped.presence || appendix
   end
 
   private

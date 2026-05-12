@@ -61,8 +61,9 @@ module ReferenceParser::HierarchyContainer
     end
   end
 
-  def repartition(left, pivot, right, drop_divider: false)
-    left_value, pivot_value, right_value = @data.values_at(left, right).compact.join.partition(pivot)
+  def repartition(left, pivot, right, drop_divider: false, from_end: false)
+    combined = @data.values_at(left, right).compact.join
+    left_value, pivot_value, right_value = from_end ? combined.rpartition(pivot) : combined.partition(pivot)
     right_value = [pivot_value, right_value].compact.join unless drop_divider
     updated = false
     if left_value.length > 0

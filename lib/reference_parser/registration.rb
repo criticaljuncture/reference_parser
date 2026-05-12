@@ -15,9 +15,8 @@ module ReferenceParser::Registration
   end
 
   def replacements
-    @replacements ||= (self.class.replacements.dup || []).map do |replacement|
-      replacement.parser = self
-      replacement
+    @replacements ||= (self.class.replacements || []).map do |replacement|
+      replacement.dup.tap { |duplicate| duplicate.parser = self }
     end
   end
 end

@@ -21,20 +21,25 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?(?:\s*\(IRC\))?/ix
+  USC_CITATION_CONTEXT = /\d+(?:\.|\s)\s*U\.?S\.?C(?!\.?A\b)/i
+  LIST_CONTINUATION_BLOCK_BOUNDARY = /<\/(?!(?:em|i)\b)[^>]+>/i
   IRC_LABEL = /I(?:nternal)?\.?\s*R(?:evenue)?\.?\s*C(?:ode)?\.?/ix
   FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
+  PL_LABEL = /
+    P(?:ub(?:lic)?)?\.?\s*
+    L(?:aw)?s?\.?\s*
+    (?:No\.?\s*)?
+  /ix
 
-  SOURCE_LABEL = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL})\s*)/ixo
-  SOURCE_LABEL_CFR = /(?<source_label>\s*#{CFR_LABEL}\s*)/ixo
-  SOURCE_LABEL_NON_CFR = /(?<source_label>\s*(?:#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL})\s*)/ixo
+  SOURCE_LABEL = /(?<source_label>\.?\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL})\s*)/ixo
+  SOURCE_LABEL_CFR = /(?<source_label>\.?\s*#{CFR_LABEL}\s*)/ixo
+  SOURCE_LABEL_NON_CFR = /(?<source_label>\.?\s*(?:#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL})\s*)/ixo
 
-  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL}|\/)\s*)/ixo
-  SOURCE_LABEL_ALLOW_SHORTHAND_CFR = /(?<source_label>\s*(?:#{CFR_LABEL}|\/)\s*)/ixo
-  SOURCE_LABEL_ALLOW_SHORTHAND_NON_CFR = /(?<source_label>\s*(?:#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL}|\/)\s*)/ixo
+  SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\.?\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL}|\/)\s*)/ixo
+  SOURCE_LABEL_ALLOW_SHORTHAND_CFR = /(?<source_label>\.?\s*(?:#{CFR_LABEL}|\/)\s*)/ixo
 
-  TITLE_SOURCE = /(?<title>#{TITLE_ID})#{SOURCE_LABEL}/ixo
+  TITLE_SOURCE = /(?:Title\s*)?(?<title>#{TITLE_ID})#{SOURCE_LABEL}/ixo
   TITLE_SOURCE_CFR = /(?<title>#{TITLE_ID})#{SOURCE_LABEL_CFR}/ixo
-  TITLE_SOURCE_NON_CFR = /(?<title>#{TITLE_ID})#{SOURCE_LABEL_NON_CFR}/ixo # laxer section list requirements
 
   TITLE_SOURCE_ALLOW_SLASH_SHORTHAND = /
     (?<title>#{TITLE_ID})
@@ -49,12 +54,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # "1 CFR 11 and 2 CFR 22" vs "1 CFR 11 and 12" needed after
   # simple digits patterns that could match the next title
   NEXT_TITLE_STOP = /
-    (?!\d|\s*(?:
+    (?!\d|
+      [A-Za-z]\s*Stat\.?|
+      \s*(?:
         C\.?F\.?R| # CFR
         U\.?S\.?C| # USC
-        F\.?R\.?|  # FR
+        F\.?R\.?(?!\w)|  # FR
         I\.?R\.?C| # IRC
         Comp\.|
+        Stat\.?|
         ,?\s*subpart|
         \/         # dates
     ))/ix
@@ -78,7 +86,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     ; |
     (?:[,;]\s*|)and\b |
     (?:,\s*|)or\b |
-    to\b |
+    (?<!note\s)to\b |
     through\s*
     /ixo
 
@@ -116,6 +124,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       #{SUBPART_ID}
       (?:
         (?:#{JOIN})
+        (?!(?:and|or)\b)
+        (?!\s*\d+\s*(?:(?:Apps?\.?|Appendix)\s*)?U\.?S\.?C)
         #{SUBPART_ID_ADDITIONAL}
       )*
     )
@@ -144,8 +154,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   PARAGRAPH_UNLABELED = /\s*#{PARENTHETICALS}*(-\d+)?/ixo
   PARAGRAPH_UNLABELED_REQUIRED = /\s*#{PARENTHETICALS}+(-\d+)?/ixo
 
+  # entire value is a single lettered paragraph ie "(a)"
+  LONE_PARAGRAPH = /\A\([a-z]{1,5}\)\z/i
+
   PARAGRAPH = /(?<paragraph>#{PARAGRAPH_UNLABELED})/ixo
-  PARAGRAPH_REQUIRED = /(?<paragraph>#{PARAGRAPH_UNLABELED_REQUIRED})/ixo
 
   PARAGRAPHS = /
     (?<paragraphs>                          # list of paragraphs
@@ -172,21 +184,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       \d+\.\d+(?:[-–—]\d+)?T?
     /ixo
 
-  # empty connection option intentional for paragraphs directly following section
-  PARAGRAPHS_OPTIONAL = /
-    (?<paragraphs>                          # list of paragraphs
-      (?:
-        (?:\s|,|and|or|through||-)+
-        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|#{POTENTIAL_LISTED_SECTION})
-      )*
-    )
-    /ixo
-
   PARAGRAPHS_OPTIONAL_LIST = /
     (?<paragraphs>                          # list of paragraphs
       (?:
         (?:\s|,|;|and|or|through||-)+
-        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|#{POTENTIAL_LISTED_SECTION})
+        (?:#{PARAGRAPH_UNLABELED_REQUIRED}|#{POTENTIAL_LISTED_SECTION}(?:\s+introductory\s+text\b)?)
         (?:
           [a-z]\d?-\d+[a-z]?
         )?
@@ -240,18 +242,67 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     )
     /ixo
 
+  SECTION_NOTE_TO_TARGET = /
+    (?:
+      <em>[^<]*<\/em> |
+      [^,;]+?
+    )
+  /ixo
+
+  SECTION_TRAILING_MODIFIER = /
+    (?:
+      \s+notes?\s+to\s+#{SECTION_NOTE_TO_TARGET} |
+      \s+introductory\s+text\b |
+      (?<!preceding\s)\s+notes?\b(?!\s+(?:prec\.?|to\b))
+    )
+  /ixo
+
+  SECTION_TRAILING_MODIFIER_OPTIONAL = /(?:#{SECTION_TRAILING_MODIFIER})?/ixo
+
+  LOOSE_SECTION_CORE = /
+    \d+#{NEXT_TITLE_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
+    #{OPTIONAL_PARENTHETICALS}
+    (?:
+      [a-z]\d+-\d |
+      [-–—]\d+T?[a-z]? |
+      \.T\d{,2}[-–—]\d{,6} |
+      \.\d+  |
+      \(T\)
+    )*
+  /ixo
+
+  LOOSE_SECTION_ITEM = /
+    #{LOOSE_SECTION_CORE}
+    #{SECTION_TRAILING_MODIFIER_OPTIONAL}
+    \s*#{NEXT_TITLE_STOP}
+  /ixo
+
   LOOSE_SECTION_SECTIONS = /
     (?<sections>
       (?:
         (?:#{LOOSE_SECTION_JOIN_SECTION})?
-        #{SECTION_UNLABELED}
+        #{LOOSE_SECTION_ITEM}
       )+
     )
-    /ixo
+  /ixo
 
   APPENDIX_ID = /[A-Z]+/ixo
+  APPENDIX_ROMAN_ID = "[IVXLC]{1,8}"
+  APPENDIX_SECTION_ID = "(?:\\d|#{APPENDIX_ROMAN_ID})"
+  PART_APPENDIX_LABEL = "(?:Appendix|Apps?|Ap)\\.?"
+  # optional markers between App. and section number: "App. §§ 2061", "App § 468", "App. P. 534"
+  APPENDIX_SECTION_MARKERS = "(?:(?:§+|P\\.)\\s*)?"
+  PRECEDING_NOTE_LABEL = "note\\s+prec\\.?"
+  USC_SECTION_LETTER_SUFFIX = "(?:(?!nt\\b)[a-z]{1,5}(?![a-z])|\\s+(?!and\\b|or\\b|to\\b|et\\b|as\\b|of\\b|by\\b|in\\b|on\\b|at\\b|for\\b)(?!nt\\b)[a-z]{1,2}(?![a-z])(?=\\s*[,;)]|\\.(?![a-z])|\\s+(?:and|or|&)\\b|\\s*$))"
+  USC_SECTION_EM_LETTER_SUFFIX = "(?:<em>(?:(?!nt\\b)[a-z]{1,5}(?:[,.])?)?</em>)?"
+  # "77f", "78o-4", "1395.1" — section number w/ optional decimal & letter suffix (not "12a34" artifacts)
+  LAX_USC_SECTION_NUMBER = "(?>\\d+)(?![a-z]+\\d)(?:\\.\\d+)?#{USC_SECTION_LETTER_SUFFIX}?"
+  LAX_USC_SECTION_RANGE = "(?:[-–—](?:\\d+(?:\\.\\d+)?(?:[a-z]{1,5})?|[a-z]{1,5})(?:[-–—][a-z]{1,5})*)?"
+  APPENDIX_ROMAN_SECTION = "(?>(?-i:#{APPENDIX_ROMAN_ID}))(?=\\s|[.,;)-]|$)"
+  PART_APPENDIX_PRECEDING_NOTE_WITH_SECTION = "(?<part_appendix_label>\\s*#{PART_APPENDIX_LABEL}\\s+#{PRECEDING_NOTE_LABEL}\\s*)(?=\\s*#{APPENDIX_SECTION_ID})"
+  TITLE_APPENDIX_CITATION_LOOKAHEAD = "\\s*\\d+\\s*(?:(?:#{PART_APPENDIX_LABEL}\\s*)(?:U\\.?S\\.?C|\\d)|U\\.?S\\.?C)"
+  REORGANIZATION_PLAN_CITATION_LOOKAHEAD = "\\s*\\d{4}\\s+(?:Reorganization|Reorgan\\.?|Reorg\\.?)\\s+Plan\\b"
   APPENDIX = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<section>#{APPENDIX_ID})/ixo
-  APPENDIX_UNLABELED = /,?\s*(?:appendix|table)\s*#{APPENDIX_ID}/ixo
   APPENDIX_EXPLICT = /(?<appendix_label>,?\s*(?:appendix|table)\s*)(?<appendix>#{APPENDIX_ID})/ixo
   APPENDIX_EXPLICT_MID = /
     (?<appendix_label_middle>,?\s*(?:appendix|table)\s*)
@@ -548,26 +599,195 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       )
     /ixo, pattern_slug: :presdoc_compilation, prepend_pattern: true)
 
+  ET_SEQ_TRAILING_MODIFIER = /
+    (?:,\s*)?
+    (?:<em>\s*)?
+    (?:,\s*)?
+    et\s*seq\.?
+    (?:\s*,|\s*;(?=\s*<\/em>))?
+    (?:\s*<\/em>)?
+  /ixo
+
+  TRAILING_MODIFIER_UNLABELED = /
+    (?:
+      ,?\s*
+      (?:
+        #{ET_SEQ_TRAILING_MODIFIER} |
+        preceding\s+notes?\b |
+        \(\s*notes?\s*\) |
+        n(?:otes?\b|t\.?(?![a-z]))
+      )
+    )
+  /ixo
+
+  TRAILING_MODIFIER = /
+    (?<trailing_modifier>
+      #{TRAILING_MODIFIER_UNLABELED}
+    )?
+  /ixo
+
+  NOT_TITLE_APPENDIX_CITATION = "(?!#{TITLE_APPENDIX_CITATION_LOOKAHEAD})"
+  NOT_STAT_PAGE_CITATION = "(?!\\s+\\d+[A-Za-z]?\\s+Stat\\.?)"
+
+  LAX_USC_SECTION_LIST_DIVIDERS = /
+    (?:
+      <em>(?:[a-z]{1,5})? |
+      <\/em>(?:[a-z]{1,5})? |
+      ,#{NOT_TITLE_APPENDIX_CITATION} |
+      ;#{NOT_TITLE_APPENDIX_CITATION}(?!#{REORGANIZATION_PLAN_CITATION_LOOKAHEAD})(?!\s*\d+\s+Stat\.?) |
+      \)\s*,#{NOT_TITLE_APPENDIX_CITATION} |
+      \)\s*and\b |
+      (?<!\))\s*[-–—]\s*(?!\s*\() |
+      \s*through\s* |
+      \s+to\s+ |
+      \s*(?:and|&)#{NOT_TITLE_APPENDIX_CITATION}#{NOT_STAT_PAGE_CITATION}\s*(?:chapters?\s+)? |
+      \s*or#{NOT_TITLE_APPENDIX_CITATION}#{NOT_STAT_PAGE_CITATION}\s*(?:chapters?\s+)?
+    )*
+  /ixo
+
+  TRAILING_MODIFIER_OPTIONAL = /(?:#{TRAILING_MODIFIER_UNLABELED})?/ixo
+
+  LAX_USC_SECTION_LIST_ITEM = /
+    (?:
+      \s*#{LAX_USC_SECTION_NUMBER}#{USC_SECTION_EM_LETTER_SUFFIX}#{LAX_USC_SECTION_RANGE} |
+      \s*[Cc]hapters?\s+(?>\d+) |
+      \s*\(\s*\d{1,3}\s*\)(?:\s*[-–—]\s*\(\s*\d{1,3}\s*\))? |
+      \s*\(\s*(?!notes?\s*\))[a-z]{1,5}\s*\)(?:\s*[-–—]\s*\(\s*(?!notes?\s*\))[a-z]{1,5}\s*\))? |
+      \s*#{APPENDIX_ROMAN_SECTION} |
+      \s*#{PART_APPENDIX_LABEL}\s*#{APPENDIX_SECTION_MARKERS}#{LAX_USC_SECTION_NUMBER}#{LAX_USC_SECTION_RANGE} |
+      \s*#{PART_APPENDIX_LABEL}\s*#{APPENDIX_SECTION_MARKERS}#{APPENDIX_ROMAN_SECTION} |
+      \s*#{PART_APPENDIX_LABEL}(?!\w)(?!\.?\s*#{APPENDIX_SECTION_MARKERS}#{APPENDIX_SECTION_ID})(?!\s+#{PRECEDING_NOTE_LABEL}) |
+      \s*preceding\s+notes?\b |
+      \s*notes?\b(?!\s+prec\.?)
+    )
+    ([a-z]{1,5}[-–—]\d+)?
+    #{TRAILING_MODIFIER_OPTIONAL}
+    (?:\.(?=\s+\d))?
+    #{NEXT_TITLE_STOP}
+  /ixo
+
+  LAX_USC_SECTION_SKIP = /
+    \s*(?>\d+)[a-z]+\d+
+  /ixo
+
+  # interrupting asides that should not end a USC section list (Pub. L. cites extracted separately)
+  PUBL_ATTRIBUTION_ASIDE = /
+    \s+(?:
+      as\s+amended\s+by\s+(?:section\s+\d+\s+of\s+)? |
+      added\s+by\s+
+    )
+    #{PL_LABEL}\d+[-–]\d+
+    (?:
+      \s+and\s+(?:section\s+\d+\s+of\s+)?#{PL_LABEL}\d+[-–]\d+ |
+      ,\s*(?:and\s+)?#{PL_LABEL}\d+[-–]\d+
+    )*
+    (?:,\s*sec(?:tion|\.)?\s*\d+)?
+    (?:,\s*\d+\s*Stat\.?\s*\d+)?
+  /ixo
+
+  # ", as amended, and 503" — bare phrase, not "as amended by Pub. L. ..."
+  AS_AMENDED_ASIDE = /
+    (?:,\s*|\s+)as\s+amended\b(?!\s+by\b)
+  /ixo
+
+  EXPLANATORY_PARENTHETICAL = /
+    \s*\(\s*for\b[^)]*\d+\s*U\.?S\.?C[^)]*\)
+  /ixo
+
+  # "(Repealed in part as to offenses committed on or after November 1, 1987)"
+  REPEALED_PARENTHETICAL = /
+    \s*\(\s*Repealed\b[^)]*\)
+  /ixo
+
+  # "3401 (note and 3402)" — note applies to prior section; trailing number is another section
+  NOTE_AND_SECTION_PARENTHETICAL = /
+    \s*\(\s*notes?\s+and\s+#{LAX_USC_SECTION_NUMBER}\s*\)
+  /ixo
+
+  # "subchapters I and III of chapter 311" — cite the chapter, not the subchapters
+  SUBCHAPTERS_OF_CHAPTER_ASIDE = /
+    (?:,\s*|\s+)subchapters?\s+[IVXLCDM]+(?:\s*(?:,|and|&)\s*[IVXLCDM]+)*\s+of\s+chapter\s+(?>\d+)
+  /ixo
+
+  # "2601 Chap. 56 Section 5604" — chapter is locational; cite the following section
+  CHAP_N_SECTION_ASIDE = /
+    (?:,\s*|\s+)Ch(?:ap(?:ter)?|\.)?\.?\s*\d+\s+Sections?\s+(?=\d)
+  /ixo
+
+  # trailing artifacts after a section: "300j-9(i)BVG, 5851"
+  TRAILING_UPPERCASE_ARTIFACT_ASIDE = /
+    [A-Z]{2,}(?=\s*[,;])
+  /xo
+
+  LAX_USC_SECTIONS = /
+    (?<sections>
+      (?:
+        #{LAX_USC_SECTION_LIST_DIVIDERS}
+        (?:
+          #{LAX_USC_SECTION_LIST_ITEM} |
+          #{LAX_USC_SECTION_SKIP}
+        ) |
+        #{PUBL_ATTRIBUTION_ASIDE} |
+        #{AS_AMENDED_ASIDE} |
+        #{EXPLANATORY_PARENTHETICAL} |
+        #{REPEALED_PARENTHETICAL} |
+        #{NOTE_AND_SECTION_PARENTHETICAL} |
+        #{SUBCHAPTERS_OF_CHAPTER_ASIDE} |
+        #{CHAP_N_SECTION_ASIDE} |
+        #{TRAILING_UPPERCASE_ARTIFACT_ASIDE}
+      )+
+    )
+  /ixo
+
+  PART_APPENDIX_LABEL_WITH_SECTION = /(?<part_appendix_label>\s*#{PART_APPENDIX_LABEL}\s*,?\s*#{APPENDIX_SECTION_MARKERS})(?=\s*#{APPENDIX_SECTION_ID})/ix
+  TITLE_APPENDIX_LABEL = /(?<title_appendix_label>\s*App\.?\s*)/ix # USC
+  TITLE_SOURCE_NON_CFR_WITH_APPENDIX = /(?:Title\s*)?(?<title>#{TITLE_ID})#{TITLE_APPENDIX_LABEL}?#{SOURCE_LABEL_NON_CFR}/ixo
+
   # primarly list replacements
   # relaxed / non-CFR
+  # continuation after parenthetical (e.g. 1185 (pursuant to EO...), 1185 note, 1201)
+  # also: Pub. L. 106-476 (114 Stat. 2101), sections 1434, 1435
+  # also: 1202 (General Note 3(i)), Harmonized Tariff Schedule of the United States, 1624
+  # also: 213n (Pub. L. 106-113 ...); 214, 214a, 217a
+  replace(->(context, options) {
+            /
+            (?<continuation_prefix>
+              \)\s*[,;]\s*
+              (?:Harmonized\s+Tariff\s+Schedule\s+of\s+the\s+United\s+States(?:\s*\([^()]*\))?\s*,\s*)?
+            )
+            (?<section_label>sections?\s+)?
+            #{LAX_USC_SECTIONS}
+            #{TRAILING_MODIFIER}
+            #{TRAILING_BOUNDRY}
+            /ixo
+          }, pattern_slug: :lax_usc_list_continuation, prepend_pattern: true, will_consider_pre_match: true)
+
+  # 50 App. 462 (title appendix section, without repeating U.S.C.)
+  replace(->(context, options) {
+            /
+            (?:Title\s*)?(?<title>#{TITLE_ID})\s*(?<title_appendix_label>#{PART_APPENDIX_LABEL}\s*)
+            #{LAX_USC_SECTIONS}
+            #{TRAILING_MODIFIER}
+            #{TRAILING_BOUNDRY}
+            /ixo
+          }, pattern_slug: :lax_title_appendix_sections, prepend_pattern: true)
+
   # 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b), 78<em>l,</em> 78m, 78n, 78o(d), 80a-8, 80a-20, 80a-24, 80a-29, 80b-3, 80b-4
   replace(->(context, options) {
             /
-            #{TITLE_SOURCE_NON_CFR}
-            (?<section_label>\s*§\s*|\s*<\/em>\s*§\s*<em>\s*)?
-            (?<sections>
-              (?:
-                (?: <em>(?:[a-z]{1,5})?|<\/em>(?:[a-z]{1,5})?|,|[-–—]|\s*through\s*|\s*and\s*|\s*or\s*)*
-                (?:
-                  \s*\d+(?:[a-z]{1,5})? |
-                  \(\s*\d+\s*\) |
-                  \(\s*[a-z]{1,5}\s*\)
-                )
-                ([a-z]{1,5}[-–—]\d+)?
-                (?:\s*note)?
-                #{NEXT_TITLE_STOP}
-              )+
-            )
+            #{TITLE_SOURCE_NON_CFR_WITH_APPENDIX}
+            (?:(?<subtitle_label>subtitle\s*)(?<subtitle>[A-Z])\s*and\s*)?
+            (?:(?<chapter_label>\s*chapter\s*)(?<chapter>#{CHAPTER_ID})\s*and\s*)?
+            (?<section_label>\s*(?:§+|sections?|secs?\.?)\s*|\s*<\/em>\s*§+\s*<em>\s*)?
+            (?:
+              ,\s*(?<part_appendix_label>#{PART_APPENDIX_LABEL}\s*#{APPENDIX_SECTION_MARKERS})(?=\s*#{APPENDIX_SECTION_ID})
+              |
+              #{PART_APPENDIX_PRECEDING_NOTE_WITH_SECTION}
+              |
+              #{PART_APPENDIX_LABEL_WITH_SECTION}
+            )?
+            #{LAX_USC_SECTIONS}
+            #{TRAILING_MODIFIER}
             #{TRAILING_BOUNDRY}
             /ixo
           }, pattern_slug: :lax_list_replacements, prepend_pattern: true)
@@ -575,7 +795,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # catch "3 CFR," style in Authority sections
   replace(->(context, options) {
     /
-    #{(options[:slash_shorthand_allowed] || options[:best_guess]) ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND : TITLE_SOURCE}
+    #{(options[:slash_shorthand_allowed] || options[:best_guess]) ? TITLE_SOURCE_ALLOW_SLASH_SHORTHAND_CFR : TITLE_SOURCE_CFR}
     (?<suffix>,)
     #{TRAILING_BOUNDRY}
     #{NEXT_TITLE_STOP}
@@ -757,10 +977,32 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     results = []
 
     puts "ReferenceParser::Cfr clean_up_named_captures captures #{captures}" if @debugging
+    continuation_title = nil
+    case options[:pattern_slug]
+    when :appendix_of_the
+      return :skip if appendix_of_the_title_only?(captures)
+    when :lax_title_appendix_sections
+      options[:source] = :usc
+    when :lax_list_replacements
+      return :skip if skip_lax_list_replacements?(captures, options)
+    when :lax_usc_list_continuation
+      resolved = resolve_lax_usc_list_continuation(captures, options)
+      return resolved unless resolved.is_a?(String)
+      continuation_title = resolved
+      options[:source] = :usc
+      if (continuation_prefix = captures[:continuation_prefix]).present?
+        captures[:prefix_unlinked] = [captures[:prefix_unlinked], continuation_prefix, captures[:section_label]].compact.join
+        captures.delete(:continuation_prefix)
+        captures.delete(:section_label)
+      end
+    end
     source = citation_source_for(captures, options: options)
 
     # create captures (expected to preserve fidelity of original text for output)
     captures = ReferenceParser::HierarchyCaptures.new(options: options, debugging: @debugging).from_named_captures(captures)
+    if continuation_title
+      captures[:title] = continuation_title
+    end
     captures.determine_repeated_capture
 
     previous_citation = nil
@@ -795,22 +1037,44 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       hierarchy.cleanup!(expected: captures.expected, captures: captures)
       hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list, previous_citation: previous_citation)
       hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list)
+      authority = hierarchy.cleanup_authority_if_needed!
       href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected, captures: captures)
       hierarchy.finish!
 
       # build citation
       citation = {hierarchy: hierarchy.to_h,
                   href_hierarchy: href_hierarchy.to_h,
-                  prefix: prefix,
-                  text: text,
-                  suffix: suffix,
-                  options: prepare_citation_options(captures: captures, hierarchy: hierarchy)}
+                  text: text}
+      if (citation_options = prepare_citation_options(captures: captures, hierarchy: hierarchy)).present?
+        citation[:options] = citation_options
+      end
+      citation[:prefix] = prefix if prefix.present?
+      citation[:suffix] = suffix if suffix.present?
 
+      if final_loop && (trailing_modifier = captures[:trailing_modifier]&.strip)&.present?
+        citation[:trailing_modifier] = trailing_modifier
+      end
+      citation[:authority] = authority if authority.present?
       citation[:source] = source if source
+      citation[:final_loop] = true if final_loop
+      citation[:part_appendix_label] = captures[:part_appendix_label] if captures[:part_appendix_label].present?
+      citation[:title_appendix_label] = captures[:title_appendix_label] if captures[:title_appendix_label].present?
+      if captures.repeated[index + 1].to_s.strip.match?(/\A\([a-z]{1,5}\)/i)
+        citation[:strip_attached_sublocators] = true
+      end
 
-      unless qualify_citation(citation, processing_a_list: captures.processing_a_list, final_loop: final_loop)
-        if final_loop && previous_citation
-          previous_citation[:suffix] += citation.values_at(*%i[prefix text suffix]).join("")
+      unless qualify_citation(citation, processing_a_list: captures.processing_a_list, final_loop: final_loop, previous_citation: previous_citation)
+        if previous_citation && (final_loop || paragraph_only_continuation?(citation, previous_citation))
+          if (merged = citation.values_at(*%i[prefix text suffix]).compact.join("")).present?
+            if previous_citation[:source] == :usc && merged.match?(/\A\s*(?:and|or|&)\s+\([a-z]{1,5}\)/i)
+              previous_citation[:text] = "#{previous_citation[:text]}#{merged}"
+            else
+              previous_citation[:suffix] = "#{previous_citation[:suffix]}#{merged}"
+            end
+          end
+          if (paragraph = citation.dig(:hierarchy, :paragraph)).present?
+            previous_citation[:paragraph_list_continuation] = paragraph
+          end
           citation = nil
         else
           citation[:hierarchy] = nil
@@ -826,10 +1090,61 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
 
     eject_text_if_needed(results)
+    results.each { |result| result.delete(:paragraph_list_continuation) }
+    weave_embedded_public_laws!(results, captures)
+    weave_as_amended_asides!(results, captures)
     return :skip unless qualify_match(captures, results: results, options: options)
     validate_and_persist(context: options[:context], references: results) if @validation_and_persistence
 
     results
+  end
+
+  def weave_as_amended_asides!(results, captures)
+    text = captures[:as_amended_aside_text]
+    return results unless text.present?
+
+    target = [captures[:sections_before_as_amended_aside].to_i - 1, 0].max
+    return results unless results[target]
+
+    woven = text.sub(/\A,\s*/, "")
+    if (next_result = results[target + 1]) && next_result[:text].to_s.match?(/\Aand\s+/i)
+      results[target][:suffix] = "#{results[target][:suffix]}#{woven}, and "
+      next_result[:text] = next_result[:text].sub(/\Aand\s+/i, "")
+    else
+      results[target][:suffix] = "#{results[target][:suffix]} #{woven}"
+    end
+    results
+  end
+
+  def weave_embedded_public_laws!(results, captures)
+    publs = captures[:embedded_public_laws]
+    stats = captures[:embedded_stats]
+    return results unless publs.present? || stats.present?
+
+    insert_at = [captures[:sections_before_publ_aside].to_i, results.length].min
+    if publs.present?
+      results.insert(insert_at, *publs)
+      insert_at += publs.length
+    end
+    results.insert(insert_at, *stats) if stats.present?
+    results
+  end
+
+  def publ_asides_from_sections(sections)
+    return unless sections.present?
+
+    aside = sections.match(PUBL_ATTRIBUTION_ASIDE)
+    return unless aside
+
+    remainder = sections.sub(aside[0], "").strip
+    return unless remainder.empty? || remainder.match?(/\A[,;.]+/)
+
+    embedded = ReferenceParser::Usc.embedded_publ_citations(aside[0])
+    if (stat = ReferenceParser::Stat.embedded_from_comma_aside(aside[0]))
+      after_aside = sections[aside.end(0)..].to_s
+      embedded += [stat] if after_aside.blank? || !after_aside.match?(/\A\s*[,;.]+/)
+    end
+    embedded.presence
   end
 
   def resolve_aliases(citation, captures)
@@ -855,6 +1170,10 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     issue = nil
 
     case options[:pattern_slug]
+    when :lax_usc_list_continuation
+      pre_match = options[:full_pre_match] || options[:pre_match]
+      scoped_pre_match = usc_list_continuation_pre_match(pre_match)
+      issue = :missing_usc_context unless scoped_pre_match&.match?(USC_CITATION_CONTEXT)
     when :loose_section
       puts "qualify_match options[:post_match] #{options[:post_match]}" if @debugging
       if options[:pre_match] && /[^m]>\s*\Z/ix.match?(options[:pre_match])
@@ -926,7 +1245,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)
     end
 
-    issue = :failure_to_preserve_source_characters if !issue && !preserved_character_count?(captures, results: results)
+    issue = :failure_to_preserve_source_characters if !issue && captures[:embedded_public_laws].blank? && captures[:as_amended_aside_text].blank? && !preserved_character_count?(captures, results: results)
+    issue ||= :unlikely_link_start if results&.any? { |result| unlikely_link_start?(result[:text]) }
 
     puts Rainbow("qualify_match #{issue}").red if @debugging && issue
     !issue
@@ -943,13 +1263,58 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     result_characters == captures.captured_characters
   end
 
-  def qualify_citation(citation, processing_a_list: nil, final_loop: nil)
+  def qualify_citation(citation, processing_a_list: nil, final_loop: nil, previous_citation: nil)
     issue = nil
     if final_loop && processing_a_list
       issue = :unlikely_trailing_identifier if ReferenceParser::Guesses.unlikely_trailing_identifier?(citation[:text])
     end
+    if paragraph_only_usc_shorthand?(citation, processing_a_list: processing_a_list, previous_citation: previous_citation)
+      issue = :paragraph_only_shorthand
+    end
     puts "qualify_citation #{issue}" if @debugging && issue
     !issue
+  end
+
+  def paragraph_only_usc_shorthand?(citation, processing_a_list: nil, previous_citation: nil)
+    return false unless processing_a_list && citation[:source] == :usc
+
+    paragraph = citation.dig(:hierarchy, :paragraph).to_s
+    return false unless paragraph.match?(LONE_PARAGRAPH)
+
+    stripped_text = citation[:text].to_s.strip.sub(/[;,]\s*\z/, "")
+    return true if stripped_text.empty?
+    return true if stripped_text.match?(/\Athrough\s+\([a-z]{1,5}\)\z/i)
+
+    prev_paragraph = previous_citation&.[](:paragraph_list_continuation).presence ||
+      previous_citation&.dig(:hierarchy, :paragraph).to_s
+    consecutive = consecutive_lettered_paragraphs?(prev_paragraph, paragraph)
+
+    if stripped_text.match?(LONE_PARAGRAPH)
+      return consecutive if citation.dig(:hierarchy, :section).present?
+
+      return citation[:prefix].to_s !~ /\b(and|or|&)\s*\z/i &&
+          citation[:text].to_s !~ /\A\s*(?:and|or|&)\b/i
+    end
+
+    if stripped_text.match?(/\A(?:and|or|&)\s+\([a-z]{1,5}\)\z/i)
+      return false unless previous_citation
+      return false if previous_citation[:text].to_s.match?(/\d+\([a-z]{1,5}\)\s*\z/i)
+      return consecutive
+    end
+
+    false
+  end
+
+  def paragraph_only_continuation?(citation, previous_citation)
+    paragraph_only_usc_shorthand?(citation, processing_a_list: true, previous_citation: previous_citation)
+  end
+
+  def consecutive_lettered_paragraphs?(previous_paragraph, paragraph)
+    prev = previous_paragraph.to_s.match(/\A\(([a-z]{1,5})\)\z/i)&.[](1)&.downcase
+    curr = paragraph.to_s.match(/\A\(([a-z]{1,5})\)\z/i)&.[](1)&.downcase
+    return false unless prev && curr && prev.length == 1 && curr.length == 1
+
+    curr.ord == prev.ord + 1
   end
 
   def enforce_title_range(title, min: nil, max: nil)
@@ -968,6 +1333,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         source = :federal_register
       end
     end
+    source ||= options[:source] if options&.[](:source)
     options[:source] = source if source && options
     source
   end
@@ -1049,7 +1415,100 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     +"#p-" << ReferenceParser::Cfr.section_string(hierarchy).gsub("%20", "-") << hierarchy[:sublocators]
   end
 
+  def redundant_usc_note_match?(match_text, pre_match:)
+    return false unless lax_list_replacements_regexp
+
+    pattern_match = match_text.match(lax_list_replacements_regexp)
+    return false unless pattern_match&.begin(0)&.zero?
+    return false unless pattern_match[:title].present? && USC_LABEL.match?(pattern_match[:source_label].to_s)
+
+    redundant_usc_notes?(pre_match, pattern_match[:sections])
+  end
+
   private
+
+  def lax_list_replacements_regexp
+    return @lax_list_replacements_regexp if defined?(@lax_list_replacements_regexp)
+    @lax_list_replacements_regexp = replacements.find { |r| r.pattern_slug == :lax_list_replacements }&.regexp
+  end
+
+  def appendix_of_the_title_only?(captures)
+    structural = captures.values_at(:section, :part, :chapter, :subchapter, :appendix, :prefixed_part, :prefixed_subpart)
+    captures[:title_connector]&.strip == "," && captures[:title].present? && structural.none?(&:present?)
+  end
+
+  def skip_lax_list_replacements?(captures, options)
+    if captures[:source_label].present? &&
+        !(USC_LABEL.match?(captures[:source_label]) || IRC_LABEL.match?(captures[:source_label]) || FR_LABEL.match?(captures[:source_label]))
+      return true
+    end
+    return true if !captures[:title].present? && captures[:sections].present? && options[:pre_match]&.match?(USC_CITATION_CONTEXT)
+
+    redundant_usc_notes?(options[:full_pre_match] || options[:pre_match], captures[:sections])
+  end
+
+  # returns the title (String) to continue the preceding USC list under,
+  # standalone aside citations (Array), or :skip
+  def resolve_lax_usc_list_continuation(captures, options)
+    sections = captures[:sections].to_s
+    return :skip if sections.match?(AS_AMENDED_ASIDE) && !sections.match?(/\d/)
+
+    pre_match = options[:full_pre_match] || options[:pre_match]
+    scoped_pre_match = usc_list_continuation_pre_match(pre_match)
+    continuation_title = scoped_pre_match.scan(/(\d+)\s+U\.?S\.?C(?!\.?A\b)/i).last&.first if scoped_pre_match&.match?(USC_CITATION_CONTEXT)
+    return publ_asides_from_sections(captures[:sections]) || :skip unless continuation_title
+
+    # "), sections 1434" after a Stat. cite — not Exchange Act "), sections 15B..."
+    return :skip if captures[:section_label].present? && !pre_match.match?(/\b\d+\s+Stat\.?\s*\d+\s*\z/i)
+    return :skip if skip_lax_usc_list_continuation?(pre_match)
+
+    continuation_title
+  end
+
+  def usc_list_continuation_pre_match(pre_match)
+    return unless pre_match.present?
+
+    pre_match.split(LIST_CONTINUATION_BLOCK_BOUNDARY).last.presence || pre_match
+  end
+
+  def skip_lax_usc_list_continuation?(pre_match)
+    return true unless pre_match.present?
+    return true if pre_match.match?(/\([A-Z][A-Z0-9.-]{1,5}\z/)
+
+    return false if pre_match.rstrip.end_with?(")")
+    return false if inside_usc_parenthetical?(pre_match)
+
+    pre_match.match?(/\d+\((?:[a-z]{1,5}|\d+)\s*\z/i) ||
+      pre_match.match?(/\d+\([a-z]{1,5}\)-\([a-z]{1,5}\s*\z/i) ||
+      pre_match.match?(/\([a-z]{1,5}\)\([^)]*\z/i)
+  end
+
+  def inside_usc_parenthetical?(pre_match)
+    last_begin = nil
+    pre_match.scan(/\(\s*\d+\s+U\.?S\.?C(?!\.?A\b)/i) { last_begin = Regexp.last_match.begin(0) }
+    return false unless last_begin
+
+    depth = 0
+    pre_match[last_begin..].each_char do |char|
+      depth += 1 if char == "("
+      depth -= 1 if char == ")"
+      return false if depth == 0
+    end
+
+    depth > 0
+  end
+
+  def redundant_usc_notes?(pre_match, sections)
+    return false unless pre_match.present? && sections.present?
+
+    items = sections.split(/,|\band\b/i).map(&:strip).reject(&:empty?)
+    return false unless items.all? { |item| item.match?(/\bnotes?\b/i) }
+
+    items.all? do |item|
+      base = item.sub(/\s+notes?\b.*\z/i, "").strip
+      pre_match.match?(/\b#{Regexp.escape(base)}\s+notes?\b/i)
+    end
+  end
 
   def a_closer_than_b_in_haystack(a, b, haystack, reference: :start)
     return unless haystack

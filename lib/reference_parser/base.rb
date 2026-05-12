@@ -4,6 +4,8 @@ class ReferenceParser::Base
   include ReferenceParser::Registration
   include ActionView::Helpers::TagHelper
 
+  UNLIKELY_LINK_START = /\A[),;]/
+
   attr_accessor :options, :debugging, :dependency
 
   def initialize(options, debugging: false)
@@ -30,6 +32,8 @@ class ReferenceParser::Base
   end
 
   def link_to(text, citation, options = {})
+    return text if text.blank?
+
     if (href = url(citation, options))
       content_tag(:a, text.html_safe, href: href.gsub("&amp;", "&"), **get_link_options(citation, options))
     else
@@ -57,6 +61,11 @@ class ReferenceParser::Base
   end
 
   private
+
+  def unlikely_link_start?(text)
+    stripped = text.to_s.gsub(/<[^>]+>/, "")
+    stripped.present? && stripped.match?(UNLIKELY_LINK_START)
+  end
 
   def absolute?(url_options)
     !url_options[:relative] || url_options[:absolute]

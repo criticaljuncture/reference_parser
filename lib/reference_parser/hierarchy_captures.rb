@@ -1,5 +1,5 @@
 class ReferenceParser::HierarchyCaptures
-  LIST_DESIGNATORS = /,|;|or|and|through|to/ix
+  LIST_DESIGNATORS = /,|;|or|and|&|through|to/ix
 
   LIST_EXAMPLES = /
     (?:<em>)?\s*Examples?\s*.                         # required example text
@@ -18,6 +18,9 @@ class ReferenceParser::HierarchyCaptures
 
   attr_accessor :options, :repeated, :repeated_capture, :captured_characters
 
+  ET_SEQ_COMMA_PLACEHOLDER = "__ET_SEQ_COMMA__"
+  EM_SEMICOLON_PLACEHOLDER = "__EM_SEMICOLON__"
+
   def from_named_captures(named_captures)
     # save initial capture order
     @order = ReferenceParser::CaptureOrder.new(named_captures)
@@ -27,11 +30,24 @@ class ReferenceParser::HierarchyCaptures
     @data = named_captures.select { |k, v| v }.symbolize_keys
 
     # eject trailing period
-    repartition(@data.keys.last, ".", :suffix_unlinked) if @data[@data.keys.last].to_s&.end_with?(".")
+    repartition(@data.keys.last, ".", :suffix_unlinked, from_end: true) if @data[@data.keys.last].to_s&.end_with?(".")
 
     # cleanup
     slide_right(:paragraph, :suffix) if only_whitespace?(:paragraph)
-    slide_right(:sections, :section) if @data[:sections] && !@data[:section] && !(LIST_DESIGNATORS =~ @data[:sections])
+    if @data[:chapter].present? && @data[:sections].present? && @data[:chapter].to_s.strip.match?(/\A\d+\z/)
+      chapter_item = "#{@data[:chapter_label]}#{@data[:chapter]}".strip
+      and_joiner = " and "
+      @data[:sections] = "#{chapter_item}#{and_joiner}#{@data[:sections]}"
+      @captured_characters += and_joiner.length
+      @data.delete(:chapter)
+      @data.delete(:chapter_label)
+    end
+    if (handler = list_source_handler)
+      handler.extract_publ_attribution_aside!(@data)
+      handler.extract_as_amended_aside!(@data)
+    end
+    keep_as_sections_list = handler&.space_separated_section_list?(@data[:sections])
+    slide_right(:sections, :section) if @data[:sections] && !@data[:section] && !(LIST_DESIGNATORS =~ @data[:sections]) && !keep_as_sections_list
     slide_left(:sections, :appendices) if @data[:appendices]
     restore_paragraph
     if list?(@data[:sections]) && list?(@data[:paragraphs])
@@ -153,22 +169,33 @@ class ReferenceParser::HierarchyCaptures
 
   private
 
-  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|;|and|or|through|note/ixo
+  LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS = /,|;|and|&|or|through/ixo
+
+  CFR_SECTION_LIST_ITEM_DIVIDERS = /,|;|\band\b|&|\bor\b|through/ixo
 
   # dividers that should be kept with the subsequent item
-  TRAILING_DIVIDERS = /and|or|to|through/ix
+  TRAILING_DIVIDERS = /and|&|or|to|through/ix
 
   ANY_DIVIDER = /(?<split>(?:\s*(?:#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS})\s*))/ix
+
+  CFR_SECTION_LIST_DIVIDER = /
+    (?<split>
+      (?:\s*(?:#{CFR_SECTION_LIST_ITEM_DIVIDERS})\s*) |
+      \s+(?<!to\s)(?<!through\s)(?=\d+\.\d+(?:\s*(?:[,;(]|introductory\s+text\b))?)
+    )
+  /ix
 
   # patterns to indicate if an entire value is composed of dividers (ie in the list ["item a", " and ", "item b"] the middle value should match to be merged)
   ALL_DIVIDERS = /\A(?<split>(?:\s+|#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS}|<\/?em>)+)\z/ixo
   ALL_DIVIDERS_IN_PARAGRAPH = /\A(?<split>(\s+|#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS}|#{LIST_EXAMPLES})+)\z/ixo # skipping "examples" for the moment
 
   def split_lists_into_individual_items(keys)
+    handler = list_source_handler
     keys.each do |key|
       original = @data[key]
       next unless original.present?
       clean = @data[key].dup
+      sections_handler = (key == :sections) ? handler : nil
 
       consumed_keys = []
       if key == :sections && ((clean&.include?("(") && @data[:paragraphs]&.include?("(")) || (clean&.end_with?("-") || @data[:sections]&.start_with?("-")))
@@ -180,14 +207,37 @@ class ReferenceParser::HierarchyCaptures
         consumed_keys.concat([:section, :sections])
       end
 
-      # split on any list markers, then absorb lone makers back into neighbors prefering
-      # trailing dividers to the right and the remainder (commas, etc) to the left
-      split = clean&.split(ANY_DIVIDER)&.select { |s| s.length > 0 }
+      if key == :sections && clean&.match?(/\bet\s*seq\.\s*,\s*<\/em>/i)
+        clean = clean.gsub(/(\bet\s*seq)\.(\s*,)(\s*<\/em>)/i) { "#{Regexp.last_match(1)}.#{ET_SEQ_COMMA_PLACEHOLDER}#{Regexp.last_match(3)}" }
+      end
+
+      if key == :sections && clean&.include?("<em>")
+        clean = clean.gsub(/(<em>[^<]*);([^<]*<\/em>)/i) { "#{Regexp.last_match(1)}#{EM_SEMICOLON_PLACEHOLDER}#{Regexp.last_match(2)}" }
+      end
+
+      if sections_handler
+        clean, delta = sections_handler.normalize_sections_list_text(clean)
+        @captured_characters += delta
+      end
+
+      cfr_section_list = key == :sections && (@options[:source].nil? || @options[:source] == :cfr) &&
+        clean&.match?(/\b(?:introductory\s+text|notes?\s+to)\b/i)
+
+      split = sections_handler&.split_sections_list(clean) ||
+        if cfr_section_list
+          clean&.split(CFR_SECTION_LIST_DIVIDER)&.select { |s| s.length > 0 }
+        else
+          clean&.split(ANY_DIVIDER)&.select { |s| s.length > 0 }
+        end
+      if sections_handler
+        split, delta = sections_handler.post_process_section_list_items(split)
+        @captured_characters += delta
+      end
       if @options[:source] && @options[:source] != :cfr
-        split = split.map do |s|
-          resplit = s.split(/(?<=\s)/)
-          (resplit.count(&:present?) == 2) ? resplit : s
-        end.flatten
+        split = split.flat_map do |s|
+          parts = s.split(/(?<=\s)/, 2)
+          split_spaced_item?(s, parts, handler) ? parts : [s]
+        end
       end
 
       if split.present?
@@ -216,6 +266,16 @@ class ReferenceParser::HierarchyCaptures
         if split.count > 1
           @data[key] = split
           consumed_keys.each { |consumed_key| @data.delete(consumed_key) }
+        elsif clean != original
+          @data[key] = split&.first || clean
+        end
+      end
+
+      if key == :sections && @data[key].present?
+        @data[key] = if @data[key].is_a?(Array)
+          @data[key].map { |item| item.gsub(ET_SEQ_COMMA_PLACEHOLDER, ",").gsub(EM_SEMICOLON_PLACEHOLDER, ";") }
+        else
+          @data[key].gsub(ET_SEQ_COMMA_PLACEHOLDER, ",").gsub(EM_SEMICOLON_PLACEHOLDER, ";")
         end
       end
 
@@ -223,6 +283,23 @@ class ReferenceParser::HierarchyCaptures
         puts Rainbow("split_lists_into_individual_items [").blue + (@data[key] || []).map { |i| Rainbow(i.to_s).green }.map { |i| Rainbow('"').blue + i + Rainbow('"').blue }.join(Rainbow(", ").blue) + Rainbow("] <= \"#{original}\"").blue if @debugging && original != @data[key]
       end
     end
+  end
+
+  def list_source_handler
+    case @options[:source]
+    when :usc then ReferenceParser::Usc
+    end
+  end
+
+  # modifiers that belong with the preceding number ("1234 et seq.", "1234 note")
+  SPACED_ITEM_MODIFIER = /\A(?:<em>\s*)?(?:,\s*)?(?:et\s*seq|as\s+amended|notes?|preceding\s+notes?|\(\s*notes?\s*\)|introductory\s+text)\b/i
+
+  def split_spaced_item?(item, parts, handler)
+    return false if /\Achapter\s+\d+\z/i.match?(item)
+    return false unless parts.length == 2 && parts.all?(&:present?)
+    return false if handler&.preserve_spaced_section_parts?(parts.first, parts.last)
+    return false if parts.last.start_with?("(") || parts.last.match?(SPACED_ITEM_MODIFIER) || parts.last.match?(/\Ato\s+/i)
+    !parts.first.match?(/\A#{ReferenceParser::Cfr::PART_APPENDIX_LABEL}\.?\s*\z/io)
   end
 
   def list?(capture)

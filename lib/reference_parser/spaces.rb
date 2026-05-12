@@ -8,7 +8,7 @@ class ReferenceParser::Spaces
   SPACES = [" ", EM_SPACE, EN_SPACE, FULLWIDTH_SPACE, THIN_SPACE]
 
   def self.any?(text)
-    text.include?(" ") || complex?(text)
+    text&.include?(" ") || complex?(text)
   end
 
   def self.none?(text)

@@ -30,7 +30,11 @@ module CfrHelper
             citations << {ambiguous: r[:ambiguous]}
           end
         end
-        expect(citations).to eq(expected_citation.map { |c| c.except(:expected_url) })
+        expect(citations).to eq(expected_citation.map { |c| c.except(:expected_url, :expected_text) })
+
+        expected_citation.filter_map { |expected_citation| expected_citation[:expected_text] }.each do |expected_text|
+          expect(result_html).to have_tag("a", text: expected_text)
+        end
 
         expected_citation.filter_map { |expected_citation| expected_citation[:expected_url] }.each do |expected_url|
           expect(result_html).to have_tag("a", with: {href: expected_url})
@@ -59,7 +63,7 @@ module CfrHelper
     expect(result_html).to include(example[:expected_html]) if example[:expected_html].present?
 
     example_text = example[:text] || example[:ex]
-    expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example_text).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none]) || example[:expected_html].present? || example_text.is_a?(Array)
+    expect(references_only_result_html_text).to include(Nokogiri::HTML.parse(example_text).text) unless expected_prior_urls.present? || (expected_citation == [:expect_none]) || example[:expected_html].present? || example_text.is_a?(Array) || expected_citation.count > 1
     expect(result_html_text).to include(Nokogiri::HTML.parse(example[:ex]).text) unless example[:html_appearance] == :expect_none || example[:ex].is_a?(Array)
     expect(result_html_text).to include(Nokogiri::HTML.parse(example[:with_surrounding_text]).text) if example[:with_surrounding_text].present?
 

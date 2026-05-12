@@ -15,8 +15,10 @@ class ReferenceParser
 
   def initialize(only: nil, except: [], options: {})
     @options = options || {}
-    @requested_parser_types = [only || @options[:only] || default_parser_types].flatten - except
+    @requested_parser_types = [expand_requested_parser_types(only || @options[:only]) || default_parser_types].flatten - except
     @timeout = @options.delete(:timeout) || 20
+    @include_unlinked = @options.delete(:include_unlinked)
+    @mutate_captures = @options.delete(:mutate_captures)
     @html_aware = @options[:html_awareness] != :none
     @debugging = false
     @parsers, @dependencies = parsers_for(@requested_parser_types)
@@ -30,10 +32,11 @@ class ReferenceParser
   end
 
   def each(text, options: {}, default: {}, &block)
-    perform(text, timeout: options.delete(:timeout)) do |parser, citation|
+    puts Rainbow("ReferenceParser#each ").dark.blue + Rainbow(text.to_s).blue if @debugging
+    perform(text, timeout: options.delete(:timeout), options: options) do |parser, citation|
       original_text = citation[:text]
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default))
-      yield(citation, parser.slug) if block && (citation[:link] != citation[:text])
+      yield(citation, parser.slug) if block && (@include_unlinked || (citation[:link] != citation[:text]))
       citation[:link] = build_link(parser, citation, citation[:text], build_options(parser, options, default)) if citation[:text] != original_text
       citation[:link]
     end
@@ -108,6 +111,15 @@ class ReferenceParser
     %i[usc email dfars_pgi cfr federal_register executive_order public_law patent url]
   end
 
+  def expand_requested_parser_types(requested_parser_types)
+    case requested_parser_types
+    when :authorities
+      %i[executive_order federal_register usc public_law] + ReferenceParser::Authority.slugs
+    else
+      requested_parser_types
+    end
+  end
+
   def new_parser(parser_type)
     case parser_type
     when Class
@@ -157,6 +169,11 @@ class ReferenceParser
     @merged_patterns ||= merge_patterns_from(replacements)
   end
 
+  def cfr_parser
+    return @cfr_parser if defined?(@cfr_parser)
+    @cfr_parser = @parsers.find { |parser| parser.is_a?(ReferenceParser::Cfr) }
+  end
+
   def replace_patterns(text, options: {}, &block)
     @references = []
     searchable_text = text.to_str
@@ -166,69 +183,76 @@ class ReferenceParser
 
     searchable_text.gsub(merged_patterns) do
       match = Regexp.last_match
-      all_captures = match.captures
       result = nil
 
       tag_context.consider(match)
 
       if !@html_aware || tag_context.linkable?
-        replacements.each.with_index do |replacement, index|
-          next unless replacement.regexp
+        if cfr_parser&.redundant_usc_note_match?(match[0], pre_match: searchable_text[0...match.begin(0)])
+          result = match[0]
+        else
+          replacements.each.with_index do |replacement, index|
+            next unless replacement.regexp
 
-          # take captures associated with this replacement pattern
-          captures = all_captures.shift(replacement.regexp.names.size)
+            pattern_match = match[0].match(replacement.regexp)
+            next unless pattern_match&.begin(0)&.zero?
 
-          # skip ahead unless this pattern has captures present
-          next unless captures.any? { |x| !x.nil? }
+            named_captures = pattern_match.named_captures.symbolize_keys
 
-          puts Rainbow("[#{index}] matched #{replacement.pattern_slug ? ":#{replacement.pattern_slug}" : "<missing slug>"} \"#{match[0]}\"").green if @debugging
+            puts Rainbow("[#{index}] matched #{replacement.pattern_slug ? ":#{replacement.pattern_slug}" : "<missing slug>"} \"#{match[0]}\"").green if @debugging
 
-          # only captures used by this replacement
-          named_captures = match.named_captures.slice(*replacement.regexp.names).to_h.symbolize_keys
-          replacement_options = build_options(replacement.parser, @options, {})
-          replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
-          replacement_options[:pre_match] = tag_context.pre_match if replacement.will_consider_pre_match
-          replacement_options[:post_match] = tag_context.post_match if replacement.will_consider_post_match
-
-          citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
-          citations = :skip if replacement.ignore?(citations, options: build_options(replacement.parser, @options, {}))
-          break if citations == :skip
-
-          # simple implementations just update the captures in place
-          citations = named_captures unless citations.is_a?(Array) || citations.is_a?(Hash)
-          citations = [citations] unless citations.is_a?(Array)
-
-          citations&.each do |citation|
-            effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
-              replacement_options.merge!(build_options(effective_parser, @options, {}))
-              effective_parser.clean_up_named_captures(citation, options: replacement_options)
+            replacement_options = build_options(replacement.parser, @options, {})
+            replacement_options[:include_unlinked] = true if @include_unlinked
+            replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
+            replacement_options[:pre_match] = tag_context.pre_match if replacement.will_consider_pre_match
+            if %i[lax_usc_list_continuation lax_list_replacements].include?(replacement.pattern_slug)
+              replacement_options[:full_pre_match] = searchable_text[0...match.begin(0)]
             end
+            replacement_options[:post_match] = tag_context.post_match if replacement.will_consider_post_match
 
-            if effective_parser && @requested_parser_types.include?(effective_parser.type_slug)
-              citation_result = nil
-              if block
-                citation[:source] ||= effective_parser.slug
-                citation[:text] = citation[:text] || match[0]
-                prefix = citation[:prefix] || ""
-                prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists)
-                suffix = citation[:suffix] || ""
-                citation_result = "".html_safe <<
-                  prefix <<
-                  prefix_spacers <<
-                  (yield(effective_parser, citation) || "") <<
-                  suffix_spacers <<
-                  suffix
+            @mutate_captures&.call(named_captures, source: replacement.parser.slug, pattern_slug: replacement.pattern_slug, context: options[:context])
+            citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
+            citations = :skip if replacement.ignore?(citations, options: build_options(replacement.parser, @options, {}))
+            next if citations == :skip
+
+            citations = named_captures unless citations.is_a?(Array) || citations.is_a?(Hash)
+            citations = [citations] unless citations.is_a?(Array)
+
+            citations&.each do |citation|
+              skip = false
+              effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
+                replacement_options.merge!(build_options(effective_parser, @options, {}))
+                skip = (effective_parser.clean_up_named_captures(citation, options: replacement_options) == :skip)
               end
-              if citation_result
-                result ||= "".html_safe
-                result << citation_result
-                citation[:result] = citation_result
+              next if skip
+
+              citation.delete(:final_loop)
+              if effective_parser && @requested_parser_types.include?(effective_parser.type_slug)
+                citation_result = nil
+                if block
+                  citation[:source] ||= effective_parser.slug
+                  citation[:text] = citation[:text] || match[0]
+                  prefix = citation[:prefix] || ""
+                  prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists)
+                  suffix = citation[:suffix] || ""
+                  citation_result = "".html_safe <<
+                    prefix <<
+                    prefix_spacers <<
+                    (yield(effective_parser, citation) || "") <<
+                    suffix_spacers <<
+                    suffix
+                end
+                if citation_result
+                  result ||= "".html_safe
+                  result << citation_result
+                  citation[:result] = citation_result
+                end
+              else
+                citation = {text: match[0], result: match[0]}
               end
-            else
-              citation = {text: match[0], result: match[0]}
             end
+            break
           end
-          break
         end
       end
 
@@ -238,7 +262,7 @@ class ReferenceParser
     end.html_safe # !?
   end
 
-  ALL_DIVIDER_PATTERN = /(?<split>(?:,|;|\s+|and|or|through)+)/ix
+  ALL_DIVIDER_PATTERN = /(?<split>(?:,|;|\s+|and|&|or|through)+)/ix
   TRAILING_PATTERN = /[\s,;]+/ix
   TRAILING_HTML_ENTITY_OR_ATTRIBUTE = /
     (?:
