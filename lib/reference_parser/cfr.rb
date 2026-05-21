@@ -793,7 +793,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
       # cleanup hierarchy (link text is already assembled, original text can be safely normalized at this point)
       hierarchy.cleanup!(expected: captures.expected, captures: captures)
-      hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list)
+      hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list, previous_citation: previous_citation)
       hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list)
       href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected, captures: captures)
       hierarchy.finish!

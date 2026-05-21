@@ -250,6 +250,13 @@ RSpec.describe "ReferenceParser::Cfr" do
            {title: "29", chapter: "XXV", section: "2510.3-3", paragraph: "(d)(1)"},
            {title: "29", chapter: "XXV", section: "2510.3-3", paragraph: "(d)(2)"},
            {title: "29", chapter: "XXV", section: "2520.3-3", paragraph: "(d)(3)"}
+         ]},
+
+        {ex: "40 CFR part 262, subpart H and 265.12", context: {composite_hierarchy: "40::I:I:266:F:266.70"},
+         with_surrounding_text: "For precious metals exported to or imported from other countries for recovery, 40 CFR part 262, subpart H and 265.12. Lorem ipsum",
+         citations: [
+           {title: "40", part: "262", subpart: "H"},
+           {title: "40", part: "265", section: "265.12"}
          ]}
       ]
     ].each_slice(2) do |description, examples|

@@ -194,14 +194,14 @@ class ReferenceParser::Hierarchy
     self
   end
 
-  def cleanup_list_ranges_if_needed!(repeated_capture: :section, processing_a_list: nil)
+  def cleanup_list_ranges_if_needed!(repeated_capture: :section, processing_a_list: nil, previous_citation: nil)
     range_captures = %i[section part paragraph]
     effective_capture = repeated_capture
     effective_capture = :part if effective_capture == :section && !@data[effective_capture]
     [effective_capture, :paragraph].uniq.each do |effective_capture|
       value = @data[effective_capture]
       next unless value.present?
-      puts "cleanup_list_ranges_if_needed value #{value}" if @debugging
+      puts Rainbow("cleanup_list_ranges_if_needed! ").blue + Rainbow(value.to_s).green + Rainbow(" (#{effective_capture}#{"/#{repeated_capture}" unless effective_capture == repeated_capture}) list? ").blue + Rainbow(processing_a_list ? "[Y]" : "[n]").send(processing_a_list ? :green : :red) if @debugging
 
       if range_captures.include?(effective_capture)
         if (value&.count("-") == 3) && (value&.count(".") == 2) && (items = value.split("-")) && (items.count == 4) && (items[0] == items[2])
@@ -212,10 +212,21 @@ class ReferenceParser::Hierarchy
         elsif (/\bto\b|through/ =~ value) || (value&.include?("-") && !(value&.count(".") == 1))
           items = value.split(/\bto\b|-|through/)
           if (effective_capture == :paragraph) || ReferenceParser::Guesses.numbers_seem_like_a_range?(items.map(&:to_i))
-            puts "cleanup_list_ranges_if_needed AAA \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"" if @debugging
+            puts Rainbow("cleanup_list_ranges_if_needed! \"#{items.first}\"-\"#{items.last}\" <= \"#{value}\"").blue if @debugging
             @data[effective_capture] = items.first.to_s.strip
             @data[:"#{effective_capture}_end"] = items.last.to_s.strip
           end
+        end
+      elsif processing_a_list && (effective_capture == :subpart) && (@data[effective_capture]&.count(".") == 1)
+        previous_alpha = !!((previous_citation&.[](:hierarchy)&.[](effective_capture) || "") =~ /\A[A-Z]+\z/)
+        current_alpha = !!((@data[effective_capture] || "") =~ /\A[A-Z]+\z/)
+
+        if previous_alpha != current_alpha
+          # mixed list
+          @data[:section] = @data[:subpart]
+          @data[:part], _ = @data[:subpart].split(".", 2)
+          @data.delete(:subpart)
+          puts Rainbow("cleanup_list_ranges_if_needed! mixed list correction #{@data[:section]} (section <= subpart)").orange if @debugging
         end
       end
     end

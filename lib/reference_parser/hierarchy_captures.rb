@@ -194,7 +194,7 @@ class ReferenceParser::HierarchyCaptures
         all_dividers = (key == :paragraphs) ? ALL_DIVIDERS_IN_PARAGRAPH : ALL_DIVIDERS
         x = 0
         while x < split.length
-          puts Rainbow("split x #{x} split #{split}").blue if @debugging
+          puts Rainbow("split x #{x} split #{split} (#{key})").blue if @debugging
           if all_dividers.match?(split[x]) || # only list cruft
               (collapsing_examples = split[x - 1].include?("example") && !split[x - 1].include?("paragraph")) # "examples 1, 2, 3, 4, 5, and 6 in paragraph (j) of this section"
             if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1)) && !collapsing_examples
@@ -220,7 +220,7 @@ class ReferenceParser::HierarchyCaptures
       end
 
       if @debugging
-        puts "split_lists_into_individual_items \"#{original}\" into \"#{@data[key]}\"" if @debugging && original != @data[key]
+        puts Rainbow("split_lists_into_individual_items [").blue + (@data[key] || []).map { |i| Rainbow(i.to_s).green }.map { |i| Rainbow('"').blue + i + Rainbow('"').blue }.join(Rainbow(", ").blue) + Rainbow("] <= \"#{original}\"").blue if @debugging && original != @data[key]
       end
     end
   end
