@@ -1,6 +1,8 @@
 class ReferenceParser::Dashes
   EM_DASH = "—"
   EN_DASH = "–"
+  LOWBARM = "＿"
+  UNDERSCORE = "_"
 
   DASHES = ["-", EM_DASH, EN_DASH]
 

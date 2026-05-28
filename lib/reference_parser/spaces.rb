@@ -2,9 +2,10 @@ class ReferenceParser::Spaces
   THIN_SPACE = " "
   EM_SPACE = " "
   EN_SPACE = " "
+  FULLWIDTH_SPACE = "　"
   NON_BREAKING_SPACE = " "
 
-  SPACES = [" ", EM_SPACE, EN_SPACE, THIN_SPACE]
+  SPACES = [" ", EM_SPACE, EN_SPACE, FULLWIDTH_SPACE, THIN_SPACE]
 
   def self.any?(text)
     text.include?(" ") || complex?(text)
