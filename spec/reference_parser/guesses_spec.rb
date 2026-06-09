@@ -32,7 +32,7 @@ RSpec.describe ReferenceParser::Guesses do
       description = range ? "range" : "not range"
       describe description do
         sets_of_numbers.each do |numbers|
-          it "#{numbers.map(&:to_s).join(",").truncate(48)} is #{description}" do
+          it "#{numbers.join(",").truncate(48)} is #{description}" do
             expect(!!described_class.numbers_seem_like_a_range?(numbers)).to eq(range)
           end
         end
@@ -60,7 +60,7 @@ RSpec.describe ReferenceParser::Guesses do
       description = similar ? "similar" : "not similar"
       describe description do
         sets_of_numbers.each do |numbers|
-          it "#{numbers.map(&:to_s).join(",").truncate(48)} is #{description}" do
+          it "#{numbers.join(",").truncate(48)} is #{description}" do
             expect(!!described_class.numbers_similarish(numbers)).to eq(similar)
           end
         end
