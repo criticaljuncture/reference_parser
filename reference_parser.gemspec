@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary = "Common public reference extraction & linking."
   spec.description = "Common public reference extraction & linking."
   spec.homepage = "https://github.com/criticaljuncture/reference_parser"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 3.4.0")
 
   spec.metadata["allowed_push_host"] = ""
 
