@@ -119,7 +119,7 @@ USC_SCENERIOS = [
     {title: "16", part: "1908", expected_text: "1908"}
   ]},
 
-  {ex: "Title 50 U.S.C. 3501 et seq.", citation: {title: "50", part: "3501", expected_text: "50 U.S.C. 3501 et seq"}, expect_variance: true},
+  {ex: "Title 50 U.S.C. 3501 et seq.", citation: {title: "50", part: "3501", expected_text: "Title 50 U.S.C. 3501 et seq"}},
   {ex: "10 U.S. Code, Ch. 47, 21 U.S. Code 801, et seq.", citations: [{title: "10", part: "47", expected_text: "10 U.S. Code, Ch. 47", expected_url: "https://www.govinfo.gov/link/uscode/10/4701"}, {title: "21", part: "801 et seq", expected_text: "21 U.S. Code 801, et seq", expected_url: "https://www.govinfo.gov/link/uscode/21/801"}], expect_variance: true},
 
   {ex: "5 U.S.C. 5514; 5 U.S.C. 5584; 5 U.S.C. 6402; 31 U.S.C. 3701, 3711; 3716, 3717, 3718, 3720A, 3720D.", citations: [
@@ -139,6 +139,262 @@ USC_SCENERIOS = [
   {ex: "40 U.S.C. App. 106.", citation: {title: "40", appendix: "106"}, authority_only: true},
   {ex: "46 App. U.S.C. 1101", citation: {title: "46", appendix: "1101"}, authority_only: true},
   {ex: "46 U.S.C. sections 53902, 53910", citations: [{title: "46", part: "53902"}, {title: "46", part: "53910"}]},
+
+  {ex: "consistent with the objectives of 49 U.S.C. Chapter 301 or Chapter 325.",
+   citations: [
+     {title: "49", chapter: "301", expected_text: "49 U.S.C. Chapter 301", expected_url: "https://www.govinfo.gov/link/uscode/49/30101"},
+     {title: "49", chapter: "325", expected_text: "Chapter 325", expected_url: "https://www.govinfo.gov/link/uscode/49/32501"}
+   ]},
+
+  {ex: "28 U.S.C. 2461 note; 49 U.S.C. 113, 1301 note, 31306a; 49 U.S.C. chapters 5, 51, 131-141, 145-149, 311, 313, and 315; and 49 CFR 1.81, 1.87.",
+   citations: [
+     {title: "28", section: "2461", expected_text: "28 U.S.C. 2461"},
+     {title: "49", section: "113", expected_text: "49 U.S.C. 113"},
+     {title: "49", section: "1301", expected_text: "1301 note"},
+     {title: "49", section: "31306a", expected_text: "31306a"},
+     {title: "49", section: "5", expected_text: "49 U.S.C. chapters 5"},
+     {title: "49", section: "51", expected_text: "51"},
+     {title: "49", section: "131", expected_text: "131-141"},
+     {title: "49", section: "145", expected_text: "145-149"},
+     {title: "49", section: "311", expected_text: "311"},
+     {title: "49", section: "313", expected_text: "313"},
+     {title: "49", section: "315", expected_text: "315"},
+     {title: "49", section: "1.81", expected_text: "49 CFR 1.81", expected_url: "https://www.ecfr.gov/current/title-49/section-1.81"},
+     {title: "49", section: "1.87", expected_text: "1.87", expected_url: "https://www.ecfr.gov/current/title-49/section-1.87"}
+   ]},
+
+  {ex: "49 U.S.C. 114, 5103, 40113, 44901-44907, 44913-44914, 44916-44918, 44935-44936, 44939, 44942, 46105; Pub. L. 110-53 (121 Stat. 266, Aug. 3, 2007) secs. 1408 (6 U.S.C. 1137), 1501 (6 U.S.C. 1151), 1517 (6 U.S.C. 1167), and 1534 (6 U.S.C. 1184).",
+   citations: [
+     {title: "49", section: "114", expected_text: "49 U.S.C. 114"},
+     {title: "49", section: "5103", expected_text: "5103"},
+     {title: "49", section: "40113", expected_text: "40113"},
+     {title: "49", section: "44901", expected_text: "44901-44907"},
+     {title: "49", section: "44913", expected_text: "44913-44914"},
+     {title: "49", section: "44916", expected_text: "44916-44918"},
+     {title: "49", section: "44935", expected_text: "44935-44936"},
+     {title: "49", section: "44939", expected_text: "44939"},
+     {title: "49", section: "44942", expected_text: "44942"},
+     {title: "49", section: "46105", expected_text: "46105"},
+     {title: "110", section: "53", expected_text: "Pub. L. 110-53", expected_url: "https://www.govinfo.gov/link/plaw/110/public/53"},
+     {title: "6", section: "1137", expected_text: "6 U.S.C. 1137"},
+     {title: "6", section: "1151", expected_text: "6 U.S.C. 1151"},
+     {title: "6", section: "1167", expected_text: "6 U.S.C. 1167"},
+     {title: "6", section: "1184", expected_text: "6 U.S.C. 1184"}
+   ]},
+
+  {ex: "49 U.S.C. 114; Pub. L. 110-53 (121 Stat. 266, Aug. 3, 2007) secs. 1501 (6 U.S.C. 1151), 1512 (6 U.S.C. 1162) and 1517 (6 U.S.C. 1167).",
+   citations: [
+     {title: "49", section: "114", expected_text: "49 U.S.C. 114"},
+     {title: "110", section: "53", expected_text: "Pub. L. 110-53", expected_url: "https://www.govinfo.gov/link/plaw/110/public/53"},
+     {title: "6", section: "1151", expected_text: "6 U.S.C. 1151"},
+     {title: "6", section: "1162", expected_text: "6 U.S.C. 1162"},
+     {title: "6", section: "1167", expected_text: "6 U.S.C. 1167"}
+   ]},
+
+  {ex: "16 U.S.C. 1361 <em>et seq.,</em> as amended by Pub. L. 97-58.",
+   citations: [{title: "16", section: "1361", expected_text: "16 U.S.C. 1361 <em>et seq.,</em>"}],
+   expected_html: "</a> as amended by Pub. L. 97-58."},
+
+  {ex: "12 U.S.C. 248(i)-(j), 343 <em>et seq.,</em> 347a, 347b, 347c, 348 <em>et seq.,</em> 357, 374, 374a, and 461.",
+   citations: [
+     {title: "12", section: "248", expected_text: "12 U.S.C. 248(i)-(j)"},
+     {title: "12", section: "343", expected_text: "343 <em>et seq.,</em>"},
+     {title: "12", section: "347a", expected_text: "347a"},
+     {title: "12", section: "347b", expected_text: "347b"},
+     {title: "12", section: "347c", expected_text: "347c"},
+     {title: "12", section: "348", expected_text: "348 <em>et seq.,</em>"},
+     {title: "12", section: "357", expected_text: "357"},
+     {title: "12", section: "374", expected_text: "374"},
+     {title: "12", section: "374a", expected_text: "374a"},
+     {title: "12", section: "461", expected_text: "461"}
+   ]},
+
+  {ex: "12 U.S.C. 248(i), (j), and 248-1, 342, 360, 464, 4001-4010, and 5001-5018.",
+   citations: [
+     {title: "12", section: "248", expected_text: "12 U.S.C. 248"},
+     {title: "12", section: "248-1", expected_text: "248-1"},
+     {title: "12", section: "342", expected_text: "342"},
+     {title: "12", section: "360", expected_text: "360"},
+     {title: "12", section: "464", expected_text: "464"},
+     {title: "12", section: "4001", expected_text: "4001-4010"},
+     {title: "12", section: "5001", expected_text: "5001-5018"}
+   ],
+   expected_html: "</a>(i), (j), and "},
+
+  # Stat. cite inside a Pub. L. aside — :stat is not in the default parser set, its text still has to survive
+  {ex: "44 U.S.C. 3102 as amended by Pub. L. 104-231, 110 Stat. 3048, Pub. L. 110-175.",
+   citations: [
+     {title: "44", section: "3102", expected_text: "44 U.S.C. 3102"},
+     {title: "104", section: "231", expected_text: "Pub. L. 104-231", expected_url: "https://www.govinfo.gov/link/plaw/104/public/231"},
+     {title: "110", section: "175", expected_text: "Pub. L. 110-175", expected_url: "https://www.govinfo.gov/link/plaw/110/public/175"}
+   ],
+   expected_html: "</a>, 110 Stat. 3048, "},
+
+  {ex: "46 App. U.S.C. 1171 <em>et seq.</em> 46 App. U.S.C. 1114(b); 49 CFR 1.66.",
+   citations: [{title: "49", section: "1.66", expected_text: "49 CFR 1.66", expected_url: "https://www.ecfr.gov/current/title-49/section-1.66"}],
+   expected_html: "46 App. U.S.C. 1171 <em>et seq.</em> 46 App. U.S.C. 1114(b); "},
+
+  {ex: "20 U.S.C. 5505. 2 CFR part 200.",
+   citations: [
+     {title: "20", section: "5505", expected_text: "20 U.S.C. 5505"},
+     {title: "2", section: "200", expected_text: "2 CFR part 200", expected_url: "https://www.ecfr.gov/current/title-2/part-200"}
+   ]},
+
+  {ex: "Title 10 U.S.C. 131.",
+   citation: {title: "10", section: "131", expected_text: "Title 10 U.S.C. 131"}},
+
+  {ex: "49 U.S.C. subtitle I and chapters 401, 411.",
+   citations: [
+     {title: "49", section: "401", expected_text: "49 U.S.C. subtitle I and chapters 401"},
+     {title: "49", section: "411", expected_text: "411"}
+   ]},
+
+  {ex: "5 U.S.C., App. 1.", citation: :expect_none},
+
+  {ex: "Secs. 202 and 208, Title 3, U.S. Code.",
+   citations: [
+     {title: "3", section: "202", expected_text: "202"},
+     {title: "3", section: "208", expected_text: "208"}
+   ],
+   expected_html: "Secs. <a"},
+
+  {ex: "49 U.S.C. 42301 preceding note added by Pub. L. 112-95, sec. 412, 126 Stat. 89, 44101.",
+   citations: [
+     {title: "49", section: "42301", expected_text: "49 U.S.C. 42301 preceding"},
+     {title: "112", section: "95", expected_text: "Pub. L. 112-95", expected_url: "https://www.govinfo.gov/link/plaw/112/public/95"},
+     {title: "49", section: "44101", expected_text: "44101"}
+   ],
+   expected_html: "</a>, sec. 412, 126 Stat. 89, "},
+
+  {ex: "16 U.S.C. 1361 et seq., as amended by Pub. L. 97-58, and 1362.",
+   citations: [
+     {title: "16", section: "1361", expected_text: "16 U.S.C. 1361 et seq."},
+     {title: "16", section: "1362", expected_text: "1362"}
+   ],
+   expected_html: "</a>, as amended by Pub. L. 97-58, and "},
+
+  {ex: "5 U.S.C. 552, as amended.",
+   citations: [{title: "5", section: "552", expected_text: "5 U.S.C. 552, as amended"}]},
+
+  {ex: "7 U.S.C. 5623, 5662-5663, as amended.",
+   citations: [
+     {title: "7", section: "5623", expected_text: "7 U.S.C. 5623"},
+     {title: "7", section: "5662", expected_text: "5662-5663, as amended"}
+   ]},
+
+  {ex: "18 U.S.C. 4081, 4082 (Repealed in part as to offenses committed on or after November 1, 1987), 5006-5024.",
+   citations: [
+     {title: "18", section: "4081", expected_text: "18 U.S.C. 4081"},
+     {title: "18", section: "4082", expected_text: "4082 (Repealed in part as to offenses committed on or after November 1, 1987)"},
+     {title: "18", section: "5006", expected_text: "5006-5024"}
+   ]},
+
+  {ex: "49 U.S.C. 46302 (for a violation of 49 U.S.C. 46504), 46304-46316.",
+   citations: [
+     {title: "49", section: "46302", expected_text: "49 U.S.C. 46302 (for a violation of 49 U.S.C. 46504)"},
+     {title: "49", section: "46304", expected_text: "46304-46316"}
+   ]},
+
+  {ex: "8 U.S.C. 1101 and note, 1102, 1103.",
+   citations: [
+     {title: "8", section: "1101", expected_text: "8 U.S.C. 1101"},
+     {title: "8", section: "1101"},
+     {title: "8", section: "1102", expected_text: "1102"},
+     {title: "8", section: "1103", expected_text: "1103"}
+   ],
+   expected_html: "</a> and <a href=\"https://www.govinfo.gov/link/uscode/8/1101\">note</a>, "},
+
+  {ex: "40 U.S.C. 318-318d. 486.",
+   citations: [
+     {title: "40", section: "318-318d", expected_text: "40 U.S.C. 318-318d."},
+     {title: "40", section: "486", expected_text: "486"}
+   ]},
+
+  {ex: "39 U.S.C. 401, 2601 Chap. 56 Section 5604.",
+   citations: [
+     {title: "39", section: "401", expected_text: "39 U.S.C. 401"},
+     {title: "39", section: "2601", expected_text: "2601 Chap. 56 Section"},
+     {title: "39", section: "5604", expected_text: "5604"}
+   ]},
+
+  {ex: "44 U.S.C. 3401 (note and 3402), 3403.",
+   citations: [
+     {title: "44", section: "3401", expected_text: "44 U.S.C. 3401 (note"},
+     {title: "44", section: "3402", expected_text: "3402"},
+     {title: "44", section: "3403", expected_text: "3403"}
+   ]},
+
+  {ex: "8 U.S.C. 1101, 1103, 11f58, 1182.",
+   citations: [
+     {title: "8", section: "1101", expected_text: "8 U.S.C. 1101"},
+     {title: "8", section: "1103", expected_text: "1103"},
+     {title: "8", section: "1182", expected_text: "1182"}
+   ]},
+
+  {ex: "49 U.S.C. 31301, et seq., and 31502.",
+   citations: [
+     {title: "49", section: "31301", expected_text: "49 U.S.C. 31301, et seq."},
+     {title: "49", section: "31502", expected_text: "31502"}
+   ]},
+
+  {ex: "12 U.S.C. 5511, 5512, 5514(b), 5531(b), (c), and (d), 5532.",
+   citations: [
+     {title: "12", section: "5511", expected_text: "12 U.S.C. 5511"},
+     {title: "12", section: "5512", expected_text: "5512"},
+     {title: "12", section: "5514", expected_text: "5514(b)"},
+     {title: "12", section: "5531", expected_text: "5531"},
+     {title: "12", section: "5532", expected_text: "5532"}
+   ],
+   expected_html: "</a>(b), (c), and (d), "},
+
+  {ex: "12 U.S.C. 1757, 1766(a), 1781-1790, 1790d, 3331 <em>et seq;</em> 31 U.S.C. 3717.",
+   citations: [
+     {title: "12", section: "1757", expected_text: "12 U.S.C. 1757"},
+     {title: "12", section: "1766", expected_text: "1766(a)"},
+     {title: "12", section: "1781", expected_text: "1781-1790"},
+     {title: "12", section: "1790d", expected_text: "1790d"},
+     {title: "12", section: "3331", expected_text: "3331 <em>et seq;</em>"},
+     {title: "31", section: "3717", expected_text: "31 U.S.C. 3717"}
+   ]},
+
+  {ex: "18 U.S.C. 842, 845; 46 U.S.C. 70105; 49 U.S.C. 114, 5103a, 40113, and 46105; Pub. L. 108-90 (117 Stat. 1156, Oct. 1, 2003), sec. 520 (6 U.S.C. 469), as amended by Pub. L. 110-329 (122 Stat. 3689, Sept. 30, 2008) sec. 543 (6 U.S.C. 469); Pub. L. 110-53 (121 Stat. 266, Aug. 3, 2007) secs. 1402 (6 U.S.C. 1131), 1405 (6 U.S.C. 1134), 1408 (6 U.S.C. 1137), 1413 (6 U.S.C. 1142), 1414 (6 U.S.C. 1143), 1501 (6 U.S.C. 1151), 1512 (6 U.S.C. 1162), 1517 (6 U.S.C. 1167), 1522 (6 U.S.C. 1170), 1531 (6 U.S.C. 1181), and 1534 (6 U.S.C. 1184).",
+   citations: [
+     {title: "18", section: "842", expected_text: "18 U.S.C. 842"},
+     {title: "18", section: "845", expected_text: "845"},
+     {title: "46", section: "70105", expected_text: "46 U.S.C. 70105"},
+     {title: "49", section: "114", expected_text: "49 U.S.C. 114"},
+     {title: "49", section: "5103a", expected_text: "5103a"},
+     {title: "49", section: "40113", expected_text: "40113"},
+     {title: "49", section: "46105", expected_text: "46105"},
+     {title: "108", section: "90", expected_text: "Pub. L. 108-90", expected_url: "https://www.govinfo.gov/link/plaw/108/public/90"},
+     {title: "6", section: "469", expected_text: "6 U.S.C. 469"},
+     {title: "110", section: "329", expected_text: "Pub. L. 110-329", expected_url: "https://www.govinfo.gov/link/plaw/110/public/329"},
+     {title: "6", section: "469", expected_text: "6 U.S.C. 469"},
+     {title: "110", section: "53", expected_text: "Pub. L. 110-53", expected_url: "https://www.govinfo.gov/link/plaw/110/public/53"},
+     {title: "6", section: "1131", expected_text: "6 U.S.C. 1131"},
+     {title: "6", section: "1134", expected_text: "6 U.S.C. 1134"},
+     {title: "6", section: "1137", expected_text: "6 U.S.C. 1137"},
+     {title: "6", section: "1142", expected_text: "6 U.S.C. 1142"},
+     {title: "6", section: "1143", expected_text: "6 U.S.C. 1143"},
+     {title: "6", section: "1151", expected_text: "6 U.S.C. 1151"},
+     {title: "6", section: "1162", expected_text: "6 U.S.C. 1162"},
+     {title: "6", section: "1167", expected_text: "6 U.S.C. 1167"},
+     {title: "6", section: "1170", expected_text: "6 U.S.C. 1170"},
+     {title: "6", section: "1181", expected_text: "6 U.S.C. 1181"},
+     {title: "6", section: "1184", expected_text: "6 U.S.C. 1184"}
+   ]},
+
+  {ex: "49 U.S.C. 113, 501 <em>et seq.</em>, subchapters I and III of chapter 311, chapter 313, and 31502; sec. 5204 of Pub. L. 114-94, 129 Stat. 1312, 1536; 42 U.S.C. 4917; and 49 CFR 1.87",
+   citations: [
+     {title: "49", section: "113", expected_text: "49 U.S.C. 113"},
+     {title: "49", section: "501", expected_text: "501 <em>et seq.</em>"},
+     {title: "49", section: "311", expected_text: "311"},
+     {title: "49", section: "313", expected_text: "chapter 313", expected_url: "https://www.govinfo.gov/link/uscode/49/31301"},
+     {title: "49", section: "31502", expected_text: "31502"},
+     {title: "114", section: "94", expected_text: "Pub. L. 114-94", expected_url: "https://www.govinfo.gov/link/plaw/114/public/94"},
+     {title: "42", section: "4917", expected_text: "42 U.S.C. 4917"},
+     {title: "49", section: "1.87", expected_text: "49 CFR 1.87", expected_url: "https://www.ecfr.gov/current/title-49/section-1.87"}
+   ]},
 
   {
     ex: "authorized by section 8 of the FDIA (12 U.S.C. 1818), sections 15B(c)(5), 15C(c)(2)(B), and 17A(d)(2) of the Exchange Act, and other subparts of this part against the following:",
@@ -220,8 +476,8 @@ USC_SCENERIOS = [
 
 RSpec.describe ReferenceParser::Usc do
   describe "links" do
-    let(:reference_parser) { ReferenceParser.new }
-    let(:reference_parser_with_unlinked) { ReferenceParser.new(options: {include_unlinked: true}) }
+    let(:reference_parser) { reference_parser_for }
+    let(:reference_parser_with_unlinked) { reference_parser_for(options: {include_unlinked: true}) }
 
     it "example usage" do
       expect(
@@ -256,6 +512,10 @@ RSpec.describe ReferenceParser::Usc do
 
             result_html = reference_parser.hyperlink(example, default: {target: nil, class: nil})
 
+            unless scenario[:expect_variance]
+              expect(text_content(result_html)).to eq(text_content(example))
+            end
+
             if scenario[:authority_only]
               expect(result_html).not_to have_tag("a")
             else
@@ -279,14 +539,6 @@ RSpec.describe ReferenceParser::Usc do
 
                 if link_citations.present?
                   expect(result_html).to have_tag("a", count: link_citations.count)
-
-                  unless scenario[:expect_variance]
-                    result_html_text = Nokogiri::HTML.parse(result_html).text
-                    example_text = Nokogiri::HTML.parse(example).text
-                    expect(
-                      result_html_text
-                    ).to include(example_text)
-                  end
                 else
                   expect(result_html).not_to have_tag("a")
                 end
@@ -308,6 +560,10 @@ RSpec.describe ReferenceParser::Usc do
           end
         end
       end
+    end
+
+    def text_content(html)
+      Nokogiri::HTML.parse(html).text
     end
 
     def usc_url(options)

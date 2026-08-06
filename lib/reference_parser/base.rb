@@ -32,12 +32,12 @@ class ReferenceParser::Base
   end
 
   def link_to(text, citation, options = {})
-    return text if text.blank?
+    return text.to_s.html_safe if text.blank?
 
     if (href = url(citation, options))
       content_tag(:a, text.html_safe, href: href.gsub("&amp;", "&"), **get_link_options(citation, options))
     else
-      text
+      text.html_safe
     end
   end
 

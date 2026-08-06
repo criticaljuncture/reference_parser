@@ -18,8 +18,10 @@ class ReferenceParser::HierarchyCaptures
 
   attr_accessor :options, :repeated, :repeated_capture, :captured_characters
 
-  ET_SEQ_COMMA_PLACEHOLDER = "__ET_SEQ_COMMA__"
-  EM_SEMICOLON_PLACEHOLDER = "__EM_SEMICOLON__"
+  ET_SEQ_COMMA_PLACEHOLDER = "~ET_SEQ_COMMA~"
+  EM_SEMICOLON_PLACEHOLDER = "~EM_SEMICOLON~"
+
+  ET_SEQ_MODIFIER_COMMA = /(\bet\s*seq)\.(\s*,)(\s*<\/em>)(?!\s*(?:and\s+|or\s+)?\d)/i
 
   def from_named_captures(named_captures)
     # save initial capture order
@@ -36,15 +38,19 @@ class ReferenceParser::HierarchyCaptures
     slide_right(:paragraph, :suffix) if only_whitespace?(:paragraph)
     if @data[:chapter].present? && @data[:sections].present? && @data[:chapter].to_s.strip.match?(/\A\d+\z/)
       chapter_item = "#{@data[:chapter_label]}#{@data[:chapter]}".strip
-      and_joiner = " and "
-      @data[:sections] = "#{chapter_item}#{and_joiner}#{@data[:sections]}"
-      @captured_characters += and_joiner.length
+      joiner = @data.delete(:chapter_joiner)
+      unless joiner
+        joiner = " and "
+        @captured_characters += joiner.length
+      end
+      @data[:sections] = "#{chapter_item}#{joiner}#{@data[:sections]}"
       @data.delete(:chapter)
       @data.delete(:chapter_label)
     end
     if (handler = list_source_handler)
       handler.extract_publ_attribution_aside!(@data)
-      handler.extract_as_amended_aside!(@data)
+      handler.extract_subchapters_aside!(@data)
+      @captured_characters += @data[:subchapters_sections_delta].to_i
     end
     keep_as_sections_list = handler&.space_separated_section_list?(@data[:sections])
     slide_right(:sections, :section) if @data[:sections] && !@data[:section] && !(LIST_DESIGNATORS =~ @data[:sections]) && !keep_as_sections_list
@@ -185,7 +191,8 @@ class ReferenceParser::HierarchyCaptures
     )
   /ix
 
-  # patterns to indicate if an entire value is composed of dividers (ie in the list ["item a", " and ", "item b"] the middle value should match to be merged)
+  MODIFIER_ONLY_ITEM = /\A[\s,;]*(?:as\s+amended|\d+[a-z]+\d+)[\s,;]*\z/i
+
   ALL_DIVIDERS = /\A(?<split>(?:\s+|#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS}|<\/?em>)+)\z/ixo
   ALL_DIVIDERS_IN_PARAGRAPH = /\A(?<split>(\s+|#{LIST_ITEM_DIVIDERS_THAT_ARE_NOT_RANGE_DELIMITERS}|#{LIST_EXAMPLES})+)\z/ixo # skipping "examples" for the moment
 
@@ -207,17 +214,19 @@ class ReferenceParser::HierarchyCaptures
         consumed_keys.concat([:section, :sections])
       end
 
-      if key == :sections && clean&.match?(/\bet\s*seq\.\s*,\s*<\/em>/i)
-        clean = clean.gsub(/(\bet\s*seq)\.(\s*,)(\s*<\/em>)/i) { "#{Regexp.last_match(1)}.#{ET_SEQ_COMMA_PLACEHOLDER}#{Regexp.last_match(3)}" }
+      # "7211 <em>et seq.,</em> unless otherwise noted" (comma not a list divider) vs
+      # "343 <em>et seq.,</em> 347a" (comma is divider)
+      if key == :sections && clean&.match?(ET_SEQ_MODIFIER_COMMA)
+        clean = clean.gsub(ET_SEQ_MODIFIER_COMMA) { "#{Regexp.last_match(1)}.#{ET_SEQ_COMMA_PLACEHOLDER}#{Regexp.last_match(3)}" }
       end
 
       if key == :sections && clean&.include?("<em>")
         clean = clean.gsub(/(<em>[^<]*);([^<]*<\/em>)/i) { "#{Regexp.last_match(1)}#{EM_SEMICOLON_PLACEHOLDER}#{Regexp.last_match(2)}" }
       end
 
+      protected_spans = nil
       if sections_handler
-        clean, delta = sections_handler.normalize_sections_list_text(clean)
-        @captured_characters += delta
+        clean, protected_spans = sections_handler.normalize_sections_list_text(clean)
       end
 
       cfr_section_list = key == :sections && (@options[:source].nil? || @options[:source] == :cfr) &&
@@ -230,8 +239,7 @@ class ReferenceParser::HierarchyCaptures
           clean&.split(ANY_DIVIDER)&.select { |s| s.length > 0 }
         end
       if sections_handler
-        split, delta = sections_handler.post_process_section_list_items(split)
-        @captured_characters += delta
+        split = sections_handler.post_process_section_list_items(split)
       end
       if @options[:source] && @options[:source] != :cfr
         split = split.flat_map do |s|
@@ -245,7 +253,7 @@ class ReferenceParser::HierarchyCaptures
         x = 0
         while x < split.length
           puts Rainbow("split x #{x} split #{split} (#{key})").blue if @debugging
-          if all_dividers.match?(split[x]) || # only list cruft
+          if all_dividers.match?(split[x]) || MODIFIER_ONLY_ITEM.match?(split[x]) || # only list cruft
               (collapsing_examples = split[x - 1].include?("example") && !split[x - 1].include?("paragraph")) # "examples 1, 2, 3, 4, 5, and 6 in paragraph (j) of this section"
             if (split[x] =~ TRAILING_DIVIDERS) && (x < (split.length - 1)) && !collapsing_examples
               split[x + 1] = split[x] + split[x + 1]
@@ -272,11 +280,15 @@ class ReferenceParser::HierarchyCaptures
       end
 
       if key == :sections && @data[key].present?
-        @data[key] = if @data[key].is_a?(Array)
-          @data[key].map { |item| item.gsub(ET_SEQ_COMMA_PLACEHOLDER, ",").gsub(EM_SEMICOLON_PLACEHOLDER, ";") }
-        else
-          @data[key].gsub(ET_SEQ_COMMA_PLACEHOLDER, ",").gsub(EM_SEMICOLON_PLACEHOLDER, ";")
+        restore = lambda do |item|
+          item = item.gsub(ET_SEQ_COMMA_PLACEHOLDER, ",").gsub(EM_SEMICOLON_PLACEHOLDER, ";")
+          protected_spans&.each do |token, span|
+            pattern = span[:divider] ? /#{Regexp.escape(token)},?\s*/ : /#{Regexp.escape(token)}/
+            item = item.gsub(pattern) { span[:text] }
+          end
+          item
         end
+        @data[key] = @data[key].is_a?(Array) ? @data[key].map(&restore) : restore.call(@data[key])
       end
 
       if @debugging
@@ -295,7 +307,8 @@ class ReferenceParser::HierarchyCaptures
   SPACED_ITEM_MODIFIER = /\A(?:<em>\s*)?(?:,\s*)?(?:et\s*seq|as\s+amended|notes?|preceding\s+notes?|\(\s*notes?\s*\)|introductory\s+text)\b/i
 
   def split_spaced_item?(item, parts, handler)
-    return false if /\Achapter\s+\d+\z/i.match?(item)
+    return false if /\Achapters?\s+\d+\z/i.match?(item)
+    return false if MODIFIER_ONLY_ITEM.match?(item)
     return false unless parts.length == 2 && parts.all?(&:present?)
     return false if handler&.preserve_spaced_section_parts?(parts.first, parts.last)
     return false if parts.last.start_with?("(") || parts.last.match?(SPACED_ITEM_MODIFIER) || parts.last.match?(/\Ato\s+/i)

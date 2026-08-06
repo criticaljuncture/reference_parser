@@ -8,7 +8,7 @@ class ReferenceParser::Usc < ReferenceParser::Base
   # section 1506 of title 44, United States Code
   # secs. 8501-8508 of title 5, United States Code
   # secs. 803 and 805, title 26, United States Code
-  replace(/(?:sections?|secs?\.?)\s*(?<section>#{SECTION_OF_TITLE_SECTIONS_LIST})\s*(?:,\s*|\s+of\s+)title\s*(?<title>\d+),?\s*#{OF_THE_USC_LABEL}/ixo, pattern_slug: :section_of_title_usc)
+  replace(/(?<section_label>(?:sections?|secs?\.?)\s*)(?<section>#{SECTION_OF_TITLE_SECTIONS_LIST})(?<of_title_label>\s*(?:,\s*|\s+of\s+)title\s*)(?<title>\d+)(?<source_label>,?\s*#{OF_THE_USC_LABEL})/ixo, pattern_slug: :section_of_title_usc)
   replace(/chapter\s*(?<chapter>\d+)\s*of\s*title\s*(?<title>\d+),?\s*#{OF_THE_USC_LABEL}/ixo, pattern_slug: :chapter_of_title_usc)
   replace(/(?<irc_label>#{ReferenceParser::Cfr::IRC_LABEL})(?<section_label>\s*§\s*|\s*section\s*)(?<section>\d+[a-z]?)\b/ixo, pattern_slug: :usc_irc) # I.R.C. § 6212
 
@@ -39,14 +39,17 @@ class ReferenceParser::Usc < ReferenceParser::Base
 
     if (sections = captures.delete(:sections)).present?
       title = captures[:title]
-      section_strings, = split_list_parts(sections, divider: /\s+and\s+|,\s*/i)
+      section_strings, dividers = split_list_parts(sections, divider: /\s+and\s+|,\s*/i)
+      final = section_strings.length - 1
       return section_strings.map.with_index do |section, index|
         clean_up_named_captures(
           captures.merge(
             section: section,
             title: title,
-            text: section
-          ),
+            text: section,
+            prefix: (index.zero? ? captures[:section_label] : nil),
+            suffix: dividers[index] || ((index == final) ? captures.values_at(:of_title_label, :title, :source_label).join.presence : nil)
+          ).compact,
           options: options
         )
       end
@@ -62,8 +65,11 @@ class ReferenceParser::Usc < ReferenceParser::Base
     captures.delete(:title_appendix_label)
     captures[:title] = "26" if !captures[:title] && captures[:irc_label].present?
     captures[:part] = captures[:section] if !captures[:part] && captures[:section]
-    if options[:pattern_slug] == :section_of_title_usc && captures[:part].present?
-      captures.delete(:section)
+    if options[:pattern_slug] == :section_of_title_usc
+      captures.delete(:section) if captures[:part].present?
+      captures.delete(:section_label)
+      captures.delete(:of_title_label)
+      captures.delete(:source_label)
     end
     captures[:part] = captures[:chapter] + "01" if !captures[:part] && captures[:chapter]
     captures[:part] = captures[:part].partition("(").first if captures[:part]&.include?("(")
@@ -131,12 +137,15 @@ class ReferenceParser::Usc < ReferenceParser::Base
     captures[:part] = nil if ReferenceParser::Dashes::DASHES.include?(captures[:part])
     apply_usc_authority!(captures, options: options)
     strip_trailing_uppercase_artifacts_from_hierarchy!(captures)
+    strip_non_identifying_modifiers!(captures)
+    relocate_garbled_section_artifact!(captures)
 
     if captures[:authority].blank? && captures[:chapter].present? && captures[:part] == "#{captures[:chapter]}01"
       captures[:authority] = {section: captures[:chapter]}
     end
 
     apply_section_part_hints!(captures)
+    relocate_unbalanced_closing_paren!(captures)
     finalize_authority_citation_fields!(captures) if options[:include_unlinked]
 
     return :skip if captures[:section].blank? && captures[:part].blank? && captures[:appendix].blank?
@@ -160,35 +169,77 @@ class ReferenceParser::Usc < ReferenceParser::Base
   ET_SEQ_SECTION_BREAK = /(\bet\s*seq)\.?(?:\s*<\/em>)?(?:\s*[,;])?(?:\s+|\s*,\s*(?:and\s+)?)(?=\d)/i
   APPENDIX_LABEL = /(?:App\.?|Appendix)/i
 
+  SECTION_ASIDE_MODIFIER = /
+    (?:
+      [\s,]*as\s+amended |
+      \s*\((?:\s*Repealed|\s*for\s)[^)]*\)? |
+      \s*Ch(?:ap(?:ter)?|\.)?\.?\s*\d+\s+Sections? |
+      [\s,;]+\d+[a-z]+\d+
+    )[\s,;.]*\z
+  /ixo
+
+  def self.normalize_section_id(section)
+    section.sub(SECTION_ASIDE_MODIFIER, "").strip
+  end
+
+  def self.finalize_section_id(section)
+    section.sub(/\A(\d+(?:\.\d+)?[a-z]{0,5})\.\z/i, '\1')
+  end
+
   def self.space_separated_section_list?(sections)
     s = sections.to_s
     s.match?(/\d\s+\d/) || s.match?(/\d[a-z]{0,5}\.\s+\d/i)
   end
 
-  def self.extract_as_amended_aside!(data)
+  def self.extract_subchapters_aside!(data)
     return unless data[:sections].present?
 
-    aside = data[:sections].match(ReferenceParser::Cfr::AS_AMENDED_ASIDE)
+    aside = data[:sections].match(ReferenceParser::Cfr::SUBCHAPTERS_OF_CHAPTER_ASIDE)
     return unless aside
 
-    data[:as_amended_aside_text] = aside[0]
-    data[:sections_before_as_amended_aside] =
+    chapter = aside[0][/\d+\z/]
+    replacement = ", #{chapter}"
+    data[:subchapters_aside_text] = aside[0].sub(/\d+\z/, "")
+    data[:sections_before_subchapters_aside] =
       data[:sections][0...aside.begin(0)].scan(/\d+(?:\.\d+)?(?:[a-z]{1,5})?/i).length
-    data[:sections] = data[:sections].sub(aside[0], "")
+    data[:subchapters_sections_delta] = replacement.length - aside[0].length
+    data[:sections] = data[:sections].sub(aside[0], replacement)
   end
 
   def self.embedded_publ_citations(aside_text)
     citations = []
-    aside_text.scan(/#{ReferenceParser::Cfr::PL_LABEL}\d+[-–]\d+/io) do |label|
+    cursor = 0
+    aside_text.to_s.scan(/#{ReferenceParser::Cfr::PL_LABEL}\d+[-–]\d+/io) do |label|
+      label_begin = Regexp.last_match.begin(0)
       next unless (match = label.match(/(\d+)[-–](\d+)/))
-      citations << {
+      citation = {
         congress: match[1].to_i,
         law: match[2],
         text: label,
         source: :publ
       }
+      if (joining_text = aside_text[cursor...label_begin]).present?
+        citation[:prefix] = joining_text
+      end
+      citations << citation
+      cursor = label_begin + label.length
     end
     citations
+  end
+
+  def self.joining_text_before(aside_text, target, preceding)
+    target_begin = aside_text.rindex(target.to_s) or return
+    consumed = if preceding && (index = aside_text.rindex(preceding[:text].to_s))
+      index + preceding[:text].to_s.length
+    else
+      0
+    end
+    aside_text[consumed...target_begin].presence
+  end
+
+  def self.trailing_text_after(aside_text, target)
+    target_end = aside_text.rindex(target.to_s) or return
+    aside_text[(target_end + target.to_s.length)..].presence
   end
 
   def self.extract_publ_attribution_aside!(data)
@@ -201,59 +252,48 @@ class ReferenceParser::Usc < ReferenceParser::Base
     if (stat = ReferenceParser::Stat.embedded_from_comma_aside(publ_aside[0]))
       after_aside = data[:sections][publ_aside.end(0)..]
       if after_aside.blank? || !after_aside.match?(/\A\s*,\s*\d/)
-        data[:embedded_stats] = [stat]
+        data[:embedded_stats] = [stat.merge(
+          prefix: joining_text_before(publ_aside[0], stat[:text], data[:embedded_public_laws]&.last),
+          suffix: trailing_text_after(publ_aside[0], stat[:text])
+        ).compact]
       end
     end
-    data[:sections_before_publ_aside] = data[:sections][0...publ_aside.begin(0)].scan(/\d+(?:\.\d+)?(?:[a-z]{1,5})?/i).length
-    data[:sections] = data[:sections].sub(publ_aside[0], "")
+    if data[:embedded_stats].blank? && (last_publ = data[:embedded_public_laws]&.last)
+      last_publ[:suffix] = trailing_text_after(publ_aside[0], last_publ[:text])
+    end
+    before = data[:sections][0...publ_aside.begin(0)]
+    after = data[:sections][publ_aside.end(0)..].to_s
+
+    if before.match?(/[,;]\s*\z/) && (seam = after.match(/\A\s*[,;]\s*/))
+      after = after[seam.end(0)..].to_s
+      if (last_publ = data[:embedded_public_laws]&.last)
+        last_publ[:suffix] = "#{last_publ[:suffix]}#{seam[0]}"
+      end
+    end
+
+    data[:sections_before_publ_aside] = before.scan(/\d+(?:\.\d+)?(?:[a-z]{1,5})?/i).length
+    data[:sections] = "#{before}#{after}"
+  end
+
+  PROTECTED_SPAN_PREFIX = "~SPAN"
+
+  def self.protect_span(spans, text, divider: false)
+    token = "#{PROTECTED_SPAN_PREFIX}#{spans.length}~"
+    spans[token] = {text: text, divider: divider}
+    divider ? "#{token}," : token
   end
 
   def self.normalize_sections_list_text(clean)
-    delta = 0
-    # "318-318d. 486" — period used as list separator (not Chap./App./seq.)
-    clean = clean.gsub(/(\d[a-z]{0,5})\.\s+(?=\d)/i, '\1, ')
-    clean = clean.gsub(/(\d+[a-z]?)\s+and\s+(notes?)\b/i) do
-      delta -= ($&.length - "#{$1}, #{$2}".length)
-      "#{$1}, #{$2}"
+    spans = {}
+    clean = clean.gsub(/(\d[a-z]{0,5})(\.\s+)(?=\d)/i) { "#{$1}#{protect_span(spans, $2, divider: true)}" }
+    clean = clean.gsub(/(\d+[a-z]?)(\s+and\s+)(?=notes?\b)/i) { "#{$1}#{protect_span(spans, $2, divider: true)}" }
+    clean = clean.gsub(ReferenceParser::Cfr::CHAP_N_SECTION_ASIDE) { protect_span(spans, $&, divider: true) }
+    clean = clean.gsub(/(\(\s*notes?)(\s+and\s+)(?=\d)/i) { "#{$1}#{protect_span(spans, $2, divider: true)}" }
+    [ReferenceParser::Cfr::EXPLANATORY_PARENTHETICAL,
+      ReferenceParser::Cfr::REPEALED_PARENTHETICAL].each do |pattern|
+      clean = clean.gsub(pattern) { protect_span(spans, $&) }
     end
-    # before stripping "chapter N", collapse "subchapters … of chapter N" to the chapter number
-    clean = clean.gsub(/(?:,\s*|\s+)subchapters?\s+[IVXLCDM]+(?:\s*(?:,|and|&)\s*[IVXLCDM]+)*\s+of\s+chapter\s+(\d+)/i) do
-      replacement = ", #{$1}"
-      delta -= ($&.length - replacement.length)
-      replacement
-    end
-    # "Chap. 56 Section 5604" — drop chapter locator; keep the section number
-    clean = clean.gsub(ReferenceParser::Cfr::CHAP_N_SECTION_ASIDE) do
-      replacement = ", "
-      delta -= ($&.length - replacement.length)
-      replacement
-    end
-    clean = clean.gsub(/\bchapters?\s+(?=\d)/i) do
-      delta -= $&.length
-      ""
-    end
-    clean = clean.gsub(ReferenceParser::Cfr::EXPLANATORY_PARENTHETICAL) do
-      delta -= $&.length
-      ""
-    end
-    clean = clean.gsub(ReferenceParser::Cfr::REPEALED_PARENTHETICAL) do
-      delta -= $&.length
-      ""
-    end
-    clean = clean.gsub(/\s*\(\s*(notes?)\s+and\s+(\d+[a-z]?)\s*\)/i) do
-      replacement = " (#{$1}), #{$2}"
-      delta -= ($&.length - replacement.length)
-      replacement
-    end
-    clean = clean.gsub(/(?:\A|(?<=\band\s)|,\s*)(\d+)\)\s*,/) do
-      delta -= 1
-      "#{$1},"
-    end
-    clean = clean.gsub(/(?:\A|(?<=\band\s)|,\s*)(\d+)\)\s*(?=and\b)/i) do
-      delta -= 2
-      $1
-    end
-    [clean, delta]
+    [clean, spans]
   end
 
   def self.split_sections_list(clean)
@@ -276,24 +316,13 @@ class ReferenceParser::Usc < ReferenceParser::Base
   end
 
   def self.post_process_section_list_items(items)
-    delta = 0
-    items = items.reject do |item|
-      if item.match?(/\A\d+[a-z]+\d+\z/i)
-        delta -= item.length
-        true
-      end
-    end
-    items = items.flat_map do |item|
+    items.flat_map do |item|
       if (match = item.match(ET_SEQ_SECTION_BREAK))
-        left = item[0...match.begin(0)] + match[1] + ". "
-        right = item[match.end(0)..]
-        delta -= (item.length - left.length - right.length)
-        [left, right]
+        [item[0...match.end(0)], item[match.end(0)..]]
       else
         [item]
       end
     end
-    [items, delta]
   end
 
   def self.preserve_spaced_section_parts?(left, right)
@@ -301,6 +330,50 @@ class ReferenceParser::Usc < ReferenceParser::Base
   end
 
   private
+
+  NON_IDENTIFYING_MODIFIERS = /
+    (?:[\s,]*as\s*amended | \s*\((?:Repealed|for\s)[^)]*\) | \s*Ch(?:ap(?:ter)?|\.)?\.?\s*\d+\s+Sections? | \.)\s*\z
+  /ix
+
+  def strip_non_identifying_modifiers!(captures)
+    strip = lambda do |container, key|
+      next unless container.is_a?(Hash)
+      value = container[key].to_s
+      container[key] = value.sub(NON_IDENTIFYING_MODIFIERS, "") if value.match?(NON_IDENTIFYING_MODIFIERS)
+    end
+    strip.call(captures, :section)
+    strip.call(captures, :part)
+    strip.call(captures[:hierarchy], :section)
+    strip.call(captures[:authority], :section)
+    strip.call(captures[:href_hierarchy], :part)
+
+    # "3401 (note and 3402)" — the opening paren is left behind once the list splits
+    unbalanced_paren = lambda do |container, key|
+      next unless container.is_a?(Hash)
+      value = container[key].to_s
+      container[key] = value.sub(/\s*\(\s*/, " ").strip if value.count("(") > value.count(")")
+    end
+    unbalanced_paren.call(captures, :section)
+    unbalanced_paren.call(captures, :part)
+    unbalanced_paren.call(captures[:hierarchy], :section)
+    unbalanced_paren.call(captures[:authority], :section)
+    unbalanced_paren.call(captures[:href_hierarchy], :part)
+  end
+
+  GARBLED_SECTION_ARTIFACT = /(?<lead>[\s,;]+)(?<artifact>\d+[a-z]+\d+)(?<trail>[\s,;]*)\z/i
+
+  def relocate_garbled_section_artifact!(captures)
+    return unless (match = captures[:text]&.match(GARBLED_SECTION_ARTIFACT))
+
+    captures[:text] = captures[:text][0...match.begin(0)]
+    SECTION_ID_KEYS.each do |key|
+      [captures, captures[:hierarchy], captures[:href_hierarchy], captures[:authority]].each do |container|
+        next unless container.is_a?(Hash)
+        container[key] = container[key].sub(GARBLED_SECTION_ARTIFACT, "") if container[key].is_a?(String)
+      end
+    end
+    push_to_suffix!(captures, match[0])
+  end
 
   def strip_trailing_uppercase_artifacts_from_hierarchy!(captures)
     artifact = captures[:text].to_s[ReferenceParser::Cfr::TRAILING_UPPERCASE_ARTIFACT_ASIDE, 0]
@@ -325,12 +398,11 @@ class ReferenceParser::Usc < ReferenceParser::Base
       !captures[:text].match?(/[-–—]\s*#{Regexp.escape(sublocators)}\z/)
   end
 
-  # relocates fragment to the suffix, before any existing list continuation ("and (b)...")
   def push_to_suffix!(captures, fragment, appended: fragment)
-    captures[:suffix] = if captures[:suffix].to_s.match?(/\A\s+(?:and|or|&)\s+\([a-z]{1,5}\)/i)
+    captures[:suffix] = if captures[:suffix].present?
       "#{fragment}#{captures[:suffix]}"
     else
-      (captures[:suffix] || "") + appended
+      appended
     end
   end
 
@@ -514,6 +586,24 @@ class ReferenceParser::Usc < ReferenceParser::Base
 
     captures[:section] = section
     captures.delete(:part)
+  end
+
+  UNBALANCED_CLOSING_PAREN = /\)(?<trailing>\s*[,;]?\s*)\z/
+  SECTION_ID_KEYS = %i[part section].freeze
+
+  def relocate_unbalanced_closing_paren!(captures)
+    text = captures[:text].to_s
+    return unless text.count(")") > text.count("(")
+    return unless (match = text.match(UNBALANCED_CLOSING_PAREN))
+
+    captures[:text] = text[0...match.begin(0)]
+    [captures, captures[:hierarchy], captures[:href_hierarchy], captures[:authority]].each do |container|
+      next unless container.is_a?(Hash)
+      SECTION_ID_KEYS.each do |key|
+        container[key] = container[key].delete_suffix(")") if container[key].is_a?(String)
+      end
+    end
+    push_to_suffix!(captures, ")#{match[:trailing]}")
   end
 
   def apply_section_part_hints!(captures)

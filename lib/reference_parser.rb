@@ -14,7 +14,7 @@ class ReferenceParser
   class ParseTimeout < StandardError; end
 
   def initialize(only: nil, except: [], options: {})
-    @options = options || {}
+    @options = (options || {}).dup
     @requested_parser_types = [expand_requested_parser_types(only || @options[:only]) || default_parser_types].flatten - except
     @timeout = @options.delete(:timeout) || 20
     @include_unlinked = @options.delete(:include_unlinked)
@@ -218,6 +218,7 @@ class ReferenceParser
             citations = named_captures unless citations.is_a?(Array) || citations.is_a?(Hash)
             citations = [citations] unless citations.is_a?(Array)
 
+            linked_any = false
             citations&.each do |citation|
               skip = false
               effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
@@ -246,10 +247,20 @@ class ReferenceParser
                   result ||= "".html_safe
                   result << citation_result
                   citation[:result] = citation_result
+                  linked_any = true
                 end
               else
+                unlinked = citation.values_at(*%i[prefix text suffix]).compact.join
+                if unlinked.present?
+                  result ||= "".html_safe
+                  result << unlinked.html_safe
+                end
                 citation = {text: match[0], result: match[0]}
               end
+            end
+            result = nil unless linked_any
+            if result && (unconsumed = match[0][pattern_match.end(0)..].to_s).present?
+              result << unconsumed.html_safe
             end
             break
           end

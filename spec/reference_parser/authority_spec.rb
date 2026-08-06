@@ -179,8 +179,8 @@ AUTHORITY_SCENARIOS = [
     ex: "Secs. 202 and 208, Title 3, U.S. Code, as amended and added, respectively by Pub. L. 94-196 (89 Stat. 1109); 5 U.S.C. 301.",
     exempt_reference_keys: [:result, :link, :hierarchy, :href_hierarchy],
     expected_references: [
-      {source: :usc, title: "3", section: "202", text: "202"},
-      {source: :usc, title: "3", section: "208", text: "208"},
+      {source: :usc, title: "3", section: "202", text: "202", prefix: "Secs. ", suffix: " and "},
+      {source: :usc, title: "3", section: "208", text: "208", suffix: ", Title 3, U.S. Code"},
       {source: :publ, congress: 94, law: "196", text: "Pub. L. 94-196"},
       {source: :stat, volume: "89", chapter: "1109", text: "89 Stat. 1109"},
       {source: :usc, title: "5", section: "301", text: "5 U.S.C. 301"}
@@ -242,7 +242,7 @@ AUTHORITY_SCENARIOS = [
 
 RSpec.describe "ReferenceParser.new(only: :authorities)" do # rubocop:disable RSpec/DescribeClass
   describe "overlapping authority patterns" do
-    let(:reference_parser) { ReferenceParser.new(only: :authorities, options: {include_unlinked: true}) }
+    let(:reference_parser) { reference_parser_for(only: :authorities, options: {include_unlinked: true}) }
 
     AUTHORITY_SCENARIOS.each do |scenario|
       [scenario[:ex]].flatten.each do |example|

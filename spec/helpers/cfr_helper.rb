@@ -116,7 +116,7 @@ module CfrHelper
 
   def extract_references(text, options: {})
     citations = []
-    result_html = ReferenceParser.new(options: options).each(text, default: {relative: true}) do |citation|
+    result_html = reference_parser_for(options: options).each(text, default: {relative: true}) do |citation|
       citations << citation
     end
     [result_html, citations]

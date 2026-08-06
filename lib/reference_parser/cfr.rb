@@ -297,6 +297,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   USC_SECTION_EM_LETTER_SUFFIX = "(?:<em>(?:(?!nt\\b)[a-z]{1,5}(?:[,.])?)?</em>)?"
   # "77f", "78o-4", "1395.1" — section number w/ optional decimal & letter suffix (not "12a34" artifacts)
   LAX_USC_SECTION_NUMBER = "(?>\\d+)(?![a-z]+\\d)(?:\\.\\d+)?#{USC_SECTION_LETTER_SUFFIX}?"
+  NOT_PUB_LAW_SECTION_WITH_USC_EQUIVALENT = "(?!\\s*\\(\\s*\\d+\\s*(?:#{PART_APPENDIX_LABEL}\\s*)?U\\.?S\\.?C)"
   LAX_USC_SECTION_RANGE = "(?:[-–—](?:\\d+(?:\\.\\d+)?(?:[a-z]{1,5})?|[a-z]{1,5})(?:[-–—][a-z]{1,5})*)?"
   APPENDIX_ROMAN_SECTION = "(?>(?-i:#{APPENDIX_ROMAN_ID}))(?=\\s|[.,;)-]|$)"
   PART_APPENDIX_PRECEDING_NOTE_WITH_SECTION = "(?<part_appendix_label>\\s*#{PART_APPENDIX_LABEL}\\s+#{PRECEDING_NOTE_LABEL}\\s*)(?=\\s*#{APPENDIX_SECTION_ID})"
@@ -649,7 +650,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   LAX_USC_SECTION_LIST_ITEM = /
     (?:
-      \s*#{LAX_USC_SECTION_NUMBER}#{USC_SECTION_EM_LETTER_SUFFIX}#{LAX_USC_SECTION_RANGE} |
+      \s*#{LAX_USC_SECTION_NUMBER}#{USC_SECTION_EM_LETTER_SUFFIX}#{LAX_USC_SECTION_RANGE}#{NOT_PUB_LAW_SECTION_WITH_USC_EQUIVALENT} |
       \s*[Cc]hapters?\s+(?>\d+) |
       \s*\(\s*\d{1,3}\s*\)(?:\s*[-–—]\s*\(\s*\d{1,3}\s*\))? |
       \s*\(\s*(?!notes?\s*\))[a-z]{1,5}\s*\)(?:\s*[-–—]\s*\(\s*(?!notes?\s*\))[a-z]{1,5}\s*\))? |
@@ -719,29 +720,29 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     [A-Z]{2,}(?=\s*[,;])
   /xo
 
-  LAX_USC_SECTIONS = /
-    (?<sections>
-      (?:
-        #{LAX_USC_SECTION_LIST_DIVIDERS}
-        (?:
-          #{LAX_USC_SECTION_LIST_ITEM} |
-          #{LAX_USC_SECTION_SKIP}
-        ) |
-        #{PUBL_ATTRIBUTION_ASIDE} |
-        #{AS_AMENDED_ASIDE} |
-        #{EXPLANATORY_PARENTHETICAL} |
-        #{REPEALED_PARENTHETICAL} |
-        #{NOTE_AND_SECTION_PARENTHETICAL} |
-        #{SUBCHAPTERS_OF_CHAPTER_ASIDE} |
-        #{CHAP_N_SECTION_ASIDE} |
-        #{TRAILING_UPPERCASE_ARTIFACT_ASIDE}
-      )+
+  LAX_USC_SECTION_LIST_ENTRY = /
+    #{LAX_USC_SECTION_LIST_DIVIDERS}
+    (?:
+      #{LAX_USC_SECTION_LIST_ITEM} |
+      #{LAX_USC_SECTION_SKIP}
     )
+    (?:
+      #{PUBL_ATTRIBUTION_ASIDE} |
+      #{AS_AMENDED_ASIDE} |
+      #{EXPLANATORY_PARENTHETICAL} |
+      #{REPEALED_PARENTHETICAL} |
+      #{NOTE_AND_SECTION_PARENTHETICAL} |
+      #{SUBCHAPTERS_OF_CHAPTER_ASIDE} |
+      #{CHAP_N_SECTION_ASIDE} |
+      #{TRAILING_UPPERCASE_ARTIFACT_ASIDE}
+    )*
   /ixo
+
+  LAX_USC_SECTIONS = /(?<sections>(?:#{LAX_USC_SECTION_LIST_ENTRY})+)/ixo
 
   PART_APPENDIX_LABEL_WITH_SECTION = /(?<part_appendix_label>\s*#{PART_APPENDIX_LABEL}\s*,?\s*#{APPENDIX_SECTION_MARKERS})(?=\s*#{APPENDIX_SECTION_ID})/ix
   TITLE_APPENDIX_LABEL = /(?<title_appendix_label>\s*App\.?\s*)/ix # USC
-  TITLE_SOURCE_NON_CFR_WITH_APPENDIX = /(?:Title\s*)?(?<title>#{TITLE_ID})#{TITLE_APPENDIX_LABEL}?#{SOURCE_LABEL_NON_CFR}/ixo
+  TITLE_SOURCE_NON_CFR_WITH_APPENDIX = /(?<title_label>Title\s*)?(?<title>#{TITLE_ID})#{TITLE_APPENDIX_LABEL}?#{SOURCE_LABEL_NON_CFR}/ixo
 
   # primarly list replacements
   # relaxed / non-CFR
@@ -776,11 +777,11 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   replace(->(context, options) {
             /
             #{TITLE_SOURCE_NON_CFR_WITH_APPENDIX}
-            (?:(?<subtitle_label>subtitle\s*)(?<subtitle>[A-Z])\s*and\s*)?
-            (?:(?<chapter_label>\s*chapter\s*)(?<chapter>#{CHAPTER_ID})\s*and\s*)?
+            (?:(?<subtitle_label>subtitle\s*)(?<subtitle>[A-Z])(?<subtitle_joiner>\s*and\s*))?
+            (?:(?<chapter_label>\s*chapter\s*)(?<chapter>#{CHAPTER_ID})(?<chapter_joiner>\s*and\s*))?
             (?<section_label>\s*(?:§+|sections?|secs?\.?)\s*|\s*<\/em>\s*§+\s*<em>\s*)?
             (?:
-              ,\s*(?<part_appendix_label>#{PART_APPENDIX_LABEL}\s*#{APPENDIX_SECTION_MARKERS})(?=\s*#{APPENDIX_SECTION_ID})
+              (?<part_appendix_prefix>,\s*)(?<part_appendix_label>#{PART_APPENDIX_LABEL}\s*#{APPENDIX_SECTION_MARKERS})(?=\s*#{APPENDIX_SECTION_ID})
               |
               #{PART_APPENDIX_PRECEDING_NOTE_WITH_SECTION}
               |
@@ -1066,7 +1067,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       unless qualify_citation(citation, processing_a_list: captures.processing_a_list, final_loop: final_loop, previous_citation: previous_citation)
         if previous_citation && (final_loop || paragraph_only_continuation?(citation, previous_citation))
           if (merged = citation.values_at(*%i[prefix text suffix]).compact.join("")).present?
-            if previous_citation[:source] == :usc && merged.match?(/\A\s*(?:and|or|&)\s+\([a-z]{1,5}\)/i)
+            if previous_citation[:source] == :usc && previous_citation[:suffix].blank? && merged.match?(/\A\s*(?:and|or|&)\s+\([a-z]{1,5}\)/i)
               previous_citation[:text] = "#{previous_citation[:text]}#{merged}"
             else
               previous_citation[:suffix] = "#{previous_citation[:suffix]}#{merged}"
@@ -1092,27 +1093,22 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     eject_text_if_needed(results)
     results.each { |result| result.delete(:paragraph_list_continuation) }
     weave_embedded_public_laws!(results, captures)
-    weave_as_amended_asides!(results, captures)
+    weave_subchapters_asides!(results, captures)
     return :skip unless qualify_match(captures, results: results, options: options)
     validate_and_persist(context: options[:context], references: results) if @validation_and_persistence
 
     results
   end
 
-  def weave_as_amended_asides!(results, captures)
-    text = captures[:as_amended_aside_text]
+  def weave_subchapters_asides!(results, captures)
+    text = captures[:subchapters_aside_text]
     return results unless text.present?
 
-    target = [captures[:sections_before_as_amended_aside].to_i - 1, 0].max
+    target = captures[:sections_before_subchapters_aside].to_i
     return results unless results[target]
 
     woven = text.sub(/\A,\s*/, "")
-    if (next_result = results[target + 1]) && next_result[:text].to_s.match?(/\Aand\s+/i)
-      results[target][:suffix] = "#{results[target][:suffix]}#{woven}, and "
-      next_result[:text] = next_result[:text].sub(/\Aand\s+/i, "")
-    else
-      results[target][:suffix] = "#{results[target][:suffix]} #{woven}"
-    end
+    results[target][:prefix] = "#{woven}#{results[target][:prefix]}"
     results
   end
 
@@ -1123,8 +1119,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     insert_at = [captures[:sections_before_publ_aside].to_i, results.length].min
     if publs.present?
+      preceding = (insert_at > 0) ? results[insert_at - 1] : nil
       results.insert(insert_at, *publs)
       insert_at += publs.length
+      if preceding && (following = results[insert_at]) &&
+          !publs.last[:suffix].to_s.match?(/[,;]\s*\z/) &&
+          (divider = preceding[:text].to_s[/[,;]\s*\z/])
+        preceding[:text] = preceding[:text].sub(/[,;]\s*\z/, "")
+        following[:prefix] = "#{divider}#{following[:prefix]}"
+      end
     end
     results.insert(insert_at, *stats) if stats.present?
     results
@@ -1245,7 +1248,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       issue ||= enforce_title_range(captures[:title], min: 1, max: MAX_EXPECTED_FR_TITLE)
     end
 
-    issue = :failure_to_preserve_source_characters if !issue && captures[:embedded_public_laws].blank? && captures[:as_amended_aside_text].blank? && !preserved_character_count?(captures, results: results)
+    issue = :failure_to_preserve_source_characters if !issue && captures[:embedded_public_laws].blank? && captures[:subchapters_aside_text].blank? && !preserved_character_count?(captures, results: results)
     issue ||= :unlikely_link_start if results&.any? { |result| unlikely_link_start?(result[:text]) }
 
     puts Rainbow("qualify_match #{issue}").red if @debugging && issue

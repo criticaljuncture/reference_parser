@@ -142,6 +142,12 @@ class ReferenceParser::Hierarchy
     end
   end
 
+  def source_handler
+    case @options[:source]
+    when :usc then ReferenceParser::Usc
+    end
+  end
+
   def cleanup!(expected: {}, captures: {})
     # drop any list or range related items that made it through
     if @data[:paragraph].present?
@@ -159,9 +165,13 @@ class ReferenceParser::Hierarchy
 
     @data[:title]&.gsub!(/\A0+/, "")
 
-    if (match = /\Achapter\s+(?<chapter>\d+)\z/i.match(@data[:section].to_s.strip))
-      @data[:chapter] = match[:chapter]
-      @data.delete(:section)
+    if (match = /\A(?:chapter\s+(?<chapter>\d+)|chapters\s+(?<chapters_section>.+))\z/i.match(@data[:section].to_s.strip))
+      if match[:chapter]
+        @data[:chapter] = match[:chapter]
+        @data.delete(:section)
+      else
+        @data[:section] = match[:chapters_section]
+      end
     end
 
     decide_section_vs_part(expected: expected)
@@ -201,10 +211,9 @@ class ReferenceParser::Hierarchy
         @data[:section] = @data[:section].sub(ReferenceParser::Cfr::SECTION_TRAILING_MODIFIER, "").strip
       end
       @data[:section] = @data[:section].gsub(/<\/?em>/, "")
+      @data[:section] = source_handler.normalize_section_id(@data[:section]) if source_handler
       @data[:section].tr!(",", "")
-      if @options[:source] == :usc
-        @data[:section].sub!(/\A(\d+(?:\.\d+)?[a-z]{0,5})\.\z/i, '\1')
-      end
+      @data[:section] = source_handler.finalize_section_id(@data[:section]) if source_handler
     end
 
     self
