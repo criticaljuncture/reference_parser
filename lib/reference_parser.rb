@@ -42,6 +42,24 @@ class ReferenceParser
     end
   end
 
+  def segments(text, options: {}, default: {})
+    source = text.to_s
+    citations = []
+    each(source, options: options, default: default) { |citation| citations << citation.dup }
+
+    results, cursor = [], 0
+    citations.each do |citation|
+      start = source.index(citation[:text], cursor)
+      next unless start
+
+      results << {text: source[cursor...start]} if start > cursor
+      results << {text: citation[:text], citation: citation}
+      cursor = start + citation[:text].length
+    end
+    results << {text: source[cursor..]} if cursor < source.length
+    results
+  end
+
   def render(parser_details, options: {}, default: {})
     result = "".html_safe
     parser_details.each do |parser, details|
