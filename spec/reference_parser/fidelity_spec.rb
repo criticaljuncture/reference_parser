@@ -1,6 +1,6 @@
 require "spec_helper"
 
-FIDELITY_SHAPES = {
+FIDELITY_SCENARIOS = {
   "nested Pub. L. section lists w/ parenthesized U.S.C. equivalents" => [
     "49 U.S.C. 114; Pub. L. 110-53 (121 Stat. 266, Aug. 3, 2007) secs. 1501 (6 U.S.C. 1151), 1512 (6 U.S.C. 1162) and 1517 (6 U.S.C. 1167).",
     "Pub. L. 110-53 secs. 1501 (6 U.S.C. 1151), 1512 (6 U.S.C. 1162), and 1517 (6 U.S.C. 1167).",
@@ -87,16 +87,19 @@ FIDELITY_SHAPES = {
     "5 U.S.C. 552a(b)(1) through (11)",
     "12 U.S.C. 248(i), (j), and 248-1, 342.",
     "5 U.S.C. 5312, 5313, 5314, 5315 or 5316"
+  ],
+  "misc" => [
+    "and procedures in title 15 CFR part 904, or other applicable regulations"
   ]
 }
 
 RSpec.describe "text fidelity" do # rubocop:disable RSpec/DescribeClass
-  FIDELITY_SHAPES.each do |description, examples|
+  FIDELITY_SCENARIOS.each do |description, scenarios|
     describe description do
-      examples.each do |example|
-        it example.truncate(60) do
-          result = reference_parser_for.hyperlink(example, default: {target: nil, class: nil})
-          expect(Nokogiri::HTML.parse(result).text).to eq(Nokogiri::HTML.parse(example).text)
+      scenarios.each do |scenario|
+        it scenario.truncate(60) do
+          result = reference_parser_for.hyperlink(scenario, default: {target: nil, class: nil})
+          expect(Nokogiri::HTML.parse(result).text).to eq(Nokogiri::HTML.parse(scenario).text)
         end
       end
     end

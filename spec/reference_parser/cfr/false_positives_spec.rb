@@ -182,7 +182,13 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "has met the appropriate requirements of 30 CFR part 556, subpart G, and has submitted a bid."},
 
         # /current/title-49/section-173.185
-        {ex: "the requirements of sub-section 38.3 of the UN Manual of Tests and Criteria, Revision 3, Amendment 1 or any", citation: :expect_none, context: {composite_hierarchy: "49:B:I:C:173:E:173.185"}}
+        {ex: "the requirements of sub-section 38.3 of the UN Manual of Tests and Criteria, Revision 3, Amendment 1 or any", citation: :expect_none, context: {composite_hierarchy: "49:B:I:C:173:E:173.185"}},
+
+        {ex: "§ 46(f)(1)", citation: :expect_none, context: {composite_hierarchy: "18::I:B:35:B:35.13"},
+         with_surrounding_text: "Internal Revenue Code General Rule, § 46(f)(1), is applicable"},
+
+        {ex: "paragraph (b)(2)(ii) of § 751-1", citation: :expect_none, context: {composite_hierarchy: "26::I:A:1::1.704-1"},
+         with_surrounding_text: "pursuant to section 704(e)(2), section 706(d), and paragraph (b)(2)(ii) of § 751-1, and"}
       ]
     ].each_slice(2) do |description, examples|
       expect_passing_cfr_scenerios(description, examples)

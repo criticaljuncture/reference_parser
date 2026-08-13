@@ -16,7 +16,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBCHAPTER_ID = /[A-Z]+[-–—_]?[A-Z]*/ix
   PART_ID = /\w+[-–—]?\w*/ix
   SUBPART_ID = /\w{1,4}(?:[\w.\-–—]{0,5}(?:\w|(?:suspended)))?\b/ix # constraint /\w+[\w.\-–—]*\w*/ix generated/internal ECFR[0-9A-Z]{15,16}
-  SUBPART_ID_ADDITIONAL = /\w{1,4}([.\-–—][\w.\-–—]{0,5}|)(?:suspended)?\b/ix
+  SUBPART_ID_ADDITIONAL = /(?!Parts?\b)\w{1,4}([.\-–—][\w.\-–—]{0,5}|)(?:suspended)?\b/ix
   SECTION_ID = /[\w\-–—]+.?[\w\-–—()]*/ix
 
   CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
@@ -38,7 +38,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SOURCE_LABEL_ALLOW_SHORTHAND = /(?<source_label>\.?\s*(?:#{CFR_LABEL}|#{USC_LABEL}|#{FR_LABEL}|#{IRC_LABEL}|\/)\s*)/ixo
   SOURCE_LABEL_ALLOW_SHORTHAND_CFR = /(?<source_label>\.?\s*(?:#{CFR_LABEL}|\/)\s*)/ixo
 
-  TITLE_SOURCE = /(?:Title\s*)?(?<title>#{TITLE_ID})#{SOURCE_LABEL}/ixo
+  TITLE_SOURCE = /(?<title_label>Title\s*)?(?<title>#{TITLE_ID})#{SOURCE_LABEL}/ixo
   TITLE_SOURCE_CFR = /(?<title>#{TITLE_ID})#{SOURCE_LABEL_CFR}/ixo
 
   TITLE_SOURCE_ALLOW_SLASH_SHORTHAND = /
@@ -53,19 +53,22 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   # "1 CFR 11 and 2 CFR 22" vs "1 CFR 11 and 12" needed after
   # simple digits patterns that could match the next title
-  NEXT_TITLE_STOP = /
-    (?!\d|
-      [A-Za-z]\s*Stat\.?|
-      \s*(?:
-        C\.?F\.?R| # CFR
-        U\.?S\.?C| # USC
-        F\.?R\.?(?!\w)|  # FR
-        I\.?R\.?C| # IRC
-        Comp\.|
-        Stat\.?|
-        ,?\s*subpart|
-        \/         # dates
-    ))/ix
+  NEXT_TITLE_INDICATORS = /
+    \d|
+    [A-Za-z]\s*Stat\.?|
+    \s*(?:
+      C\.?F\.?R| # CFR
+      U\.?S\.?C| # USC
+      F\.?R\.?(?!\w)|  # FR
+      I\.?R\.?C| # IRC
+      Comp\.|
+      Stat\.?|
+      \/         # dates
+    )
+  /ix
+
+  NEXT_TITLE_STOP = /(?!#{NEXT_TITLE_INDICATORS})/ixo
+  AFTER_BARE_NUMBER_STOP = /(?!#{NEXT_TITLE_INDICATORS}|\s*,?\s*subpart)/ixo
 
   TRAILING_BOUNDRY = /(?!\.?\d|\/)/ix # don't stop mid-number or date
 
@@ -117,6 +120,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SUBCHAPTER = /(?<subchapter>#{SUBCHAPTER_ID})/ixo
 
   SUBPART_LABEL = /(?<subpart_label>[,:]?\s*su[pb]{2}arts?\s*)/ix
+  BARE_SUBPART_LABEL = /(?<subpart_label>Su[pb]{2}arts?\s*)/ix
   SUBPART = /(?<subpart>#{SUBPART_ID})/ixo
 
   SUBPARTS = /
@@ -132,6 +136,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo
 
   PART_LABEL = /(?<part_label>\s*Part\s*)/ix
+  PARTS_LABEL = /(?<part_label>\bParts?\.?)/ix
   PART = /(?<part>#{PART_ID})/ixo
   PARTS = /
     (?<parts>
@@ -139,6 +144,31 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         (?:\s|,|and(?:\s*parts?\s*)?|or|through|-|(?:\s*part\s*))+
         (?:\d+)
       )+
+      (?:\s+et\s*seq\.?)?
+    )
+    /ixo
+
+  IMPLIED_SUBTITLE_LABEL = /(?<subtitle_label>\bsubtitles?\s+)/ix
+  IMPLIED_SUBTITLE = /(?<subtitle>(?-i:[A-Z]))\b/x
+  IMPLIED_CHAPTER_LABEL = /(?<chapter_label>\bchapters?\s+)/ix
+  IMPLIED_CHAPTER = /(?<chapter>(?-i:[IVXLCDM]+))\b/x
+  IMPLIED_SUBCHAPTER_LABEL = /(?<subchapter_label>[,:]?\s*\bsubchapters?\s+)/ix
+  IMPLIED_SUBCHAPTER = /(?<subchapter>(?-i:[A-Z]+[-–—_]?[A-Z]*))\b/x
+  IMPLIED_SUBPART_ID = /
+    (?:
+      \d+(?:[-–—]\d+)? |
+      (?-i:[A-Z])(?:[-–—](?-i:[A-Z]))?
+    )
+    (?!\w|\.\d)
+    /x
+  IMPLIED_SUBPARTS = /
+    (?<subparts>
+      #{IMPLIED_SUBPART_ID}
+      (?:
+        (?:#{JOIN})
+        (?!(?:and|or)\b)
+        #{IMPLIED_SUBPART_ID}
+      )*
     )
     /ixo
 
@@ -218,7 +248,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # 165.T07-0806
 
   SECTION_UNLABELED = /
-    \d+#{NEXT_TITLE_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
+    \d+#{AFTER_BARE_NUMBER_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
     #{OPTIONAL_PARENTHETICALS}
     (?:
       [a-z]\d+-\d |
@@ -253,6 +283,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     (?:
       \s+notes?\s+to\s+#{SECTION_NOTE_TO_TARGET} |
       \s+introductory\s+text\b |
+      \s+et\s*seq\.? |
       (?<!preceding\s)\s+notes?\b(?!\s+(?:prec\.?|to\b))
     )
   /ixo
@@ -260,7 +291,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   SECTION_TRAILING_MODIFIER_OPTIONAL = /(?:#{SECTION_TRAILING_MODIFIER})?/ixo
 
   LOOSE_SECTION_CORE = /
-    \d+#{NEXT_TITLE_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
+    \d+#{AFTER_BARE_NUMBER_STOP}(?:\.\d+)?#{NEXT_TITLE_STOP}(?:[a-z]{1,3}\d?)?
     #{OPTIONAL_PARENTHETICALS}
     (?:
       [a-z]\d+-\d |
@@ -508,7 +539,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       exceeds\sthe\sapplicable |
       Performance\sSpecification\s\d, |
       sub-\z |
-      appendix\s[A-Za-z\d-]+\sto\sthis\spart,
+      appendix\s[A-Za-z\d-]+\sto\sthis\spart, |
+      Internal\s+Revenue\s+Code\s+General\s+Rule\s*,\s*\z
     /ix
 
   UNLINKABLE_POST_MATCH = /
@@ -916,8 +948,37 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     /ixo
   })
 
+  replace(/
+    #{IMPLIED_SUBTITLE_LABEL}#{IMPLIED_SUBTITLE}
+    (?:(?<part_label>,?\s*parts?\.?\s*)#{PART})?
+    (?:#{SUBPART_LABEL}#{IMPLIED_SUBPARTS})?
+    /ixo, pattern_slug: :implied_subtitle, if: :implied_title?, context_expected: :title)
+
+  replace(/
+    #{PARTS_LABEL}#{PARTS}
+    (?:#{SUBPART_LABEL}#{IMPLIED_SUBPARTS})?
+    (?<suffix>)? # keep "et seq." period in link text (same as loose_section empty suffix)
+    /ixo, pattern_slug: :implied_part, if: :implied_title?, context_expected: :title)
+
+  replace(/
+    #{BARE_SUBPART_LABEL}#{IMPLIED_SUBPARTS}
+    /ixo, pattern_slug: :implied_subpart, if: :implied_title?, context_expected: :title)
+
+  replace(/
+    #{IMPLIED_CHAPTER_LABEL}#{IMPLIED_CHAPTER}
+    (?:#{IMPLIED_SUBCHAPTER_LABEL}#{IMPLIED_SUBCHAPTER})?
+    /ixo, pattern_slug: :implied_chapter, if: :implied_title?, context_expected: :title)
+
+  replace(/
+    #{IMPLIED_SUBCHAPTER_LABEL}#{IMPLIED_SUBCHAPTER}
+    /ixo, pattern_slug: :implied_subchapter, if: :implied_title?, context_expected: :title)
+
   def context_present?(options)
     options[:context].present?
+  end
+
+  def implied_title?(options)
+    options[:implied_title].present? && options.dig(:context, :title).present?
   end
 
   def handles_lists
@@ -1205,7 +1266,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         # fails to match common formatting
         if potential_danger.present?
           if !potential_danger.detect { |r| r.include?(".") }
-            issue = :formatting
+            issue = :formatting unless captures[:section_label]&.include?("§") && potential_danger.none? { |r| r.match?(/[-–—]/) }
           elsif options[:context][:appendix].present?
             issue = :formatting unless captures[:section_label]&.include?("§") || /of this part/i.match?(captures[:suffix])
           end

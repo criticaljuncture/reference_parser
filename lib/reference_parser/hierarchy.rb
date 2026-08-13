@@ -29,7 +29,7 @@ class ReferenceParser::Hierarchy
       end
       citation << "Subchapter #{hierarchy[:subchapter]}" if hierarchy[:subchapter].present?
     when :part, :subpart, :subject_group
-      citation << "#{"Part " unless simple}#{hierarchy[:part]}"
+      citation << "#{"Part " unless simple}#{hierarchy[:part]}" if hierarchy[:part].present?
       citation << "Subpart #{hierarchy[:subpart]}" if hierarchy[:subpart].present?
       citation << "- #{hierarchy[:subject_group_title] || hierarchy[:subject_group]}" if hierarchy[:subject_group_title].present? || hierarchy[:subject_group].present? && !short
     when :section
@@ -174,7 +174,7 @@ class ReferenceParser::Hierarchy
       end
     end
 
-    decide_section_vs_part(expected: expected)
+    decide_section_vs_part(expected: expected, captures: captures)
 
     slide_right(:prefixed_part, :part)
     slide_right(:prefixed_subpart, :subpart)
@@ -193,6 +193,7 @@ class ReferenceParser::Hierarchy
 
     # drop list duplicated labels
     @data[:part]&.gsub!(/\s*parts?\s*/ix, "")
+    @data[:part]&.sub!(/\s+et\s*seq\.?\z/i, "")
     @data[:section]&.gsub!(/\A§§\s*/x, "")
 
     @data.delete(:subpart) if @data[:appendix].present? && expected[:section_list_appendix_toggle]
@@ -509,12 +510,12 @@ class ReferenceParser::Hierarchy
     reason
   end
 
-  def decide_section_vs_part(expected: {})
+  def decide_section_vs_part(expected: {}, captures: {})
     if !@data[:part] && @data[:section]
       if @options[:prefer_part] && !@data[:section]&.include?(".")
-        unless expected[:appendix] && !@data[:appendix]
-          repartition(:part, ".", :section, drop_divider: true)
-        end
+        skip_prefer_part = captures[:section_label]&.include?("§") ||
+          (expected[:appendix] && !@data[:appendix])
+        repartition(:part, ".", :section, drop_divider: true) unless skip_prefer_part
       elsif expected[:part]
         # take section if missing part & expecting it
         slide_left(:part, :section)
