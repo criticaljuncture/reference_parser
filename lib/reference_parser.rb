@@ -259,7 +259,7 @@ class ReferenceParser
                     prefix_spacers <<
                     (yield(effective_parser, citation) || "") <<
                     suffix_spacers <<
-                    suffix
+                    suffix.html_safe
                 end
                 if citation_result
                   result ||= "".html_safe
