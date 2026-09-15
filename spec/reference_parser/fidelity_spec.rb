@@ -89,7 +89,8 @@ FIDELITY_SCENARIOS = {
     "5 U.S.C. 5312, 5313, 5314, 5315 or 5316"
   ],
   "misc" => [
-    "and procedures in title 15 CFR part 904, or other applicable regulations"
+    "and procedures in title 15 CFR part 904, or other applicable regulations",
+    "The provisions of 25 U.S.C. 3406 (b), <em>et seq.,</em> governing submission."
   ]
 }
 

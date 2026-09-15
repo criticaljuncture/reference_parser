@@ -5,12 +5,6 @@ require "spec_helper"
 RSpec.describe ReferenceParser do
   let(:lorem) { "Lorem ipsum dolor sit amet, consectetur adipiscing elit." }
 
-  it "preserves italicized text in an unlinked USC citation suffix" do
-    source = "The provisions of 25 U.S.C. 3406 (b), <em>et seq.,</em> governing submission."
-    expected = 'The provisions of <a href="https://www.govinfo.gov/link/uscode/25/3406" class="usc external" target="_blank" rel="noopener noreferrer">25 U.S.C. 3406</a> (b), <em>et seq.,</em> governing submission.'
-    expect(described_class.new.hyperlink(source)).to eq(expected)
-  end
-
   it "has a version number" do
     expect(described_class).not_to be_nil
   end
