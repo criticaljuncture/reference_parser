@@ -714,7 +714,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       \s+and\s+(?:section\s+\d+\s+of\s+)?#{PL_LABEL}\d+[-–]\d+ |
       ,\s*(?:and\s+)?#{PL_LABEL}\d+[-–]\d+
     )*
-    (?:,\s*sec(?:tion|\.)?\s*\d+)?
+    (?:,\s*sec(?:tion|\.)?\s*\d+#{OPTIONAL_PARENTHETICALS})?
     (?:,\s*\d+\s*Stat\.?\s*\d+)?
   /ixo
 
