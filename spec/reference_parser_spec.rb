@@ -163,4 +163,55 @@ RSpec.describe ReferenceParser do
 
     expect(context).to eq original
   end
+
+  context "with replacement cache" do
+    let(:pattern_calls) { [] }
+
+    before do
+      calls = pattern_calls
+      parser_class = Class.new(ReferenceParser::Base) do
+        def url(citation, _options = {})
+          "/test/#{citation[:text]}"
+        end
+      end
+      parser_class.replace(->(context, _) {
+        calls << context[:word]
+        /(?<text>#{Regexp.escape(context.fetch(:word))})/
+      })
+      stub_const("ReferenceParser::TestPattern", parser_class)
+    end
+
+    def parser_for(word)
+      described_class.new(only: :test_pattern, options: {test_pattern: {context: {word: word}}})
+    end
+
+    it "reuses callable pattern" do
+      parser = parser_for("lorem")
+      html = parser.hyperlink("lorem lorem lorem")
+      expect(html.scan('href="/test/lorem"').size).to eq(3)
+      expect(pattern_calls).to eq(%w[lorem lorem])
+      expect(parser.hyperlink("lorem lorem").scan('href="/test/lorem"').size).to eq(2)
+      expect(pattern_calls).to eq(%w[lorem lorem lorem])
+    end
+
+    it "isolated between contexts" do
+      first = parser_for("lorem")
+      second = parser_for("ipsum")
+      expect(first.hyperlink("lorem ipsum")).to include('href="/test/lorem"')
+      expect(first.hyperlink("lorem ipsum")).not_to include('href="/test/ipsum"')
+      expect(second.hyperlink("lorem ipsum")).to include('href="/test/ipsum"')
+      expect(second.hyperlink("lorem ipsum")).not_to include('href="/test/lorem"')
+    end
+
+    it "does not resolve replacement patterns when there are no matches" do
+      expect(parser_for("lorem").hyperlink("unrelated text")).to eq("unrelated text")
+      expect(pattern_calls).to eq(["lorem"])
+    end
+
+    it "survives nil" do
+      parser_class = ReferenceParser::TestPattern
+      parser_class.replacements.unshift(ReferenceParser::Replacement.new(->(_, _) {}))
+      expect(parser_for("lorem").hyperlink("lorem lorem").scan('href="/test/lorem"').size).to eq(2)
+    end
+  end
 end

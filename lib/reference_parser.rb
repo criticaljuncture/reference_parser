@@ -198,6 +198,7 @@ class ReferenceParser
     return text unless searchable_text
 
     tag_context = ReferenceParser::TagContext.new(searchable_text, @html_aware)
+    replacement_regexps = {}
 
     searchable_text.gsub(merged_patterns) do
       match = Regexp.last_match
@@ -210,9 +211,10 @@ class ReferenceParser
           result = match[0]
         else
           replacements.each.with_index do |replacement, index|
-            next unless replacement.regexp
+            regexp = replacement_regexps.fetch(replacement) { replacement_regexps[replacement] = replacement.regexp }
+            next unless regexp
 
-            pattern_match = match[0].match(replacement.regexp)
+            pattern_match = match[0].match(regexp)
             next unless pattern_match&.begin(0)&.zero?
 
             named_captures = pattern_match.named_captures.symbolize_keys
