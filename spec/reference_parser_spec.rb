@@ -63,6 +63,12 @@ RSpec.describe ReferenceParser do
     ).to eql('1 CFR Part 2(n)(o)(l)(i)(n)(k) referenced by <a href="mailto:test@nil.local" class="email">test@nil.local</a>')
   end
 
+  it "links short text without html awareness" do
+    expect(
+      described_class.new(only: %i[cfr], options: {html_awareness: :none}).hyperlink("See 40 CFR 1.1")
+    ).to eql('See <a href="https://www.ecfr.gov/current/title-40/section-1.1" class="cfr external">40 CFR 1.1</a>')
+  end
+
   describe "usable" do
     it "for CFR text (internal references with context)" do
       expect(
