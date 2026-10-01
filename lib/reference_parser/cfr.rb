@@ -1532,7 +1532,15 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   def usc_list_continuation_pre_match(pre_match)
     return unless pre_match.present?
 
-    pre_match.split(LIST_CONTINUATION_BLOCK_BOUNDARY).last.presence || pre_match
+    text_after_last_block_boundary(pre_match).presence ||
+      pre_match.split(LIST_CONTINUATION_BLOCK_BOUNDARY).last.presence ||
+      pre_match
+  end
+
+  def text_after_last_block_boundary(text)
+    return text unless text.byterindex(LIST_CONTINUATION_BLOCK_BOUNDARY)
+
+    text.byteslice(Regexp.last_match.byteoffset(0)[1]..)
   end
 
   def skip_lax_usc_list_continuation?(pre_match)
