@@ -1235,7 +1235,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
     case options[:pattern_slug]
     when :lax_usc_list_continuation
-      pre_match = options[:full_pre_match] || options[:pre_match]
+      pre_match = options[:full_pre_match]&.call || options[:pre_match]
       scoped_pre_match = usc_list_continuation_pre_match(pre_match)
       issue = :missing_usc_context unless scoped_pre_match&.match?(USC_CITATION_CONTEXT)
     when :loose_section
@@ -1517,7 +1517,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     sections = captures[:sections].to_s
     return :skip if sections.match?(AS_AMENDED_ASIDE) && !sections.match?(/\d/)
 
-    pre_match = options[:full_pre_match] || options[:pre_match]
+    pre_match = options[:full_pre_match]&.call || options[:pre_match]
     scoped_pre_match = usc_list_continuation_pre_match(pre_match)
     continuation_title = scoped_pre_match.scan(/(\d+)\s+U\.?S\.?C(?!\.?A\b)/i).last&.first if scoped_pre_match&.match?(USC_CITATION_CONTEXT)
     return publ_asides_from_sections(captures[:sections]) || :skip unless continuation_title
@@ -1563,10 +1563,13 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   end
 
   def redundant_usc_notes?(pre_match, sections)
-    return false unless pre_match.present? && sections.present?
+    return false unless sections.present?
 
     items = sections.split(/,|\band\b/i).map(&:strip).reject(&:empty?)
     return false unless items.all? { |item| item.match?(/\bnotes?\b/i) }
+
+    pre_match = pre_match.call if pre_match.respond_to?(:call)
+    return false unless pre_match.present?
 
     items.all? do |item|
       base = item.sub(/\s+notes?\b.*\z/i, "").strip

@@ -203,11 +203,13 @@ class ReferenceParser
     searchable_text.gsub(merged_patterns) do
       match = Regexp.last_match
       result = nil
+      full_pre_match = nil
+      lazy_full_pre_match = -> { full_pre_match ||= searchable_text.byteslice(0, match.byteoffset(0)[0]) }
 
       tag_context.consider(match)
 
       if !@html_aware || tag_context.linkable?
-        if cfr_parser&.redundant_usc_note_match?(match[0], pre_match: searchable_text[0...match.begin(0)])
+        if cfr_parser&.redundant_usc_note_match?(match[0], pre_match: lazy_full_pre_match)
           result = match[0]
         else
           replacements.each.with_index do |replacement, index|
@@ -226,7 +228,7 @@ class ReferenceParser
             replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
             replacement_options[:pre_match] = tag_context.pre_match if replacement.will_consider_pre_match
             if %i[lax_usc_list_continuation lax_list_replacements].include?(replacement.pattern_slug)
-              replacement_options[:full_pre_match] = searchable_text[0...match.begin(0)]
+              replacement_options[:full_pre_match] = lazy_full_pre_match
             end
             replacement_options[:post_match] = tag_context.post_match if replacement.will_consider_post_match
 
