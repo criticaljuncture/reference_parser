@@ -1,6 +1,11 @@
 require "spec_helper"
 
 FIDELITY_SCENARIOS = {
+  "title structure" => [
+    "33 U.S.C. 1903(b); 46 U.S.C. 2103, 3306, 4102, 4302; Department of Homeland Security Delegation No. 00170.1, Revision No. 01.2, paragraphs (II) (77), (92)(a), and 92(b).",
+    "Pub. L. 113-76; 5 U.S.C. 301; 41 U.S.C. 418b; (FAR) 48 CFR 1.3.",
+    "41 U.S.C. 418b; (FAR) 48 CFR 1.3."
+  ],
   "nested Pub. L. section lists w/ parenthesized U.S.C. equivalents" => [
     "49 U.S.C. 114; Pub. L. 110-53 (121 Stat. 266, Aug. 3, 2007) secs. 1501 (6 U.S.C. 1151), 1512 (6 U.S.C. 1162) and 1517 (6 U.S.C. 1167).",
     "Pub. L. 110-53 secs. 1501 (6 U.S.C. 1151), 1512 (6 U.S.C. 1162), and 1517 (6 U.S.C. 1167).",
@@ -69,7 +74,11 @@ FIDELITY_SCENARIOS = {
     "12 U.S.C. 248(i), (j), and 248-1, 342, 360, 464, 4001-4010, and 5001-5018.",
     "12 U.S.C. 248(i)-(j), 343 <em>et seq.,</em> 347a, 347b, 347c, 348 <em>et seq.,</em> 357, 374, 374a, and 461."
   ],
-  "chapter folded into the section list" => [
+  "chapter & section" => [
+    "23 U.S.C. Chapter 4 and Section 1906.",
+    "23 U.S.C. Chapter 4 and Sec. 1906, Public Law 109-59.",
+    "5 U.S.C. chapter 43 and section 5307(d).",
+    "23 U.S.C. Chapter 4 and § 1906.",
     "5 U.S.C. chapter 43 and 5307(d).",
     "49 U.S.C. chapter 401 and 5307.",
     "5 U.S.C. subtitle I and chapters 401, 411.",

@@ -242,12 +242,17 @@ class ReferenceParser
 
             linked_any = false
             citations&.each do |citation|
+              original_citation_text = citation.values_at(:prefix, :text, :suffix).compact.join
               skip = false
               effective_parser = determine_effective_parser(replacement.parser, citation) do |effective_parser|
                 replacement_options.merge!(build_options(effective_parser, @options, {}))
                 skip = (effective_parser.clean_up_named_captures(citation, options: replacement_options) == :skip)
               end
-              next if skip
+              if skip
+                result ||= "".html_safe
+                result << original_citation_text.html_safe
+                next
+              end
 
               citation.delete(:final_loop)
               if effective_parser && @requested_parser_types.include?(effective_parser.type_slug)

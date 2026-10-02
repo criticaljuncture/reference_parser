@@ -179,7 +179,7 @@ class ReferenceParser::Usc < ReferenceParser::Base
   /ixo
 
   def self.normalize_section_id(section)
-    section.sub(SECTION_ASIDE_MODIFIER, "").strip
+    section.sub(/\A(?:§+|sections?|secs?\.?)\s*/i, "").sub(SECTION_ASIDE_MODIFIER, "").strip
   end
 
   def self.finalize_section_id(section)

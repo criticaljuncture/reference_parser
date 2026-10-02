@@ -43,7 +43,8 @@ class ReferenceParser::HierarchyCaptures
         joiner = " and "
         @captured_characters += joiner.length
       end
-      @data[:sections] = "#{chapter_item}#{joiner}#{@data[:sections]}"
+      section_label = @data.delete(:section_label)
+      @data[:sections] = "#{chapter_item}#{joiner}#{section_label}#{@data[:sections]}"
       @data.delete(:chapter)
       @data.delete(:chapter_label)
     end
