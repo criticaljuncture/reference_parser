@@ -22,6 +22,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   CFR_LABEL = /C(?:ode(?:\s*of)|\.)?\s*F(?:ederal|\.)?\s*R(?:egulations|\.)?/ix
   USC_LABEL = /U(?:nited)?\.?\s*S(?:tates)?\.?\s*C(?:ode)?\.?(?:\s*\(IRC\))?/ix
   USC_CITATION_CONTEXT = /\d+(?:\.|\s)\s*U\.?S\.?C(?!\.?A\b)/i
+  STATE_CODE_PRE_MATCH = /\b(?:administrative|revised|municipal)\s+code\s*\z/i
   LIST_CONTINUATION_BLOCK_BOUNDARY = /<\/(?!(?:em|i)\b)[^>]+>/i
   IRC_LABEL = /I(?:nternal)?\.?\s*R(?:evenue)?\.?\s*C(?:ode)?\.?/ix
   FR_LABEL = /F(?:ederal)?\.?\s*R(?:egister)?\.?/ix
@@ -798,12 +799,12 @@ class ReferenceParser::Cfr < ReferenceParser::Base
   # 50 App. 462 (title appendix section, without repeating U.S.C.)
   replace(->(context, options) {
             /
-            (?:Title\s*)?(?<title>#{TITLE_ID})\s*(?<title_appendix_label>#{PART_APPENDIX_LABEL}\s*)
+            (?<title_label>Title\s*)?(?<title>#{TITLE_ID})(?<title_appendix_label>\s*#{PART_APPENDIX_LABEL}\s*)
             #{LAX_USC_SECTIONS}
             #{TRAILING_MODIFIER}
             #{TRAILING_BOUNDRY}
             /ixo
-          }, pattern_slug: :lax_title_appendix_sections, prepend_pattern: true)
+          }, pattern_slug: :lax_title_appendix_sections, prepend_pattern: true, will_consider_pre_match: true)
 
   # 15 U.S.C. 77f, 77g, 77h, 77j, 78c(b), 78<em>l,</em> 78m, 78n, 78o(d), 80a-8, 80a-20, 80a-24, 80a-29, 80b-3, 80b-4
   replace(->(context, options) {
@@ -1044,6 +1045,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     when :appendix_of_the
       return :skip if appendix_of_the_title_only?(captures)
     when :lax_title_appendix_sections
+      return :skip if STATE_CODE_PRE_MATCH.match?(options[:pre_match].to_s)
       options[:source] = :usc
     when :lax_list_replacements
       return :skip if skip_lax_list_replacements?(captures, options)

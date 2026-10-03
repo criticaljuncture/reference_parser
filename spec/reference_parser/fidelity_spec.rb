@@ -97,6 +97,19 @@ FIDELITY_SCENARIOS = {
     "12 U.S.C. 248(i), (j), and 248-1, 342.",
     "5 U.S.C. 5312, 5313, 5314, 5315 or 5316"
   ],
+  "title + appendix" => [
+    "50 App. 462",
+    "Title 50 App. 462",
+    "Title 50 Appendix 462",
+    "Title\t50  App.\t462",
+    "Title 50 App. 462, 463 and 464"
+  ],
+  "state admin code" => [
+    "Nebraska Administrative Code Title 126 appendix I.",
+    "Nebraska Administrative Code Title 50 appendix I.",
+    "Nebraska Administrative Code 50 appendix I.",
+    "Nebraska Revised Code Title 50 appendix I."
+  ],
   "misc" => [
     "and procedures in title 15 CFR part 904, or other applicable regulations",
     "The provisions of 25 U.S.C. 3406 (b), <em>et seq.,</em> governing submission.",
