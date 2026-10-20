@@ -230,7 +230,7 @@ RSpec.describe ReferenceParser::Cfr do
 
   describe "per DDH" do # Document Drafting Handbook
     CFR_SCENARIOS.each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
 
     def all_non_context_specific_examples

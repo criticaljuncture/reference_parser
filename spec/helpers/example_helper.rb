@@ -7,12 +7,12 @@ module ExampleHelper
     result
   end
 
-  def expect_passing_cfr_scenerios(description, examples)
+  def expect_passing_cfr_scenarios(description, examples)
     describe description do
       permute_examples(examples).each_with_index do |example, index|
         example[:index] = index
         it describe_example(example, index: index) do
-          expect_passing_cfr_scenerio(example)
+          expect_passing_cfr_scenario(example)
         end
       end
     end

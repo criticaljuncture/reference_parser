@@ -26,7 +26,7 @@ class ReferenceParser::TagContext
     track_last_brackets(prior) unless @match_begin.zero?
     @ignorable_group = match.names.include?("ignorable") if @ignorable_group.nil?
     @ignorable_match = @ignorable_group && match[:ignorable].present?
-    @ignorable = @ignorable_match || @open > @close # current position is is the middle of tag attributes
+    @ignorable = @ignorable_match || @open > @close # current position is in the middle of tag attributes
     @pre_match_begin = @html_aware ? @linkable_pointer : char_boundary_at_or_before(@match_begin - UNAWARE_PRE_MATCH_BYTES)
 
     @pointer = @match_begin

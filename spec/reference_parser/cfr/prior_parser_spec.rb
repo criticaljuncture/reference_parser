@@ -40,7 +40,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "1 CFR", options: {cfr: {best_guess: true}}, citation: {title: "1"}, with_surrounding_text: "1 CFR Food"}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 end

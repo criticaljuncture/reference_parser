@@ -17,11 +17,11 @@ RSpec.describe ReferenceParser::RegulatoryPlan do
       ).to eql 'Lorem ipsum dolor sit amet, <a href="https://www.federalregister.gov/r/8888-AB88" class="external_fr_link" target="_blank" rel="noopener noreferrer">RIN 8888-AB88</a> consectetur adipiscing elit.'
     end
 
-    RIN_SCENARIOS.each do |scenerio|
-      [scenerio[:ex]].flatten.each do |example|
+    RIN_SCENARIOS.each do |scenario|
+      [scenario[:ex]].flatten.each do |example|
         it example.to_s do
           result = ReferenceParser.new(only: :regulatory_plan).hyperlink(example, default: {target: nil, class: nil})
-          (scenerio[:citations] || [scenerio[:citation]]).each do |citation|
+          (scenario[:citations] || [scenario[:citation]]).each do |citation|
             expect(
               result
             ).to have_tag("a", text: "RIN #{citation[:rin]}" || example,

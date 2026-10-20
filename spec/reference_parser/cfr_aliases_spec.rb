@@ -51,41 +51,41 @@ ALTERNATE_REFERENCE_SCENARIOS = {
 RSpec.describe ReferenceParser::CfrAliases do
   ALTERNATE_REFERENCE_SCENARIOS.each do |description, scenarios|
     describe "CFR aliases & overlays (#{description})" do
-      scenarios.each do |scenerio|
-        it "recognizes #{scenerio[:citation]}" do
+      scenarios.each do |scenario|
+        it "recognizes #{scenario[:citation]}" do
           expect(
-            ReferenceParser::Hierarchy.citation(scenerio[:hierarchy])
-          ).to eq(scenerio[:citation])
+            ReferenceParser::Hierarchy.citation(scenario[:hierarchy])
+          ).to eq(scenario[:citation])
 
-          if scenerio[:alternate]
+          if scenario[:alternate]
             expect(
-              ReferenceParser::Cfr.alternate_reference_for(scenerio[:hierarchy])
-            ).to eq(scenerio[:alternate])
+              ReferenceParser::Cfr.alternate_reference_for(scenario[:hierarchy])
+            ).to eq(scenario[:alternate])
           end
 
-          if scenerio[:primary] || scenerio[:primary_path]
-            details = ReferenceParser::Cfr.primary_details_for(scenerio[:hierarchy], {on: "current", relative: true})
+          if scenario[:primary] || scenario[:primary_path]
+            details = ReferenceParser::Cfr.primary_details_for(scenario[:hierarchy], {on: "current", relative: true})
 
             overlay = details&.[](:title)
             overlay_path = details&.[](:path)
-            if scenerio[:primary]
-              if scenerio[:primary] == :none
+            if scenario[:primary]
+              if scenario[:primary] == :none
                 expect(overlay).to be_nil
               else
-                expect(overlay).to eq(scenerio[:primary])
+                expect(overlay).to eq(scenario[:primary])
               end
             end
-            if scenerio[:primary_path]
-              expect(overlay_path).to eq(scenerio[:primary_path])
+            if scenario[:primary_path]
+              expect(overlay_path).to eq(scenario[:primary_path])
             end
           end
 
-          if scenerio[:primary_link]
-            overlay_link = ReferenceParser::Cfr.linked_primary_for(scenerio[:hierarchy])
-            if scenerio[:primary_link] == :none
+          if scenario[:primary_link]
+            overlay_link = ReferenceParser::Cfr.linked_primary_for(scenario[:hierarchy])
+            if scenario[:primary_link] == :none
               expect(overlay_link).to be_nil
             else
-              expect(overlay_link).to eq(scenerio[:primary_link])
+              expect(overlay_link).to eq(scenario[:primary_link])
             end
           end
         end

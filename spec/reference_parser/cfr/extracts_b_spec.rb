@@ -219,7 +219,7 @@ RSpec.describe "ReferenceParser::Cfr" do
          expected_url: "/on/2020-09-11/title-21/section-341.74#p-341.74(c)(5)(iii)"}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 end

@@ -56,7 +56,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "FMR parts 102-193 and 102-194", citations: [{title: "41", part: "102", part_end: "193"}, {title: "41", part: "102", part_end: "194"}], options: alias_options}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 end

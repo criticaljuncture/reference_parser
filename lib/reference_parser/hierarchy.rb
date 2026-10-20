@@ -100,7 +100,7 @@ class ReferenceParser::Hierarchy
   end
 
   def appears_incomplete?(captures: {})
-    # ranks explictly listed by the replace definition are required
+    # ranks explicitly listed by the replace definition are required
     result = PARSED_RANKS.detect do |rank|
       result = context_expected.include?(rank) && !@data[rank].present?
       result = false if result && (rank == :section) && @data[:appendix].present?

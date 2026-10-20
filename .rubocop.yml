@@ -22,7 +22,7 @@ RSpec/MultipleExpectations:
 RSpec:
    Language:
      Expectations:
-       - expect_passing_cfr_scenerio
+       - expect_passing_cfr_scenario
 
 plugins:
   - rubocop-performance

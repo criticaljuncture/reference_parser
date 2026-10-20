@@ -40,7 +40,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "1CFR2.7(a)(2)", citation: {title: "1", chapter: "I", part: "2", section: "2.7", paragraph: "(a)(2)"}, optional: [:chapter, :part]}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 end

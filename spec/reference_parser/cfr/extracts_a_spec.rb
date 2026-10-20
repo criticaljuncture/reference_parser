@@ -194,7 +194,7 @@ RSpec.describe "ReferenceParser::Cfr" do
 
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 end

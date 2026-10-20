@@ -46,7 +46,7 @@ RSpec.describe "ReferenceParser::Cfr" do
         {ex: "1.1388—1", options: {cfr: {best_guess: true, prefer_part: true}}, citation: :expect_none}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 

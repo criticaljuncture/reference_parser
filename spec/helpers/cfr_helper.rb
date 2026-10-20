@@ -1,7 +1,7 @@
 module CfrHelper
   LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 
-  def expect_passing_cfr_scenerio(example)
+  def expect_passing_cfr_scenario(example)
     embed_example_in_text = true
     embed_example_in_text = false if example.dig(:options, :cfr, :allow_aliases) && example.dig(:options, :cfr, :best_guess)
     text = +""

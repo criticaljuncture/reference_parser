@@ -191,7 +191,7 @@ RSpec.describe "ReferenceParser::Cfr" do
          with_surrounding_text: "pursuant to section 704(e)(2), section 706(d), and paragraph (b)(2)(ii) of § 751-1, and"}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 end

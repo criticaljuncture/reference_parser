@@ -83,7 +83,7 @@ class ReferenceParser::Base
       # this is done automatically by safe_target_blank for
       # link_to but cfr parser is using content tag to avoid
       # reversing href & class attribute order (breaking
-      # exsiting test fixtures), patching it in here for the
+      # existing test fixtures), patching it in here for the
       # moment
     end
 

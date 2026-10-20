@@ -23,7 +23,7 @@ RSpec.describe "ReferenceParser::Cfr" do
          citation: {title: "26", section: "1.199A-12", expected_url: "/current/title-26/section-1.199A-12"}}
       ]
     ].each_slice(2) do |description, examples|
-      expect_passing_cfr_scenerios(description, examples)
+      expect_passing_cfr_scenarios(description, examples)
     end
   end
 
@@ -39,16 +39,16 @@ RSpec.describe "ReferenceParser::Cfr" do
       {ex: "a-b-c-d-e", expected_count: 81},
       {ex: "a-b-c-d-e-f", expected_count: 1, expected: ["a-b-c-d-e-f"]},
       {ex: "a-b-c", max_occurrences: 1, expected: ["a-b-c"]}
-    ].each do |scenerio|
-      it "permutes #{scenerio[:ex]}" do
-        permuted = if scenerio[:max_occurrences]
-          ReferenceParser::Dashes.permute(scenerio[:ex], max_occurrences: scenerio[:max_occurrences])
+    ].each do |scenario|
+      it "permutes #{scenario[:ex]}" do
+        permuted = if scenario[:max_occurrences]
+          ReferenceParser::Dashes.permute(scenario[:ex], max_occurrences: scenario[:max_occurrences])
         else
-          ReferenceParser::Dashes.permute(scenerio[:ex])
+          ReferenceParser::Dashes.permute(scenario[:ex])
         end
 
-        expect(permuted).to eq(Set.new(scenerio[:expected])) if scenerio[:expected]
-        expect(permuted.count).to eq(scenerio[:expected_count]) if scenerio[:expected_count]
+        expect(permuted).to eq(Set.new(scenario[:expected])) if scenario[:expected]
+        expect(permuted.count).to eq(scenario[:expected_count]) if scenario[:expected_count]
       end
     end
   end

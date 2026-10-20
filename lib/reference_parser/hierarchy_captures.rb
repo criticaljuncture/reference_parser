@@ -4,7 +4,7 @@ class ReferenceParser::HierarchyCaptures
   LIST_EXAMPLES = /
     (?:<em>)?\s*Examples?\s*.                         # required example text
     (?:
-      (?:<em>)?\s*(?:Examples?\s*)?                   # optional italics and or repeated example test
+      (?:<em>)?\s*(?:Examples?\s*)?                   # optional italics and or repeated example text
       \d+                                             # number
       (?:<\/em>)?                                     # close italics if needed
       (?:\s*through\s*|\s*,\s*(?:and\s*)?)?
