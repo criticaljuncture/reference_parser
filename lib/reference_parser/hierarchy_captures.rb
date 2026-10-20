@@ -321,7 +321,7 @@ class ReferenceParser::HierarchyCaptures
   end
 
   def only_whitespace?(capture)
-    @data[:capture] =~ /\A\s*\Z/
+    @data[capture] =~ /\A\s*\z/
   end
 
   def restore_paragraph

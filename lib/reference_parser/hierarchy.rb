@@ -319,7 +319,7 @@ class ReferenceParser::Hierarchy
     elsif processing_a_list && ends_with_a_paragraph?(@data[:section], paragraph: @data[:paragraph])
       # section is section+paragraph?
       repartition(:section, "(", :paragraph)
-      @data[:section] = previous_hierarchy[:section] || original_section unless @data[:section].present?
+      @data[:section] = previous_hierarchy[:section] unless @data[:section].present?
       @data[:section] = @data[:section]&.strip
       puts "normalize_paragraph_ranges [section is section+paragraph] #{@data[:section]} #{@data[:paragraph]}" if @debugging
     elsif processing_a_list && @data[:section].blank? && @data[:paragraph].present? && @data[:paragraph].start_with?("(")
@@ -387,8 +387,7 @@ class ReferenceParser::Hierarchy
 
   def starts_with_a_section?(paragraph, section: nil)
     return unless paragraph.present?
-    match = /^A[\d[a-z].-]+/ix.match(paragraph)
-    match || (section.present? && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
+    (section.present? && paragraph.start_with?(section)) || ((paragraph.index("(") || 0) > 0)
   end
 
   def ends_with_a_paragraph?(section, paragraph: nil)

@@ -7,8 +7,7 @@ class ReferenceParser::Replacement
     :will_consider_post_match,
     :debug_pattern
 
-  delegate :link,
-    :link_options,
+  delegate :link_options,
     :url,
     :slug,
     :options,
