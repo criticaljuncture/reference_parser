@@ -7,10 +7,7 @@ AllCops:
     - bin/*
   TargetRubyVersion: 4.0
   NewCops: enable
-  SuggestExtensions: false  
-Style/GlobalVars:
-  Enabled: true
-  AllowedVariables: [$redis]
+  SuggestExtensions: false
 
 RSpec/EmptyExampleGroup:
   Enabled: false
@@ -20,16 +17,13 @@ RSpec/MultipleExpectations:
   Enabled: false
 
 RSpec:
-   Language:
-     Expectations:
-       - expect_passing_cfr_scenario
+  Language:
+    Expectations:
+      - expect_passing_cfr_scenario
 
 plugins:
   - rubocop-performance
   - rubocop-rspec
-
-require:
-  - standard
 
 inherit_gem:
   standard: config/base.yml
