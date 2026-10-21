@@ -44,7 +44,7 @@ class ReferenceParser::ReorganizationPlan < ReferenceParser::Authority
     end
   end
 
-  def handles_lists
+  def handles_lists?
     true
   end
 

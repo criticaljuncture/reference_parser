@@ -163,7 +163,7 @@ class ReferenceParser::Usc < ReferenceParser::Base
     :usc
   end
 
-  def handles_lists
+  def handles_lists?
     true
   end
 

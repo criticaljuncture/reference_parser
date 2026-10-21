@@ -16,7 +16,7 @@ class ReferenceParser::Base
     @accumulated_context = {sections: Set.new, section_prefixes: Set.new}
   end
 
-  def handles_lists
+  def handles_lists?
     false
   end
 

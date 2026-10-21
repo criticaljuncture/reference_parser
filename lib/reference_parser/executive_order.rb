@@ -46,7 +46,7 @@ class ReferenceParser::ExecutiveOrder < ReferenceParser::Base
     captures
   end
 
-  def handles_lists
+  def handles_lists?
     true
   end
 

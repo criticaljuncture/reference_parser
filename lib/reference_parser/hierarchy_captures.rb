@@ -112,7 +112,7 @@ class ReferenceParser::HierarchyCaptures
     }
   end
 
-  def processing_a_list
+  def processing_a_list?
     (repeated.count > 1) || @data[:part_label]&.include?("parts")
   end
 
@@ -151,7 +151,7 @@ class ReferenceParser::HierarchyCaptures
     # add remainder
     result.reverse_merge!(@data.except(:prefix, :suffix))
 
-    result.prepare_loop_captures(processing_a_list: processing_a_list)
+    result.prepare_loop_captures(processing_a_list: processing_a_list?)
     result
   end
 
@@ -167,7 +167,7 @@ class ReferenceParser::HierarchyCaptures
     loop_suffix = final_loop ? parent[:suffix] || "" : ""
     loop_suffix_unlinked = final_loop ? parent[:suffix_unlinked] || "" : ""
 
-    text_from_captures = (!parent.processing_a_list || first_loop) ? order.first_loop_named_captures : [] # first loop/prefix
+    text_from_captures = (!parent.processing_a_list? || first_loop) ? order.first_loop_named_captures : [] # first loop/prefix
     text_from_captures << parent.repeated_capture
     text_from_captures.concat(order.last_loop_named_captures) if final_loop # last loop/suffix
 

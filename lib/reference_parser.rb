@@ -228,11 +228,11 @@ class ReferenceParser
             replacement_options = build_options(replacement.parser, @options, {})
             replacement_options[:include_unlinked] = true if @include_unlinked
             replacement_options[:pattern_slug] = replacement.pattern_slug if replacement.pattern_slug.present?
-            replacement_options[:pre_match] = tag_context.pre_match if replacement.will_consider_pre_match
+            replacement_options[:pre_match] = tag_context.pre_match if replacement.will_consider_pre_match?
             if %i[lax_usc_list_continuation lax_list_replacements].include?(replacement.pattern_slug)
               replacement_options[:full_pre_match] = lazy_full_pre_match
             end
-            replacement_options[:post_match] = tag_context.post_match if replacement.will_consider_post_match
+            replacement_options[:post_match] = tag_context.post_match if replacement.will_consider_post_match?
 
             @mutate_captures&.call(named_captures, source: replacement.parser.slug, pattern_slug: replacement.pattern_slug, context: options[:context])
             citations = replacement.clean_up_named_captures(named_captures, options: replacement_options)
@@ -263,7 +263,7 @@ class ReferenceParser
                   citation[:source] ||= effective_parser.slug
                   citation[:text] = citation[:text] || match[0]
                   prefix = citation[:prefix] || ""
-                  prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists)
+                  prefix_spacers, suffix_spacers = eject_spacers_from_tag(citation[:text], aggressive: effective_parser.handles_lists?)
                   suffix = citation[:suffix] || ""
                   citation_result = "".html_safe <<
                     prefix <<
@@ -351,7 +351,7 @@ class ReferenceParser
     all = @parsers.flat_map(&:replacements)
 
     if @debugging
-      debug = all.select { |r| r.debug_pattern }
+      debug = all.select { |r| r.debug_pattern? }
       if debug.present?
         puts "merged pattern \n #{merge_patterns_from(debug)}"
         return debug
@@ -359,7 +359,7 @@ class ReferenceParser
     end
 
     # move prepend_pattern replacements to the front
-    prepended, other = all.partition(&:prepend_pattern)
+    prepended, other = all.partition(&:prepend_pattern?)
 
     # check if_clauses
     results = [prepended, other].flatten.select do |replacement|

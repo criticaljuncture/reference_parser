@@ -40,7 +40,7 @@ class ReferenceParser::Stat < ReferenceParser::Authority
   # 68A Stat. 580 — Internal Revenue Code of 1954 volumes use a letter suffix
   replace(/#{VOLUME}#{VOLUME_STAT_SEPARATOR}Stat\.?,?\s*#{DEFERRED_CHAPTERS_PREFIX}(?<chapters>#{CHAPTER}(?:#{TRAILING_BOUNDARY})*)(?<secs_labeled_page>#{SECS_LABELED_PAGE})?(?<et_seq>#{ET_SEQ})?(?<trailing_sec>,\s*sec\.\s*[0-9]+)?/io, pattern_slug: :stat)
 
-  def handles_lists
+  def handles_lists?
     true
   end
 

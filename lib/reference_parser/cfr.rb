@@ -984,7 +984,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     options[:implied_title].present? && options.dig(:context, :title).present?
   end
 
-  def handles_lists
+  def handles_lists?
     true
   end
 
@@ -1088,7 +1088,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
       loop_captures = captures.loop_captures_for(what)
 
-      first_loop = !captures.processing_a_list || (index == 0)
+      first_loop = !captures.processing_a_list? || (index == 0)
       final_loop = index == (captures.repeated.count - 1)
 
       # create hierarchy (normalized citation data)
@@ -1101,8 +1101,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
       # cleanup hierarchy (link text is already assembled, original text can be safely normalized at this point)
       hierarchy.cleanup!(expected: captures.expected, captures: captures)
-      hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list, previous_citation: previous_citation)
-      hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list)
+      hierarchy.cleanup_list_ranges_if_needed!(repeated_capture: captures.repeated_capture, processing_a_list: captures.processing_a_list?, previous_citation: previous_citation)
+      hierarchy.normalize_paragraph_ranges(text: text, previous_citation: previous_citation, captures: captures, processing_a_list: captures.processing_a_list?)
       authority = hierarchy.cleanup_authority_if_needed!
       href_hierarchy = hierarchy.to_href_hierarchy(expected: captures.expected, captures: captures)
       hierarchy.finish!
@@ -1129,7 +1129,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
         citation[:strip_attached_sublocators] = true
       end
 
-      unless qualify_citation(citation, processing_a_list: captures.processing_a_list, final_loop: final_loop, previous_citation: previous_citation)
+      unless qualify_citation(citation, processing_a_list: captures.processing_a_list?, final_loop: final_loop, previous_citation: previous_citation)
         if previous_citation && (final_loop || paragraph_only_continuation?(citation, previous_citation))
           if (merged = citation.values_at(*%i[prefix text suffix]).compact.join("")).present?
             if previous_citation[:source] == :usc && previous_citation[:suffix].blank? && merged.match?(/\A\s*(?:and|or|&)\s+\([a-z]{1,5}\)/i)
@@ -1249,8 +1249,8 @@ class ReferenceParser::Cfr < ReferenceParser::Base
       elsif (match = LIKELY_EXTERNAL_SECTIONS.match(options[:post_match]))
         issue = :direct_match
       elsif !captures[:section_label]&.include?("§") && (
-            a_closer_than_b_in_haystack("<td", "</table>", options[:pre_match], reference: :end) ||
-            a_closer_than_b_in_haystack("</td", "<table>", options[:post_match], reference: :start))
+            a_closer_than_b_in_haystack?("<td", "</table>", options[:pre_match], reference: :end) ||
+            a_closer_than_b_in_haystack?("</td", "<table>", options[:post_match], reference: :start))
         issue = :loose_section_table_column # 40/52.1570 "state citations"
       end
       if !issue || (issue == :heading_title)
@@ -1589,7 +1589,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
     end
   end
 
-  def a_closer_than_b_in_haystack(a, b, haystack, reference: :start)
+  def a_closer_than_b_in_haystack?(a, b, haystack, reference: :start)
     return unless haystack
 
     if reference == :end

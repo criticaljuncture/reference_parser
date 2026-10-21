@@ -31,7 +31,7 @@ class ReferenceParser::FederalRegister < ReferenceParser::Base
     :federal_register
   end
 
-  def handles_lists
+  def handles_lists?
     true
   end
 end

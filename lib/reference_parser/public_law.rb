@@ -37,7 +37,7 @@ class ReferenceParser::PublicLaw < ReferenceParser::Base
 
   def url(citation, url_options = {})
     if (congress = citation[:congress].to_i) >= 104 && (law = citation[:law].to_i)
-      return if RESPECT_KNOWN_SESSION_DETAILS && !plausible(congress, law)
+      return if RESPECT_KNOWN_SESSION_DETAILS && !plausible?(congress, law)
       "https://www.govinfo.gov/link/plaw/#{congress}/public/#{law}"
     end
   end
@@ -68,7 +68,7 @@ class ReferenceParser::PublicLaw < ReferenceParser::Base
     captures
   end
 
-  def handles_lists
+  def handles_lists?
     true
   end
 
@@ -78,7 +78,7 @@ class ReferenceParser::PublicLaw < ReferenceParser::Base
 
   private
 
-  def plausible(congress, law)
+  def plausible?(congress, law)
     if (final = FINAL_LAW_PER_SESSION[congress])
       (law >= 1) && (law <= final)
     else
