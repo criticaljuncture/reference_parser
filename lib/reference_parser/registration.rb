@@ -1,9 +1,9 @@
-module ReferenceParser::Registration
-  def self.included(base)
-    base.extend SetupMethods
-  end
+# frozen_string_literal: true
 
-  module SetupMethods
+module ReferenceParser::Registration
+  extend ActiveSupport::Concern
+
+  class_methods do
     def replacements
       @replacements
     end

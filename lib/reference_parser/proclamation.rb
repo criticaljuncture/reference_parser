@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Proclamation < ReferenceParser::Authority
   PROCLAMATION_LABEL = /
     \b

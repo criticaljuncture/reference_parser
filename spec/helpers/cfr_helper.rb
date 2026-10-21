@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CfrHelper
   LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 

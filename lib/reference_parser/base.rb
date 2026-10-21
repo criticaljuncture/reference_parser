@@ -1,4 +1,4 @@
-require_relative "registration"
+# frozen_string_literal: true
 
 class ReferenceParser::Base
   include ReferenceParser::Registration

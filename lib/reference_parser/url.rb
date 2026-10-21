@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Url < ReferenceParser::Base
   BRACKETS = "[](){}".chars.each_slice(2).map(&:reverse).to_h
   WORD_PATTERN = '\p{Word}'

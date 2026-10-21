@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Stat < ReferenceParser::Authority
   # United States Statutes at Large
 

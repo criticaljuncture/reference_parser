@@ -5,8 +5,10 @@ require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/hash"
 require "action_view"
 require "timeout"
+require "zeitwerk"
 
-require_relative "reference_parser/all"
+loader = Zeitwerk::Loader.for_gem
+loader.setup
 
 class ReferenceParser
   class ParseError < StandardError; end
@@ -372,3 +374,5 @@ class ReferenceParser
     results.compact
   end
 end
+
+loader.eager_load

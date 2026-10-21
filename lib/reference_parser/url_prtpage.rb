@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "htmlentities"
 
 class ReferenceParser::UrlPrtpage < ReferenceParser::Base

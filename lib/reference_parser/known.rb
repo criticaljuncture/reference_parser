@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Known
   def cfr_non_temporary_terminating_with_parenthetical
     {

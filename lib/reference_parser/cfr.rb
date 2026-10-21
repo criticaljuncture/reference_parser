@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Cfr < ReferenceParser::Base
   MAX_EXPECTED_CFR_TITLE = 50
   MAX_EXPECTED_FR_TITLE = 999

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ScenarioHelper
   def expect_link_with_text(html, href:, text:)
     link = find_link_in_html(html, href)

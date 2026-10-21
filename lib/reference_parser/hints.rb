@@ -1,4 +1,6 @@
-class ReferenceParser::Hints
+# frozen_string_literal: true
+
+module ReferenceParser::Hints
   KNOWN_REFERENCES = {
     usc: [
       "15 USC 78l",
@@ -10,14 +12,16 @@ class ReferenceParser::Hints
     usc: " USC "
   }.freeze
 
-  def self.sections_for(source, title)
+  module_function
+
+  def sections_for(source, title)
     Array(KNOWN_REFERENCES[source])
       .filter_map { |reference| parse(reference, source: source) }
       .select { |entry| entry[:title] == title.to_s }
       .map { |entry| entry[:section] }
   end
 
-  def self.parse(reference, source:)
+  def parse(reference, source:)
     delimiter = DELIMITERS[source]
     return unless delimiter
 

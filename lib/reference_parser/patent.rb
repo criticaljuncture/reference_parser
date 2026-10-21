@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Patent < ReferenceParser::Base
   replace(/Patent Number (?<number>[0-9,]+)/, pattern_slug: :patent)
 

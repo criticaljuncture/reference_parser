@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::HierarchyCaptures
   LIST_DESIGNATORS = /,|;|or|and|&|through|to/ix
 

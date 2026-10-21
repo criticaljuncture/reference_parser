@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "spec_helper"
 
 SEGMENT_OPTIONS = {cfr: {best_guess: true, allow_aliases: true, prefer_part: true, implied_title: true, context: {title: "43"}}}

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::FederalRegisterDocNumber < ReferenceParser::Base
   replace(/
     (?:FR\s*Doc

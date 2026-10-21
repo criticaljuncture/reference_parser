@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Replacement
   attr_accessor :parser,
     :pattern_slug,

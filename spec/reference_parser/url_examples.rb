@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.shared_examples "url examples" do
   describe "links urls" do
     it "example usage" do

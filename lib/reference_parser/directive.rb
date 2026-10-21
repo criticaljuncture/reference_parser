@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Directive < ReferenceParser::Authority
   # after an optional number: either a quoted title, or comma/space before the date
   TITLE_OR_DATE_SEPARATOR = /(?:,\s*[“"][^”"]+[”"],?\s*|[,\s]+)/

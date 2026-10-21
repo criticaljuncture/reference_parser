@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ExampleHelper
   def describe_example(example, index: nil)
     result = +""

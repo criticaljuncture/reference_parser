@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Authority < ReferenceParser::Base
   include ReferenceParser::Lists
 

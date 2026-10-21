@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport"
   spec.add_dependency "actionview"
   spec.add_dependency "htmlentities"
+  spec.add_dependency "zeitwerk"
 end

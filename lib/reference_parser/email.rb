@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Email < ReferenceParser::Base
   AUTO_EMAIL_LOCAL_RE = /[\w.!#$%&'*\/=?^`{|}~+-]/
   replace(/(?<email>(?<!#{AUTO_EMAIL_LOCAL_RE})[\w.!#$%+-]\.?#{AUTO_EMAIL_LOCAL_RE}*@[\w-]+(?:\.[\w-]+)+)/o, pattern_slug: :email)

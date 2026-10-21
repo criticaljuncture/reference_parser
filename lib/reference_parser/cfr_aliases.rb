@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
 module ReferenceParser::CfrAliases
+  extend ActiveSupport::Concern
+
   HIERARCHY_ALIASES = {}
 
   FAR_CHAPTERS = {
@@ -59,11 +63,7 @@ module ReferenceParser::CfrAliases
     HIERARCHY_ALIASES[acronym] = config
   end
 
-  def self.included(base)
-    base.extend(ClassMethods)
-  end
-
-  module ClassMethods
+  class_methods do
     def alternate_reference_for(hierarchy)
       matched_hierarchy = nil
       alias_text = nil

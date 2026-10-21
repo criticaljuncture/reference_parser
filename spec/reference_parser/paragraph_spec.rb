@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "spec_helper"
 
 PARAGRAPH_GUESS_LEVEL_SCENARIOS = {

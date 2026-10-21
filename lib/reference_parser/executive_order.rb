@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::ExecutiveOrder < ReferenceParser::Base
   include ReferenceParser::Lists
 

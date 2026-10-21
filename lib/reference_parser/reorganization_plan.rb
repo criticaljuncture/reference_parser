@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::ReorganizationPlan < ReferenceParser::Authority
   LIST_DIVIDER = SEMICOLON_COMMA_AND_OR_DIVIDER
 

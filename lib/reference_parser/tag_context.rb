@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::TagContext
   UNAWARE_PRE_MATCH_BYTES = 32
   POST_MATCH_CHARS = 65

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ReferenceParser::HierarchyContainer
   attr_accessor :options, :debugging, :data, :order, :parent
 

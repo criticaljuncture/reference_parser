@@ -1,5 +1,9 @@
-class ReferenceParser::Paragraph
-  def self.guess_level(fragment)
+# frozen_string_literal: true
+
+module ReferenceParser::Paragraph
+  module_function
+
+  def guess_level(fragment)
     italic = fragment.include?("em>")
     clean_fragment = fragment.tr("(", "").tr(")", "").gsub(/<\/?em>/, "")
     case clean_fragment

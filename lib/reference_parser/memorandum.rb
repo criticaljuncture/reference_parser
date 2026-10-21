@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::Memorandum < ReferenceParser::Authority
   replace(/
     \b

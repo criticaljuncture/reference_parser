@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::PublicLaw < ReferenceParser::Base
   include ReferenceParser::Lists
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # track the order of named captures (both original and those created during processing) for use in reassembly of text
 class ReferenceParser::CaptureOrder
   delegate :[], :"[]=", :index, :find_index, :count, :inspect, :to_s,

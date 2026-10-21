@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReferenceParser::FederalRegister < ReferenceParser::Base
   def url(citation, url_options = {})
     return unless citation&.values_at(:volume, :page)&.all?(&:present?)
