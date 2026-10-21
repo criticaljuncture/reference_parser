@@ -4,7 +4,7 @@ class ReferenceParser::Cfr < ReferenceParser::Base
 
   include ReferenceParser::CfrAliases
 
-  def link_options(citation)
+  def link_options(_citation)
     {class: "cfr external"}
   end
 

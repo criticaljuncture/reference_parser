@@ -23,7 +23,7 @@ class ReferenceParser::Base
   def clean_up_named_captures(captures, options: {})
   end
 
-  def link_options(citation)
+  def link_options(_citation)
     {class: default_link_classes, target: "_blank"}
   end
 
@@ -35,7 +35,7 @@ class ReferenceParser::Base
     return text.to_s.html_safe if text.blank?
 
     if (href = url(citation, options))
-      content_tag(:a, text.html_safe, href: href.gsub("&amp;", "&"), **get_link_options(citation, options))
+      content_tag(:a, text.html_safe, href: href.gsub("&amp;", "&"), **link_options_for(citation, options))
     else
       text.html_safe
     end
@@ -71,7 +71,7 @@ class ReferenceParser::Base
     !url_options[:relative] || url_options[:absolute]
   end
 
-  def get_link_options(citation, options)
+  def link_options_for(citation, options)
     result = link_options(citation)
     result = result.call(citation) if result.respond_to?(:call)
 

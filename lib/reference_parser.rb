@@ -73,7 +73,7 @@ class ReferenceParser
   end
 
   def self.cfr_parser
-    @cached_cfr ||= ReferenceParser.new(only: %i[cfr])
+    @cfr_parser ||= ReferenceParser.new(only: %i[cfr])
   end
 
   def self.cfr_best_guess_hierarchy_parser
@@ -187,9 +187,9 @@ class ReferenceParser
     @merged_patterns ||= merge_patterns_from(replacements)
   end
 
-  def cfr_parser
-    return @cfr_parser if defined?(@cfr_parser)
-    @cfr_parser = @parsers.find { |parser| parser.is_a?(ReferenceParser::Cfr) }
+  def cfr
+    return @cfr if defined?(@cfr)
+    @cfr = @parsers.find { |parser| parser.is_a?(ReferenceParser::Cfr) }
   end
 
   def replace_patterns(text, options: {}, &block)
@@ -209,7 +209,7 @@ class ReferenceParser
       tag_context.consider(match)
 
       if !@html_aware || tag_context.linkable?
-        if cfr_parser&.redundant_usc_note_match?(match[0], pre_match: lazy_full_pre_match)
+        if cfr&.redundant_usc_note_match?(match[0], pre_match: lazy_full_pre_match)
           result = match[0]
         else
           replacements.each.with_index do |replacement, index|

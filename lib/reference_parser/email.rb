@@ -2,7 +2,7 @@ class ReferenceParser::Email < ReferenceParser::Base
   AUTO_EMAIL_LOCAL_RE = /[\w.!#$%&'*\/=?^`{|}~+-]/
   replace(/(?<email>(?<!#{AUTO_EMAIL_LOCAL_RE})[\w.!#$%+-]\.?#{AUTO_EMAIL_LOCAL_RE}*@[\w-]+(?:\.[\w-]+)+)/o, pattern_slug: :email)
 
-  def link_to(text, citation, options = {})
-    content_tag(:a, citation[:email], {href: "mailto:#{CGI.escape(citation[:email]).gsub("%40", "@")}", class: "email"})
+  def link_to(text, citation, _options = {})
+    content_tag(:a, text, {href: "mailto:#{CGI.escape(citation[:email]).gsub("%40", "@")}", class: "email"})
   end
 end
