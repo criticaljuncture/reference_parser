@@ -32,7 +32,7 @@ USC_SCENERIOS = [
   {ex: "23 U.S.C. 107 and 317", citations: [{title: "23", part: "107"}, {title: "23", part: "317"}]},
 
   {ex: "17 U.S.C. 203, 304(c)", citations: [{title: "17", part: "203"}, {title: "17", part: "304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
-  {ex: "17 U.S.C. 203, 304(c) and (d)", citations: [{title: "17", part: "203", expected_url: "https://www.govinfo.gov/link/uscode/17/203"}, {title: "17", part: "304", expected_text: "304(c)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}], context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
+  {ex: "17 U.S.C. 203, 304(c) and (d)", citations: [{title: "17", part: "203", expected_url: "https://www.govinfo.gov/link/uscode/17/203"}, {title: "17", part: "304", expected_text: "304(c)", expected_url: "https://www.govinfo.gov/link/uscode/17/304"}, {title: "17", part: "304"}], expected_html: 'and <a href="https://www.govinfo.gov/link/uscode/17/304">(d)</a>', context: "/current/title-37/chapter-II/subchapter-A/part-201/section-201.4"},
 
   {ex: "(15 U.S.C. 78<em>o</em>(b)(11)(A))", text: "15 U.S.C. 78<em>o</em>(b)(11)(A)", citation: {title: "15", part: "78o"}},
   {ex: "pursuant to section 6(a) of the Act (15 U.S.C. 78f(a)) or a national", text: "15 U.S.C. 78f(a)", citation: {title: "15", part: "78f"}},
@@ -411,8 +411,10 @@ USC_SCENERIOS = [
 
   {ex: "47 U.S.C. 154(b), (j), (i) and 303(r)", citations: [
     {title: "47", part: "154", expected_text: "47 U.S.C. 154"},
+    {title: "47", part: "154"},
+    {title: "47", part: "154"},
     {title: "47", part: "303", expected_text: "303"}
-  ]},
+  ], expected_html: '</a>(b), <a href="https://www.govinfo.gov/link/uscode/47/154">(j)</a>, <a href="https://www.govinfo.gov/link/uscode/47/154">(i)</a> and '},
 
   {ex: "16 U.S.C. 590a-f, 590q, 2005b, 3861, and 3862.", citations: [
     {title: "16", part: "590a", part_end: "f", expected_text: "16 U.S.C. 590a"},
@@ -430,6 +432,10 @@ USC_SCENERIOS = [
   {ex: "12 U.S.C. 1467a (i) and (r);", text: "12 U.S.C. 1467a", citations: [
     {title: "12", section: "1467a", expected_text: "12 U.S.C. 1467a", link: "https://www.govinfo.gov/link/uscode/12/1467a"}
   ]},
+
+  {ex: "5 U.S.C. 13104(a)(2)(A) and (B),",
+   citations: [{title: "5", section: "13104"}, {title: "5", section: "13104"}],
+   expected_html: '<a href="https://www.govinfo.gov/link/uscode/5/13104">5 U.S.C. 13104(a)(2)(A)</a> and <a href="https://www.govinfo.gov/link/uscode/5/13104">(B)</a>,'},
 
   {ex: "addition to those defined in 12 U.S.C. 5481(15)(A)(i)-(x). The purpose", text: "12 U.S.C. 5481(15)(A)(i)-(x)", citations: [
     {title: "12", section: "5481", expected_text: "12 U.S.C. 5481(15)(A)(i)-(x)", link: "https://www.govinfo.gov/link/uscode/12/5481"}

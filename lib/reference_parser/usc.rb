@@ -23,7 +23,6 @@ class ReferenceParser::Usc < ReferenceParser::Base
     if paragraph.match?(ReferenceParser::Cfr::LONE_PARAGRAPH) && stripped.blank?
       return
     end
-    return if stripped&.match?(/\A\([a-z]{1,5}\)\s*;?\s*\z/i)
     return if stripped&.match?(/\A(?:and|or)\s+\([a-z]{1,5}\)\s*;?\s*\z/i)
     return if citation[:text]&.downcase&.include?("app") # !TODO pending appendix link format
     part = citation[:part].to_s.gsub(" ", "%20")
